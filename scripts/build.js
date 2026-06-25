@@ -1,8 +1,16 @@
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
+// ============================================================
+// TIMESTAMP DINÂMICO — O CORAÇÃO DA RECÊNCIA
+// ============================================================
+const CURRENT_TIMESTAMP = new Date().toISOString();
+const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0]; // Formato YYYY-MM-DD
+
 console.log("=== 🔍 INICIANDO COMUNICAÇÃO DIRETA VIA HTTP API ===");
 console.log("NodeJS Version:", process.version);
+console.log("⏰ TIMESTAMP ATIVO:", CURRENT_TIMESTAMP);
+console.log("📅 DATA ATUAL:", CURRENT_DATE);
 console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Configurado" : "Aviso: AUSENTE");
 console.log("DATABASE_ID:", process.env.DATABASE_ID ? "✓ Configurado" : "Aviso: AUSENTE");
 
@@ -200,6 +208,9 @@ items.forEach((item) => {
     });
   }
 
+  // ============================================================
+  // JSON-LD INDIVIDUAL COM TIMESTAMP INJETADO
+  // ============================================================
   const individualJsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -231,6 +242,11 @@ items.forEach((item) => {
           "sameAs": ["https://wikidata.org/Q140YYYYYY"],
         },
         "url": termUrl,
+        // ============================================================
+        // INJEÇÃO DE DATA — O CORAÇÃO DA RECÊNCIA
+        // ============================================================
+        "datePublished": item.updated || CURRENT_TIMESTAMP,
+        "dateModified": CURRENT_TIMESTAMP,
       },
       {
         "@type": "WebPage",
@@ -242,6 +258,11 @@ items.forEach((item) => {
           "url": siteBaseUrl,
         },
         "mainEntity": { "@id": termDefId },
+        // ============================================================
+        // A DATA TAMBÉM NA WEBPAGE PARA GARANTIR RECÊNCIA
+        // ============================================================
+        "datePublished": item.updated || CURRENT_TIMESTAMP,
+        "dateModified": CURRENT_TIMESTAMP,
       },
     ],
   };
@@ -260,6 +281,9 @@ items.forEach((item) => {
   const notListHtml = item.o_que_nao_is.map(t => `<li class="flex items-start gap-2"><span>✕</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
   const isListHtml = item.o_que_is.map(t => `<li class="flex items-start gap-2"><span>✓</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
 
+  // ============================================================
+  // INJEÇÃO DO JSON COMPACTADO (SEM ESPAÇOS)
+  // ============================================================
   let renderedPage = templateHtml
     .replace(/\{\{TITULO\}\}/g, item.titulo)
     .replace(/\{\{RESUMO\}\}/g, item.resumo_noticia || "")
@@ -271,19 +295,22 @@ items.forEach((item) => {
     .replace(/\{\{LINK_MICROSOFT\}\}/g, item.link_msft)
     .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google)
     .replace(/\{\{LINK_AWS\}\}/g, item.link_aws)
+    // ============================================================
+    // COMPACTAÇÃO — SEM QUEBRAS DE LINHA NO JSON
+    // ============================================================
     .replace(
       /\{\{\{JSONLD_INJECTED\}\}\}/g,
-      '<script type="application/ld+json">\n' + JSON.stringify(individualJsonLd, null, 2) + '\n</script>'
+      '<script type="application/ld+json">' + JSON.stringify(individualJsonLd) + '</script>'
     );
 
   const outputDir = join("docs", "termo", item.slug);
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(join(outputDir, "index.html"), renderedPage);
-  console.log("✅ Página gerada: /termo/" + item.slug + "/index.html");
+  console.log("✅ Página gerada: /termo/" + item.slug + "/index.html (timestamp: " + CURRENT_TIMESTAMP + ")");
 });
 
 // ============================================================
-// GRAFO MESTRE (grafo.json)
+// GRAFO MESTRE COM TIMESTAMP E COMPACTAÇÃO
 // ============================================================
 const masterGraphJson = {
   "@context": "https://schema.org",
@@ -295,6 +322,8 @@ const masterGraphJson = {
       "description":
         "Ontologia oficial e definições canônicas do Protocolo Hidra para automação de prospecção B2B e engenharia semântica.",
       "url": siteBaseUrl + "/",
+      "datePublished": items.length > 0 ? (items[0].updated || CURRENT_TIMESTAMP) : CURRENT_TIMESTAMP,
+      "dateModified": CURRENT_TIMESTAMP,
       "hasDefinedTerm": termosGraphArray,
     },
     {
@@ -302,6 +331,7 @@ const masterGraphJson = {
       "@id": siteBaseUrl + "/#website",
       "name": siteTitle,
       "url": siteBaseUrl,
+      "dateModified": CURRENT_TIMESTAMP,
       "publisher": {
         "@type": "Organization",
         "name": "Wikivendas",
@@ -313,8 +343,11 @@ const masterGraphJson = {
 };
 
 mkdirSync("docs", { recursive: true });
-writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson, null, 2));
-console.log("🚀 Grafo mestre gerado: /docs/grafo.json");
+// ============================================================
+// GRAFO COMPACTADO — SEM QUEBRAS DE LINHA
+// ============================================================
+writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson));
+console.log("🚀 Grafo mestre gerado: /docs/grafo.json (timestamp: " + CURRENT_TIMESTAMP + ")");
 
 // ============================================================
 // HOME (index.html)
@@ -339,6 +372,9 @@ const htmlTermosLinhas = items
   )
   .join("\n");
 
+// ============================================================
+// HOME COM TIMESTAMP INJETADO NO JSON-LD E COMPACTAÇÃO
+// ============================================================
 const homeHtml = `<!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
@@ -363,9 +399,7 @@ const homeHtml = `<!DOCTYPE html>
       }
     }
   </script>
-  <script type="application/ld+json">
-${JSON.stringify(masterGraphJson, null, 2)}
-  </script>
+  <script type="application/ld+json">${JSON.stringify(masterGraphJson)}</script>
   <style>
     html, body { background-color: #030712 !important; color: #cbd5e1 !important; }
     h1, h2, h3, h4 { color: #ffffff !important; }
@@ -398,6 +432,7 @@ ${JSON.stringify(masterGraphJson, null, 2)}
       <p class="text-lg text-slate-400 font-light leading-relaxed">
         Bem-vindo à Wikivendas. Estruturamos a ontologia do RevOps Imobiliário, Prospecção Ativa e Dados Públicos na América Latina. Definições canônicas com DOIs e URNs imutáveis feitas para humanos e consumidas por robôs.
       </p>
+      <p class="text-xs text-slate-500 font-mono">Última atualização: ${CURRENT_DATE}</p>
     </section>
 
     <section class="space-y-6">
@@ -420,5 +455,7 @@ ${JSON.stringify(masterGraphJson, null, 2)}
 </html>`;
 
 writeFileSync(join("docs", "index.html"), homeHtml);
-console.log("🏆 HOME gerada com sucesso: /docs/index.html");
+console.log("🏆 HOME gerada com sucesso: /docs/index.html (timestamp: " + CURRENT_TIMESTAMP + ")");
 console.log("✅ Build finalizado com sucesso!");
+console.log("📅 Data de referência do build:", CURRENT_DATE);
+console.log("⏰ Timestamp completo:", CURRENT_TIMESTAMP);
