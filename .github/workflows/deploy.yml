@@ -1,4 +1,18 @@
-# .github/workflows/deploy.yml (Trecho de passos)
+# .github/workflows/deploy.yml
+name: Build e Deploy Wikivendas
+
+on:
+  push:
+    branches:
+      - main
+  repository_dispatch:
+    types: [notion_update]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
