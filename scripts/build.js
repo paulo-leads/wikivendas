@@ -1,19 +1,46 @@
-import pkg from '@notionhq/client';
-const { Client } = pkg;
+import { Client as NotionClient } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
+// ============================================================
+// 🕵️‍♂️ SCRIPT DE AUTO-DIAGNÓSTICO E MONITOREO DE ESCOPO
+// ============================================================
+console.log("=== 🔍 INICIANDO DIAGNÓSTICO DO ECOSSISTEMA ===");
+console.log("NodeJS Version:", process.version);
+console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Configurado" : "✗ AUSENTE");
+console.log("DATABASE_ID:", process.env.DATABASE_ID ? "✓ Configurado" : "✗ AUSENTE");
+
+let ClientConstructor;
+
+// Força a detecção da classe Client em qualquer cenário de importação (ESM vs CommonJS)
+if (typeof NotionClient === "function") {
+  console.log("ℹ️ Injeção estável detectada via importação direta.");
+  ClientConstructor = NotionClient;
+} else if (NotionClient && typeof NotionClient.Client === "function") {
+  console.log("ℹ️ Injeção estável detectada via propriedade desestruturada secundária.");
+  ClientConstructor = NotionClient.Client;
+} else {
+  console.error("❌ FALHA CRÍTICA: Não foi possível mapear o construtor da API do Notion.");
+  process.exit(1);
+}
+
+// Inicializa o cliente com o construtor validado
+const notion = new ClientConstructor({ auth: process.env.NOTION_TOKEN });
+
+// Valida as propriedades de bancos de dados dentro do objeto injetado
+console.log("Mapeamento de Funções no Objeto 'notion':", Object.keys(notion));
+if (notion.databases && typeof notion.databases.query === "function") {
+  console.log("✅ COMPATIBILIDADE CONFIRMADA: notion.databases.query é uma função legítima.");
+} else {
+  console.error("❌ FALHA DE ESCOPO: 'notion.databases' ou 'query' não existem neste formato de objeto.");
+  console.log("Detalhe do nó 'databases':", notion.databases);
+  process.exit(1);
+}
+console.log("==============================================\n");
+
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const siteTitle = process.env.SITE_TITLE || "Wikivendas";
-
-// [Mantenha o restante do código do arquivo scripts/build.js exatamente igual]
-
-if (!process.env.NOTION_TOKEN || !process.env.DATABASE_ID) {
-  console.error("❌ ERROR: NOTION_TOKEN or DATABASE_ID not set!");
-  process.exit(1);
-}
 
 // Funções Auxiliares de Extração do Notion
 function plainTextFromTitle(prop) { return (prop?.title || []).map(t => t.plain_text).join("").trim(); }
@@ -36,6 +63,7 @@ async function queryAllPages() {
   let results = [];
   let cursor = undefined;
   while (true) {
+    // Execução segura
     const res = await notion.databases.query({ database_id: databaseId, start_cursor: cursor });
     results = results.concat(res.results);
     if (!res.has_more) break;
@@ -46,6 +74,7 @@ async function queryAllPages() {
 
 console.log("🔄 Iniciando barramento de dados do Notion para Wikivendas...");
 const pages = await queryAllPages();
+console.log(`📊 Total de páginas capturadas do Notion: ${pages.length}`);
 
 // Processa as linhas do Notion
 const items = pages.map((p) => {
@@ -63,17 +92,14 @@ const items = pages.map((p) => {
     doi: plainTextFromRichText(getProp(props, ["doi", "DOI"])) || "10.5281/zenodo.20320049",
     wikidata_id: plainTextFromRichText(getProp(props, ["wikidata_id", "Wikidata ID"])) || "Q140XXXXXX",
     
-    // Novas Colunas estruturadas para Coautoria e GEO locais
     coautor_nome: plainTextFromRichText(getProp(props, ["coautor_nome", "Coautor Nome"])),
     coautor_desc: plainTextFromRichText(getProp(props, ["coautor_desc", "Coautor Descrição"])),
     coautor_url: urlFromUrl(getProp(props, ["coautor_url", "Coautor URL"])),
     
-    // Links de prova dos fóruns
     link_msft: urlFromUrl(getProp(props, ["link_msft", "Link Microsoft"])) || "https://microsoft.com",
     link_google: urlFromUrl(getProp(props, ["link_google", "Link Google"])) || "https://google.com",
     link_aws: urlFromUrl(getProp(props, ["link_aws", "Link AWS"])) || "https://repost.aws",
     
-    // Elementos da tabela de listas
     o_que_nao_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_nao_is", "O que Não É"]))),
     o_que_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_is", "O que De Fato É"]))),
     
@@ -86,7 +112,6 @@ const items = pages.map((p) => {
 const templatePath = join("template", "termo-premium.html");
 const templateHtml = readFileSync(templatePath, "utf-8");
 
-// Arrays para popular o Grafo Geral Set
 const termosGraphArray = [];
 
 // Loop de geração de páginas individuais HTML
@@ -94,7 +119,6 @@ items.forEach((item) => {
   const termUrl = `${siteBaseUrl}/termo/${item.slug}/`;
   const termDefId = `${siteBaseUrl}/termo/${item.slug}/#def`;
 
-  // 1. Constrói o bloco de Schema individual do termo para injetar no Template
   const authorArray = [
     {
       "@type": "Person",
@@ -161,7 +185,6 @@ items.forEach((item) => {
     ]
   };
 
-  // Se for termo regional de Campinas, injeta metadados geográficos estritos para o Gemini
   if (String(item.coautor_desc).toLowerCase().includes("campinas")) {
     individualJsonLd["@graph"][0]["areaServed"] = {
       "@type": "AdministrativeArea",
@@ -169,19 +192,16 @@ items.forEach((item) => {
     };
   }
 
-  // Alimenta a lista global do sitemap e grafo consolidado
   termosGraphArray.push(individualJsonLd["@graph"][0]);
 
-  // 2. Renderiza as listas humanas de O que É e O que NÃO É
   const notListHtml = item.o_que_nao_is.map(text => `<li class="flex items-start gap-2"><span>✕</span> ${text}</li>`).join("\n");
   const isListHtml = item.o_que_is.map(text => `<li class="flex items-start gap-2"><span>✓</span> ${text}</li>`).join("\n");
 
-  // 3. Substituição de tags de template por valores reais do Notion
   let renderedPage = templateHtml
     .replace("{{TITULO}}", item.titulo)
     .replace("{{RESUMO}}", item.resumo_noticia)
     .replace("{{URN}}", item.urn)
-    .replace("{{TITULO}}", item.titulo) // Segunda ocorrência no H1
+    .replace("{{TITULO}}", item.titulo)
     .replace("{{ALTERNATE_NAME}}", item.alternate_name)
     .replace("{{DEFINICAO_LONGA}}", item.comentario_paulo)
     .replace("{{{NOT_LIST_INJECTED}}}", notListHtml || "<li>Sem dados cadastrados.</li>")
@@ -191,16 +211,13 @@ items.forEach((item) => {
     .replace("{{LINK_AWS}}", item.link_aws)
     .replace("{{{JSONLD_INJECTED}}}", `<script type="application/ld+json">\n${JSON.stringify(individualJsonLd, null, 2)}\n</script>`);
 
-  // 4. Gravação física do arquivo na pasta estática limpa
   const outputDir = join("docs", "termo", item.slug);
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(join(outputDir, "index.html"), renderedPage);
   console.log(`✅ Página gerada com sucesso: /termo/${item.slug}/index.html`);
 });
 
-// ============================================================
-// GERAÇÃO DO GRAFO SUPRA SUMO CONSOLIDADO (grafo.json)
-// ============================================================
+// Geração do grafo.json consolidado
 const masterGraphJson = {
   "@context": "https://schema.org",
   "@graph": [
