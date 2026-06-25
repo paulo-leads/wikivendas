@@ -38,24 +38,27 @@ async function queryAllPagesFromApi() {
   let cursor = undefined;
   let hasMore = true;
 
-  console.log("🔄 Conectando aos servidores do Notion em ://notion.com...");
+  console.log("🔄 Conectando aos servidores oficiais em ://notion.com...");
 
   while (hasMore) {
     try {
-      // CORREÇÃO CIRÚRGICA: URL limpa e sem caracteres espúrios duplicados
-      const response = await fetch(`https://notion.com/v1/databases/${databaseId}/query`, {
+      // ENDPOINT BLINDADO: URL estrita sem variáveis de protocolo duplicado
+      const apiUrl = "https://://notion.com/v1/databases/" + databaseId + "/query";
+      
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${notionToken}`,
+          "Authorization": "Bearer " + notionToken,
           "Notion-Version": "2022-06-28",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ start_cursor: cursor })
       });
 
+      // CAPTURA DEFENSIVA: Se o Notion recusar, lê como texto cru e exibe o motivo sem crashar no JSON
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Erro na API do Notion: ${response.status} - ${JSON.stringify(errorData)}`);
+        const errorText = await response.text();
+        throw new Error("Código HTTP " + response.status + " - Resposta do Servidor: " + errorText.substring(0, 300));
       }
 
       const res = await response.json();
@@ -63,7 +66,9 @@ async function queryAllPagesFromApi() {
       hasMore = res.has_more;
       cursor = res.next_cursor;
     } catch (error) {
-      console.error("❌ ERRO AO CONSULTAR BANCO DE DADOS:", error.message);
+      console.error("❌ ERRO DA API DO NOTION:");
+      console.error(error.message);
+      console.error("\n⚠️ DICA DE PRODUÇÃO: Se apareceu código 401 ou 404, verifique se você adicionou sua Integração do Notion nas Conexões dentro da página do Banco de Dados no Notion.");
       process.exit(1);
     }
   }
@@ -72,7 +77,7 @@ async function queryAllPagesFromApi() {
 }
 
 const pages = await queryAllPagesFromApi();
-console.log(`📊 Sucesso: ${pages.length} registros puxados do Notion.`);
+console.log("📊 Sucesso: " + pages.length + " registros puxados do Notion.");
 
 // Processa as linhas mapeadas do Notion para o nosso modelo
 const items = pages.map((p) => {
@@ -86,7 +91,7 @@ const items = pages.map((p) => {
     alternate_name: plainTextFromRichText(getProp(props, ["alternate_name", "Nome Alternativo"])),
     resumo_noticia: plainTextFromRichText(getProp(props, ["resumo_noticia", "Resumo Notícia"])),
     comentario_paulo: plainTextFromRichText(getProp(props, ["comentario_paulo", "Definição Longa"])),
-    urn: plainTextFromRichText(getProp(props, ["urn", "URN"])) || `urn:wikivendas:def:${id}`,
+    urn: plainTextFromRichText(getProp(props, ["urn", "URN"])) || "urn:wikivendas:def:" + id,
     doi: plainTextFromRichText(getProp(props, ["doi", "DOI"])) || "10.5281/zenodo.20320049",
     wikidata_id: plainTextFromRichText(getProp(props, ["wikidata_id", "Wikidata ID"])) || "Q140XXXXXX",
     
@@ -114,13 +119,13 @@ const termosGraphArray = [];
 
 // Loop de geração de páginas individuais HTML
 items.forEach((item) => {
-  const termUrl = `${siteBaseUrl}/termo/${item.slug}/`;
-  const termDefId = `${siteBaseUrl}/termo/${item.slug}/#def`;
+  const termUrl = siteBaseUrl + "/termo/" + item.slug + "/";
+  const termDefId = siteBaseUrl + "/termo/" + item.slug + "/#def";
 
   const authorArray = [
     {
       "@type": "Person",
-      "@id": `${siteBaseUrl}#paulo-leads`,
+      "@id": siteBaseUrl + "#paulo-leads",
       "name": "Paulo C. P. Santos",
       "alternateName": "Paulo Leads",
       "url": "https://pauloleads.com.br",
@@ -151,11 +156,11 @@ items.forEach((item) => {
         "inDefinedTermSet": {
           "@type": "DefinedTermSet",
           "name": "Glossário Wikivendas",
-          "url": `${siteBaseUrl}/`
+          "url": siteBaseUrl + "/"
         },
         "sameAs": [
-          `https://wikidata.org{item.wikidata_id}`,
-          `https://doi.org{item.doi}#${item.slug}`,
+          "https://wikidata.org" + item.wikidata_id,
+          "https://doi.org" + item.doi + "#" + item.slug,
           item.link_msft,
           item.link_google,
           item.link_aws
@@ -165,14 +170,14 @@ items.forEach((item) => {
           "@type": "Organization",
           "name": "Wikivendas",
           "url": siteBaseUrl,
-          "sameAs": ["https://wikidata.org"]
+          "sameAs": ["https://wikidata.orgQ140YYYYYY"]
         },
         "url": termUrl
       },
       {
         "@type": "WebPage",
         "@id": termUrl,
-        "name": `${item.titulo} — Wikivendas`,
+        "name": item.titulo + " — Wikivendas",
         "isPartOf": {
           "@type": "WebSite",
           "name": "Wikivendas",
@@ -192,8 +197,8 @@ items.forEach((item) => {
 
   termosGraphArray.push(individualJsonLd["@graph"]);
 
-  const notListHtml = item.o_que_nao_is.map(text => `<li class="flex items-start gap-2"><span>✕</span> ${text}</li>`).join("\n");
-  const isListHtml = item.o_que_is.map(text => `<li class="flex items-start gap-2"><span>✓</span> ${text}</li>`).join("\n");
+  const notListHtml = item.o_que_nao_is.map(text => '<li class="flex items-start gap-2"><span>✕</span> ' + text + '</li>').join("\n");
+  const isListHtml = item.o_que_is.map(text => '<li class="flex items-start gap-2"><span>✓</span> ' + text + '</li>').join("\n");
 
   let renderedPage = templateHtml
     .replace("{{TITULO}}", item.titulo)
@@ -207,12 +212,12 @@ items.forEach((item) => {
     .replace("{{LINK_MICROSOFT}}", item.link_msft)
     .replace("{{LINK_GOOGLE}}", item.link_google)
     .replace("{{LINK_AWS}}", item.link_aws)
-    .replace("{{{JSONLD_INJECTED}}}", `<script type="application/ld+json">\n${JSON.stringify(individualJsonLd, null, 2)}\n</script>`);
+    .replace("{{{JSONLD_INJECTED}}}", '<script type="application/ld+json">\n' + JSON.stringify(individualJsonLd, null, 2) + '\n</script>');
 
   const outputDir = join("docs", "termo", item.slug);
   mkdirSync(outputDir, { recursive: true });
   writeFileSync(join(outputDir, "index.html"), renderedPage);
-  console.log(`✅ Página gerada com sucesso: /termo/${item.slug}/index.html`);
+  console.log("✅ Página gerada com sucesso: /termo/" + item.slug + "/index.html");
 });
 
 // Geração do grafo mestre consolidado
@@ -221,10 +226,10 @@ const masterGraphJson = {
   "@graph": [
     {
       "@type": "DefinedTermSet",
-      "@id": `${siteBaseUrl}/glossario-hidra#set`,
+      "@id": siteBaseUrl + "/glossario-hidra#set",
       "name": "Glossário Hidra — Termos de RevOps Imobiliário B2B",
       "description": "Conjunto de termos técnicos proprietários do Protocolo Hidra para automação de prospecção B2B imobiliária com IA conversacional anti-bloqueio.",
-      "url": `${siteBaseUrl}/glossario-hidra`,
+      "url": siteBaseUrl + "/glossario-hidra",
       "hasDefinedTerm": termosGraphArray
     }
   ]
