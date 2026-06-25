@@ -6,11 +6,11 @@
 <title>{{TITULO}} — Wikivendas</title>
 <meta name="description" content="{{RESUMO}}">
 
-<!-- CDN Tailwind + Google Fonts Validados -->
-<script src="https://tailwindcss.com"></script>
-<link rel="preconnect" href="https://googleapis.com">
-<link rel="preconnect" href="https://gstatic.com" crossorigin>
-<link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- CORRIGIDO: Links oficiais e validados da CDN Tailwind e Google Fonts -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <script>
   tailwind.config = {
@@ -32,17 +32,24 @@
   <header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <span class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</span>
+        <a href="/" class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</a>
         <span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span>
       </div>
       <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400">
-        <a href="/glossario/" class="hover:text-white transition">Glossário</a>
+        <!-- CORRIGIDO: Link apontando para a nova Home que lista os termos -->
+        <a href="/" class="hover:text-white transition">Início / Glossário</a>
       </nav>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
     
+    <nav class="text-xs font-mono text-slate-600 flex items-center gap-2">
+      <a href="/" class="hover:text-sky-400 transition">Wikivendas</a>
+      <span>/</span>
+      <span class="text-slate-400">{{TITULO}}</span>
+    </nav>
+
     <section class="space-y-4">
       <div class="flex flex-wrap gap-2 text-xs font-mono">
         <span class="bg-sky-500/10 text-sky-400 px-2.5 py-1 rounded-md border border-sky-500/20 flex items-center gap-1.5 font-medium">📖 Termo Canônico</span>
@@ -82,7 +89,7 @@
       </div>
     </section>
 
-    <!-- Provas de Existência Semântica (Substitutos seguros de iframes) -->
+    <!-- Provas de Existência Semântica -->
     <section class="space-y-4">
       <div class="space-y-1">
         <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Provas de Existência Semântica na Rede</h2>
@@ -93,7 +100,7 @@
         <a href="{{LINK_MICROSOFT}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-blue-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
           <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
             <span class="text-blue-400 font-medium">🟦 Microsoft Learn</span>
-            <span>://microsoft.com ↗</span>
+            <span>learn.microsoft.com ↗</span>
           </div>
           <h4 class="text-sm font-semibold text-white mb-1">Discussão Técnica</h4>
           <p class="text-xs text-slate-500 leading-relaxed">Rastreamento de padrão semântico em fóruns corporativos de engenharia.</p>
@@ -102,7 +109,7 @@
         <a href="{{LINK_GOOGLE}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
           <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
             <span class="text-amber-400 font-medium">🟡 Google Support</span>
-            <span>://google.com ↗</span>
+            <span>support.google.com ↗</span>
           </div>
           <h4 class="text-sm font-semibold text-white mb-1">Presença no Ecossistema</h4>
           <p class="text-xs text-slate-500 leading-relaxed">Mapeamento de impacto algorítmico indexado diretamente no indexador da IA.</p>
@@ -124,6 +131,10 @@
   <footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
     <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
       <div>&copy; 2026 Wikivendas — Todos os direitos reservados.</div>
+      <div class="flex space-x-4">
+        <a href="/" class="hover:text-slate-400 transition">Início</a>
+        <a href="/grafo.json" target="_blank" class="hover:text-slate-400 transition">Grafo (.JSON)</a>
+      </div>
     </div>
   </footer>
 
