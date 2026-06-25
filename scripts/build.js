@@ -2,7 +2,7 @@ import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
 // ============================================================
-// TIMESTAMP DINÂMICO — O CORAÇÃO DA RECÊNCIA
+// TIMESTAMP DINÂMICO
 // ============================================================
 const CURRENT_TIMESTAMP = new Date().toISOString();
 const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0];
@@ -20,7 +20,7 @@ const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const siteTitle = process.env.SITE_TITLE || "Wikivendas";
 
 if (!notionToken || !databaseId) {
-  console.error("❌ FALHA CRÍTICA: NOTION_TOKEN ou DATABASE_ID não foram configurados!");
+  console.error("❌ FALHA CRÍTICA: NOTION_TOKEN ou DATABASE_ID não foram configurados nos Segredos!");
   process.exit(1);
 }
 
@@ -53,6 +53,43 @@ function splitPipeText(value) {
 }
 
 // ============================================================
+// EXTRAÇÃO ROBUSTA DE URL
+// ============================================================
+function extractUrl(prop) {
+  if (!prop) return "";
+  if (prop.url) return prop.url;
+  if (prop.rich_text) {
+    const text = prop.rich_text.map(t => t.plain_text).join("");
+    if (text.match(/^https?:\/\/\S+$/)) return text;
+    return text;
+  }
+  if (prop.title) {
+    const text = prop.title.map(t => t.plain_text).join("");
+    if (text.match(/^https?:\/\/\S+$/)) return text;
+    return text;
+  }
+  return "";
+}
+
+// ============================================================
+// VALIDAÇÃO DE URL
+// ============================================================
+function isValidUrl(str) {
+  if (!str || typeof str !== "string") return false;
+  return str.startsWith("http://") || str.startsWith("https://");
+}
+
+function isPlaceholder(url) {
+  const placeholders = [
+    "https://microsoft.com",
+    "https://google.com",
+    "https://repost.aws",
+    "https://example.com",
+  ];
+  return placeholders.includes(url);
+}
+
+// ============================================================
 // CONSULTA À API DO NOTION
 // ============================================================
 async function queryAllPagesFromApi() {
@@ -60,7 +97,7 @@ async function queryAllPagesFromApi() {
   let cursor = undefined;
   let hasMore = true;
 
-  console.log("🔄 Conectando ao Notion...");
+  console.log("🔄 Conectando aos servidores oficiais do Notion...");
 
   while (hasMore) {
     try {
@@ -85,7 +122,8 @@ async function queryAllPagesFromApi() {
       hasMore = res.has_more;
       cursor = res.next_cursor;
     } catch (error) {
-      console.error("❌ ERRO DA API:", error.message);
+      console.error("❌ ERRO DA API DO NOTION:");
+      console.error(error.message);
       process.exit(1);
     }
   }
@@ -97,7 +135,7 @@ const pages = await queryAllPagesFromApi();
 console.log("📊 Sucesso: " + pages.length + " registros puxados do Notion.");
 
 // ============================================================
-// MAPEAMENTO DOS ITENS — COM CORREÇÃO NOS CAMPOS DE LINK
+// MAPEAMENTO DOS ITENS
 // ============================================================
 const items = pages
   .map((p) => {
@@ -106,11 +144,12 @@ const items = pages
                    plainTextFromRichText(getProp(props, ["titulo", "Título"]));
     const id = plainTextFromRichText(getProp(props, ["id", "ID"])) || slugify(titulo) || p.id;
 
-    // CORREÇÃO: usar plainTextFromRichText para links (captura qualquer texto/URL)
-    const linkMsft = plainTextFromRichText(getProp(props, ["link_msft", "Link Microsoft"])) || "https://microsoft.com";
-    const linkGoogle = plainTextFromRichText(getProp(props, ["link_google", "Link Google"])) || "https://google.com";
-    const linkAws = plainTextFromRichText(getProp(props, ["link_aws", "Link AWS"])) || "https://repost.aws";
-    const embedUrl = plainTextFromRichText(getProp(props, ["embed_url", "Embed URL", "URL Adicional"])) || "";
+    // Extrai URLs e valida
+    const linkMsft = extractUrl(getProp(props, ["link_msft", "Link Microsoft"]));
+    const linkGoogle = extractUrl(getProp(props, ["link_google", "Link Google"]));
+    const linkAws = extractUrl(getProp(props, ["link_aws", "Link AWS"]));
+    const urlReferencia = extractUrl(getProp(props, ["url_referencia", "URL Referência", "Embed URL"]));
+    const coautorUrl = extractUrl(getProp(props, ["coautor_url", "Coautor URL"]));
 
     return {
       id,
@@ -124,13 +163,16 @@ const items = pages
 
       coautor_nome: plainTextFromRichText(getProp(props, ["coautor_nome", "Coautor Nome"])),
       coautor_desc: plainTextFromRichText(getProp(props, ["coautor_desc", "Coautor Descrição"])),
-      coautor_url: plainTextFromRichText(getProp(props, ["coautor_url", "Coautor URL"])),
+      coautor_url: isValidUrl(coautorUrl) ? coautorUrl : "",
 
-      // Links agora capturados como texto
-      link_msft: linkMsft,
-      link_google: linkGoogle,
-      link_aws: linkAws,
-      embed_url: embedUrl, // novo campo
+      link_msft: isValidUrl(linkMsft) && !isPlaceholder(linkMsft) ? linkMsft : "",
+      link_google: isValidUrl(linkGoogle) && !isPlaceholder(linkGoogle) ? linkGoogle : "",
+      link_aws: isValidUrl(linkAws) && !isPlaceholder(linkAws) ? linkAws : "",
+
+      // ============================================================
+      // URL DE REFERÊNCIA (pode ser embed, artigo, fórum)
+      // ============================================================
+      url_referencia: isValidUrl(urlReferencia) && !isPlaceholder(urlReferencia) ? urlReferencia : "",
 
       o_que_nao_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_nao_is", "O que Não É"]))),
       o_que_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_is", "O que De Fato É"]))),
@@ -144,7 +186,7 @@ const items = pages
 console.log("📦 Total de termos válidos:", items.length);
 
 // ============================================================
-// TEMPLATE FALLBACK (COM SUPORTE A EMBED_URL)
+// TEMPLATE FALLBACK
 // ============================================================
 let templateHtml;
 try {
@@ -152,7 +194,7 @@ try {
   templateHtml = readFileSync(templatePath, "utf-8");
   console.log("📄 Template carregado de:", templatePath);
 } catch (_) {
-  console.warn("⚠️ Template não encontrado. Usando template inline com suporte a embed.");
+  console.warn("⚠️ Template não encontrado. Usando template inline mínimo.");
   templateHtml = `
   <!DOCTYPE html>
   <html lang="pt-BR">
@@ -171,18 +213,12 @@ try {
         <div><h2 class="text-xl font-semibold text-white">O que NÃO é</h2><ul class="list-disc pl-5 text-red-300">{{{NOT_LIST_INJECTED}}}</ul></div>
         <div><h2 class="text-xl font-semibold text-white">O que DE FATO é</h2><ul class="list-disc pl-5 text-green-300">{{{IS_LIST_INJECTED}}}</ul></div>
       </div>
-      <!-- LINKS DE REFERÊNCIA -->
-      <div class="flex flex-wrap gap-4 text-sm mb-4">
-        <a href="{{LINK_MICROSOFT}}" target="_blank" class="text-blue-400 hover:underline">Ver no Microsoft</a>
-        <a href="{{LINK_GOOGLE}}" target="_blank" class="text-blue-400 hover:underline">Ver no Google</a>
-        <a href="{{LINK_AWS}}" target="_blank" class="text-blue-400 hover:underline">Ver na AWS</a>
-        {{#EMBED_URL}}<a href="{{EMBED_URL}}" target="_blank" class="text-blue-400 hover:underline">Link adicional</a>{{/EMBED_URL}}
+      <div class="flex flex-wrap gap-4 text-sm items-center">
+        {{#LINK_MICROSOFT}}<a href="{{LINK_MICROSOFT}}" target="_blank" class="text-blue-400">Microsoft</a>{{/LINK_MICROSOFT}}
+        {{#LINK_GOOGLE}}<a href="{{LINK_GOOGLE}}" target="_blank" class="text-blue-400">Google</a>{{/LINK_GOOGLE}}
+        {{#LINK_AWS}}<a href="{{LINK_AWS}}" target="_blank" class="text-blue-400">AWS</a>{{/LINK_AWS}}
+        {{#URL_REFERENCIA}}<a href="{{URL_REFERENCIA}}" target="_blank" class="text-yellow-400 border border-yellow-400/30 px-3 py-1 rounded-full hover:bg-yellow-400/10">🔗 Referência externa →</a>{{/URL_REFERENCIA}}
       </div>
-      {{#EMBED_IFRAME}}
-      <div class="mb-4">
-        <iframe src="{{EMBED_URL}}" class="w-full h-64 rounded-lg border border-gray-700"></iframe>
-      </div>
-      {{/EMBED_IFRAME}}
       <p class="mt-4 text-sm text-gray-500">URN: {{URN}}</p>
     </div>
   </body>
@@ -210,7 +246,7 @@ items.forEach((item) => {
     },
   ];
 
-  if (item.coautor_nome) {
+  if (item.coautor_nome && item.coautor_url) {
     authorArray.push({
       "@type": "Person",
       "name": item.coautor_nome,
@@ -220,7 +256,19 @@ items.forEach((item) => {
   }
 
   // ============================================================
-  // JSON-LD INDIVIDUAL COM TIMESTAMP E LINKS CORRETOS
+  // MONTA ARRAY SAMEAS APENAS COM URLs VÁLIDAS (SEM PLACEHOLDERS)
+  // ============================================================
+  const sameAsArray = [
+    "https://wikidata.org/" + item.wikidata_id,
+    "https://doi.org/" + item.doi + "#" + item.slug,
+  ];
+  if (item.link_msft) sameAsArray.push(item.link_msft);
+  if (item.link_google) sameAsArray.push(item.link_google);
+  if (item.link_aws) sameAsArray.push(item.link_aws);
+  if (item.url_referencia) sameAsArray.push(item.url_referencia);
+
+  // ============================================================
+  // JSON-LD INDIVIDUAL
   // ============================================================
   const individualJsonLd = {
     "@context": "https://schema.org",
@@ -238,14 +286,7 @@ items.forEach((item) => {
           "name": "Glossário Wikivendas",
           "url": siteBaseUrl + "/",
         },
-        "sameAs": [
-          "https://wikidata.org/" + item.wikidata_id,
-          "https://doi.org/" + item.doi + "#" + item.slug,
-          item.link_msft,
-          item.link_google,
-          item.link_aws,
-          item.embed_url,
-        ].filter(Boolean),
+        "sameAs": sameAsArray.filter(Boolean),
         "author": authorArray,
         "publisher": {
           "@type": "Organization",
@@ -273,6 +314,7 @@ items.forEach((item) => {
     ],
   };
 
+  // Área geográfica (se coautor tiver "campinas" na descrição)
   if (String(item.coautor_desc).toLowerCase().includes("campinas")) {
     individualJsonLd["@graph"][0]["areaServed"] = {
       "@type": "AdministrativeArea",
@@ -282,16 +324,9 @@ items.forEach((item) => {
 
   termosGraphArray.push(individualJsonLd["@graph"]);
 
-  // Renderização da página
+  // Renderiza a página do termo
   const notListHtml = item.o_que_nao_is.map(t => `<li class="flex items-start gap-2"><span>✕</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
   const isListHtml = item.o_que_is.map(t => `<li class="flex items-start gap-2"><span>✓</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
-
-  // Verifica se o embed_url parece ser um link de vídeo (YouTube, Vimeo, etc.) para iframe
-  const isVideoEmbed = item.embed_url && (
-    item.embed_url.includes("youtube.com") ||
-    item.embed_url.includes("youtu.be") ||
-    item.embed_url.includes("vimeo.com")
-  );
 
   let renderedPage = templateHtml
     .replace(/\{\{TITULO\}\}/g, item.titulo)
@@ -301,11 +336,28 @@ items.forEach((item) => {
     .replace(/\{\{DEFINICAO_LONGA\}\}/g, item.comentario_paulo || "")
     .replace(/\{\{\{NOT_LIST_INJECTED\}\}\}/g, notListHtml)
     .replace(/\{\{\{IS_LIST_INJECTED\}\}\}/g, isListHtml)
-    .replace(/\{\{LINK_MICROSOFT\}\}/g, item.link_msft)
-    .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google)
-    .replace(/\{\{LINK_AWS\}\}/g, item.link_aws)
-    .replace(/\{\{EMBED_URL\}\}/g, item.embed_url || "")
-    .replace(/\{\{EMBED_IFRAME\}\}/g, isVideoEmbed ? `<div class="mb-4"><iframe src="${item.embed_url}" class="w-full h-64 rounded-lg border border-gray-700" allowfullscreen></iframe></div>` : "")
+    .replace(/\{\{LINK_MICROSOFT\}\}/g, item.link_msft || "")
+    .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google || "")
+    .replace(/\{\{LINK_AWS\}\}/g, item.link_aws || "")
+    .replace(/\{\{URL_REFERENCIA\}\}/g, item.url_referencia || "")
+    // ============================================================
+    // REMOVE BLOCOS CONDICIONAIS SE URL ESTIVER VAZIA
+    // ============================================================
+    .replace(/\{\{#LINK_MICROSOFT\}\}([\s\S]*?)\{\{\/LINK_MICROSOFT\}\}/g, (match, content) => {
+      return item.link_msft ? content : "";
+    })
+    .replace(/\{\{#LINK_GOOGLE\}\}([\s\S]*?)\{\{\/LINK_GOOGLE\}\}/g, (match, content) => {
+      return item.link_google ? content : "";
+    })
+    .replace(/\{\{#LINK_AWS\}\}([\s\S]*?)\{\{\/LINK_AWS\}\}/g, (match, content) => {
+      return item.link_aws ? content : "";
+    })
+    .replace(/\{\{#URL_REFERENCIA\}\}([\s\S]*?)\{\{\/URL_REFERENCIA\}\}/g, (match, content) => {
+      return item.url_referencia ? content : "";
+    })
+    // ============================================================
+    // COMPACTAÇÃO — SEM QUEBRAS DE LINHA NO JSON
+    // ============================================================
     .replace(
       /\{\{\{JSONLD_INJECTED\}\}\}/g,
       '<script type="application/ld+json">' + JSON.stringify(individualJsonLd) + '</script>'
@@ -318,7 +370,7 @@ items.forEach((item) => {
 });
 
 // ============================================================
-// GRAFO MESTRE (compactado)
+// GRAFO MESTRE
 // ============================================================
 const masterGraphJson = {
   "@context": "https://schema.org",
@@ -354,7 +406,7 @@ writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson));
 console.log("🚀 Grafo mestre gerado: /docs/grafo.json (timestamp: " + CURRENT_TIMESTAMP + ")");
 
 // ============================================================
-// HOME (index.html)
+// HOME
 // ============================================================
 const htmlTermosLinhas = items
   .map(
