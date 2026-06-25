@@ -1,127 +1,59 @@
-<!-- Template fixo — Lido por build.js e preenchido com dados de termos.json -->
 <!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{NOME}} — Wikivendas</title>
-  <meta name="description" content="{{NOME}}: {{DESCRICAO}}">
-  <link rel="canonical" href="https://wikivendas.com.br/termo/{{SLUG}}/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{TITULO}} — Wikivendas</title>
+<meta name="description" content="{{RESUMO}}">
 
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+<!-- CDN Tailwind + Google Fonts Validados -->
+<script src="https://tailwindcss.com"></script>
+<link rel="preconnect" href="https://googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
+<link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } }
+  }
+</script>
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
+<!-- O bloco JSON-LD injetado dinamicamente pelo seu script -->
+{{{JSONLD_INJECTED}}}
 
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "DefinedTerm",
-      "@id": "https://wikivendas.com.br/termo/{{SLUG}}/#def",
-      "name": "{{NOME}}",
-      "description": "{{DESCRICAO}}",
-      "termCode": "{{TERM_CODE}}",
-      "inLanguage": "pt-BR",
-      "inDefinedTermSet": {
-        "@type": "DefinedTermSet",
-        "name": "Glossário Wikivendas",
-        "url": "https://wikivendas.com.br/"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "{{AUTHOR_NAME}}",
-        "alternateName": "{{AUTHOR}}",
-        "url": "https://wikivendas.com.br{{AUTHOR_URL}}"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Wikivendas",
-        "url": "https://wikivendas.com.br/"
-      },
-      "url": "https://wikivendas.com.br/termo/{{SLUG}}/"
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://wikivendas.com.br/termo/{{SLUG}}/",
-      "name": "{{NOME}} — Wikivendas",
-      "isPartOf": {
-        "@type": "WebSite",
-        "name": "Wikivendas",
-        "url": "https://wikivendas.com.br/"
-      },
-      "mainEntity": {
-        "@id": "https://wikivendas.com.br/termo/{{SLUG}}/#def"
-      }
-    }
-  ]
-}
-  </script>
-
-  <style>
-    html, body { 
-      background-color: #030712 !important; 
-      color: #cbd5e1 !important; 
-    }
-    h1, h2, h3, h4 {
-      color: #ffffff !important;
-    }
-    a { color: #38bdf8; }
-  </style>
+<style>
+  html, body { background-color: #030712 !important; color: #cbd5e1 !important; }
+  h1, h2, h3, h4 { color: #ffffff !important; }
+  a { color: #38bdf8; }
+</style>
 </head>
-<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen selection:bg-sky-500/30 selection:text-sky-300">
+<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen">
 
-  <!-- Header / Barra Superior de Navegação -->
   <header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <a href="/" class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent hover:opacity-80 transition">WIKIVENDAS</a>
+        <span class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</span>
         <span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span>
       </div>
       <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400">
-        <a href="/" class="hover:text-white transition">Glossário</a>
-        <a href="/metodo/" class="hover:text-white transition">Protocolo Hidra</a>
+        <a href="/glossario/" class="hover:text-white transition">Glossário</a>
       </nav>
     </div>
   </header>
 
-  <!-- Container Principal -->
-  <main class="max-w-4xl mx-auto px-6 py-12 space-y-12">
+  <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
     
-    <!-- Seção de Título e Metadados -->
     <section class="space-y-4">
       <div class="flex flex-wrap gap-2 text-xs font-mono">
         <span class="bg-sky-500/10 text-sky-400 px-2.5 py-1 rounded-md border border-sky-500/20 flex items-center gap-1.5 font-medium">📖 Termo Canônico</span>
-        {{#if WIKIDATA_URL}}<a href="{{WIKIDATA_URL}}" target="_blank" class="bg-slate-900 text-slate-400 hover:text-white px-2.5 py-1 rounded-md border border-slate-800 flex items-center gap-1.5 transition">🧬 Wikidata</a>{{/if}}
-        <a href="{{AUTHOR_URL}}" class="bg-slate-900 text-slate-400 hover:text-white px-2.5 py-1 rounded-md border border-slate-800 flex items-center gap-1.5 transition">👤 {{AUTHOR_NAME}}</a>
+        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">🧬 URN: {{URN}}</span>
+        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">👤 Coautor: Paulo Leads</span>
       </div>
       
-      <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight pt-2">
-        {{NOME}}
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight pt-2 leading-tight">
+        {{TITULO}}
       </h1>
-      
-      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-mono text-slate-500 pt-1">
-        <div>URN: <code class="text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">{{TERM_CODE}}</code></div>
-        {{#if DOI_URL}}<div class="hidden md:block text-slate-700">•</div>
-        <div>DOI: <a href="{{DOI_URL}}" target="_blank" class="text-indigo-400 hover:underline">{{DOI_SHORT}}</a></div>{{/if}}
-      </div>
+      <p class="text-lg text-slate-400 font-light max-w-2xl">{{ALTERNATE_NAME}}</p>
     </section>
 
     <!-- Bloco de Definição Canônica -->
@@ -129,121 +61,69 @@
       <div class="space-y-2">
         <h2 class="text-xs uppercase font-mono tracking-widest text-sky-400 font-semibold">Definição Canônica</h2>
         <p class="text-lg text-slate-100 leading-relaxed font-light">
-          <strong class="font-semibold text-white">{{NOME}}</strong> {{DESCRICAO_LONGA}}
+          {{DEFINICAO_LONGA}}
         </p>
       </div>
 
-      <!-- Diferenciação de Escopo Semântico -->
-      {{#if NAO_E}}
+      <!-- Estrutura de Tripla Afirmação / Negação vinda do Notion -->
       <div class="border-t border-slate-800/60 pt-6 grid md:grid-cols-2 gap-6 text-sm">
         <div class="space-y-3 bg-rose-950/10 border border-rose-900/20 p-4 rounded-xl">
           <h3 class="font-semibold text-rose-400 flex items-center gap-2">O que NÃO é</h3>
           <ul class="space-y-2 text-slate-400 font-medium">
-            {{#each NAO_E}}<li class="flex items-start gap-2"><span>❌</span> {{this}}</li>{{/each}}
+            {{{NOT_LIST_INJECTED}}}
           </ul>
         </div>
         <div class="space-y-3 bg-emerald-950/10 border border-emerald-900/20 p-4 rounded-xl">
           <h3 class="font-semibold text-emerald-400 flex items-center gap-2">O que de fato É</h3>
           <ul class="space-y-2 text-slate-400 font-medium">
-            {{#each E}}<li class="flex items-start gap-2"><span>✅</span> {{this}}</li>{{/each}}
+            {{{IS_LIST_INJECTED}}}
           </ul>
         </div>
       </div>
-      {{/if}}
     </section>
 
-    <!-- Trinca Validativa de Infraestrutura -->
-    {{#if COMPROVANTES}}
+    <!-- Provas de Existência Semântica (Substitutos seguros de iframes) -->
     <section class="space-y-4">
-      <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span> Trinca Validativa de Infraestrutura
-      </h2>
-      
-      <div class="grid md:grid-cols-3 gap-4">
-        {{#each COMPROVANTES}}
-        <div class="bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-5 space-y-3 transition flex flex-col justify-between group">
-          <div class="space-y-2">
-            <span class="text-xl">{{icone}}</span>
-            <h3 class="text-sm font-semibold text-white tracking-tight mt-1">{{titulo}}</h3>
-            <p class="text-xs text-slate-500 leading-relaxed">{{descricao}}</p>
-          </div>
-          <a href="/comprovantes/{{../SLUG}}/{{arquivo}}" class="inline-flex items-center text-xs font-mono text-sky-400 hover:text-sky-300 gap-1 pt-2">
-            Ver Prova PDF <span class="group-hover:translate-x-1 transition-transform">→</span>
-          </a>
-        </div>
-        {{/each}}
-      </div>
-    </section>
-    {{/if}}
-
-    <!-- EMBED — Prova de Existência Semântica -->
-    {{#if EMBEDS}}
-    <section class="space-y-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold flex items-center gap-2">
-          <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> Embed — Prova de Existência Semântica
-        </h2>
-        <span class="text-xs text-slate-600 font-mono">{{EMBEDS_COUNT}} domínios • DR 90+</span>
-      </div>
-      
-      <div class="grid gap-6">
-        {{#each EMBEDS}}
-        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl overflow-hidden">
-          <div class="flex items-center gap-3 px-5 py-3 bg-slate-900/80 border-b border-slate-800/60">
-            <span class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-xs text-white font-bold">{{icone}}</span>
-            <span class="text-xs font-mono text-slate-400">{{titulo}}</span>
-            <span class="ml-auto text-xs text-slate-600">{{domain}}</span>
-          </div>
-          <iframe src="{{src}}" title="{{titulo}}" class="w-full h-64 bg-slate-950 border-0"></iframe>
-        </div>
-        {{/each}}
+      <div class="space-y-1">
+        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Provas de Existência Semântica na Rede</h2>
+        <p class="text-xs text-slate-500">Mapeamento e indexações profundas do termo em domínios de alta autoridade.</p>
       </div>
 
-      <p class="text-xs text-slate-600 text-center font-mono">
-        Os frames acima comprovam que o termo foi plantado e indexado em domínios de alta autoridade. O contexto inteiro é absorvido pela IA durante crawling.
-      </p>
-    </section>
-    {{/if}}
-
-    <!-- Referências Externas -->
-    {{#if REFERENCIAS_EXTERNAS}}
-    <section class="border-t border-slate-800/60 pt-8 space-y-4">
-      <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Referências Externas</h2>
-      
-      <div class="grid md:grid-cols-2 gap-3">
-        {{#each REFERENCIAS_EXTERNAS}}
-        <a href="{{url}}" target="_blank" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
-          <span class="text-lg">{{icone}}</span>
-          <div>
-            <div class="text-sm text-white group-hover:text-sky-400 transition">{{titulo}}</div>
-            <div class="text-xs text-slate-500">{{subtitulo}}</div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <a href="{{LINK_MICROSOFT}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-blue-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
+          <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
+            <span class="text-blue-400 font-medium">🟦 Microsoft Learn</span>
+            <span>://microsoft.com ↗</span>
           </div>
+          <h4 class="text-sm font-semibold text-white mb-1">Discussão Técnica</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Rastreamento de padrão semântico em fóruns corporativos de engenharia.</p>
         </a>
-        {{/each}}
-      </div>
-    </section>
-    {{/if}}
 
-    <!-- Botão Voltar à Home -->
-    <section class="border-t border-slate-800/60 pt-8 flex justify-center">
-      <a href="/" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
-        <span class="text-lg">←</span>
-        <div>
-          <div class="text-sm text-white group-hover:text-sky-400 transition">Voltar à Wikivendas</div>
-          <div class="text-xs text-slate-500">Página inicial</div>
-        </div>
-      </a>
+        <a href="{{LINK_GOOGLE}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
+          <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
+            <span class="text-amber-400 font-medium">🟡 Google Support</span>
+            <span>://google.com ↗</span>
+          </div>
+          <h4 class="text-sm font-semibold text-white mb-1">Presença no Ecossistema</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Mapeamento de impacto algorítmico indexado diretamente no indexador da IA.</p>
+        </a>
+
+        <a href="{{LINK_AWS}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-orange-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
+          <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
+            <span class="text-orange-400 font-medium">🟠 AWS re:Post</span>
+            <span>repost.aws ↗</span>
+          </div>
+          <h4 class="text-sm font-semibold text-white mb-1">Validação em Nuvem</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">Análise de persistência e latência estrutural documentada em esteiras de dados.</p>
+        </a>
+      </div>
     </section>
 
   </main>
 
   <footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
-    <div class="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
       <div>&copy; 2026 Wikivendas — Todos os direitos reservados.</div>
-      <div class="flex space-x-6">
-        <a href="/" class="hover:text-slate-400 transition">Home</a>
-        <a href="/" class="hover:text-slate-400 transition">Ver Todos os Termos</a>
-      </div>
     </div>
   </footer>
 
