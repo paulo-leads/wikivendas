@@ -43,7 +43,7 @@ async function queryAllPagesFromApi() {
   while (hasMore) {
     try {
       // CORREÇÃO CIRÚRGICA: URL limpa e sem caracteres espúrios duplicados
-      const response = await fetch(`https://://notion.com/v1/databases/${databaseId}/query`, {
+      const response = await fetch(`https://notion.com/v1/databases/${databaseId}/query`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${notionToken}`,
