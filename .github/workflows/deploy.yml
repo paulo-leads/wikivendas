@@ -21,15 +21,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # FIX: Removido o 'cache: npm' para evitar o erro de falta de arquivo lock
 
-      - name: Instalar Dependências e Inicializar Ambiente
+      - name: Instalar Dependências e Forçar ES Modules
         run: |
-          if [ ! -f package.json ]; then
-            echo "📦 Inicializando package.json bruto..."
-            npm init -y
-          fi
-          echo "📥 Instalando cliente oficial do Notion..."
+          echo "📦 Inicializando package.json com suporte a ES Modules..."
+          echo '{"type": "module"}' > package.json
+          echo "📥 Instalando cliente estável do Notion..."
           npm install @notionhq/client
 
       - name: Executar Script de Engenharia Semântica (Build)
