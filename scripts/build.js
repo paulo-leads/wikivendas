@@ -1,4 +1,5 @@
-import { Client } from "@notionhq/client";
+import pkg from '@notionhq/client';
+const { Client } = pkg;
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -6,6 +7,8 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const siteTitle = process.env.SITE_TITLE || "Wikivendas";
+
+// [Mantenha o restante do código do arquivo scripts/build.js exatamente igual]
 
 if (!process.env.NOTION_TOKEN || !process.env.DATABASE_ID) {
   console.error("❌ ERROR: NOTION_TOKEN or DATABASE_ID not set!");
