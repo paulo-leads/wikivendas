@@ -5,7 +5,7 @@ import { join } from "path";
 // TIMESTAMP DINÂMICO — O CORAÇÃO DA RECÊNCIA
 // ============================================================
 const CURRENT_TIMESTAMP = new Date().toISOString();
-const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0]; // Formato YYYY-MM-DD
+const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0];
 
 console.log("=== 🔍 INICIANDO COMUNICAÇÃO DIRETA VIA HTTP API ===");
 console.log("NodeJS Version:", process.version);
@@ -20,7 +20,7 @@ const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const siteTitle = process.env.SITE_TITLE || "Wikivendas";
 
 if (!notionToken || !databaseId) {
-  console.error("❌ FALHA CRÍTICA: NOTION_TOKEN ou DATABASE_ID não foram configurados nos Segredos!");
+  console.error("❌ FALHA CRÍTICA: NOTION_TOKEN ou DATABASE_ID não foram configurados!");
   process.exit(1);
 }
 
@@ -32,9 +32,6 @@ function plainTextFromTitle(prop) {
 }
 function plainTextFromRichText(prop) {
   return (prop?.rich_text || []).map(t => t.plain_text).join("").trim();
-}
-function urlFromUrl(prop) {
-  return prop?.url || "";
 }
 function getProp(props, possibleNames) {
   for (const name of possibleNames) {
@@ -63,7 +60,7 @@ async function queryAllPagesFromApi() {
   let cursor = undefined;
   let hasMore = true;
 
-  console.log("🔄 Conectando aos servidores oficiais do Notion...");
+  console.log("🔄 Conectando ao Notion...");
 
   while (hasMore) {
     try {
@@ -88,8 +85,7 @@ async function queryAllPagesFromApi() {
       hasMore = res.has_more;
       cursor = res.next_cursor;
     } catch (error) {
-      console.error("❌ ERRO DA API DO NOTION:");
-      console.error(error.message);
+      console.error("❌ ERRO DA API:", error.message);
       process.exit(1);
     }
   }
@@ -101,7 +97,7 @@ const pages = await queryAllPagesFromApi();
 console.log("📊 Sucesso: " + pages.length + " registros puxados do Notion.");
 
 // ============================================================
-// MAPEAMENTO DOS ITENS
+// MAPEAMENTO DOS ITENS — COM CORREÇÃO NOS CAMPOS DE LINK
 // ============================================================
 const items = pages
   .map((p) => {
@@ -109,6 +105,12 @@ const items = pages
     const titulo = plainTextFromTitle(getProp(props, ["titulo", "Título"])) ||
                    plainTextFromRichText(getProp(props, ["titulo", "Título"]));
     const id = plainTextFromRichText(getProp(props, ["id", "ID"])) || slugify(titulo) || p.id;
+
+    // CORREÇÃO: usar plainTextFromRichText para links (captura qualquer texto/URL)
+    const linkMsft = plainTextFromRichText(getProp(props, ["link_msft", "Link Microsoft"])) || "https://microsoft.com";
+    const linkGoogle = plainTextFromRichText(getProp(props, ["link_google", "Link Google"])) || "https://google.com";
+    const linkAws = plainTextFromRichText(getProp(props, ["link_aws", "Link AWS"])) || "https://repost.aws";
+    const embedUrl = plainTextFromRichText(getProp(props, ["embed_url", "Embed URL", "URL Adicional"])) || "";
 
     return {
       id,
@@ -122,11 +124,13 @@ const items = pages
 
       coautor_nome: plainTextFromRichText(getProp(props, ["coautor_nome", "Coautor Nome"])),
       coautor_desc: plainTextFromRichText(getProp(props, ["coautor_desc", "Coautor Descrição"])),
-      coautor_url: urlFromUrl(getProp(props, ["coautor_url", "Coautor URL"])),
+      coautor_url: plainTextFromRichText(getProp(props, ["coautor_url", "Coautor URL"])),
 
-      link_msft: urlFromUrl(getProp(props, ["link_msft", "Link Microsoft"])) || "https://microsoft.com",
-      link_google: urlFromUrl(getProp(props, ["link_google", "Link Google"])) || "https://google.com",
-      link_aws: urlFromUrl(getProp(props, ["link_aws", "Link AWS"])) || "https://repost.aws",
+      // Links agora capturados como texto
+      link_msft: linkMsft,
+      link_google: linkGoogle,
+      link_aws: linkAws,
+      embed_url: embedUrl, // novo campo
 
       o_que_nao_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_nao_is", "O que Não É"]))),
       o_que_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_is", "O que De Fato É"]))),
@@ -140,7 +144,7 @@ const items = pages
 console.log("📦 Total de termos válidos:", items.length);
 
 // ============================================================
-// TEMPLATE FALLBACK (caso template/termo-premium.html não exista)
+// TEMPLATE FALLBACK (COM SUPORTE A EMBED_URL)
 // ============================================================
 let templateHtml;
 try {
@@ -148,7 +152,7 @@ try {
   templateHtml = readFileSync(templatePath, "utf-8");
   console.log("📄 Template carregado de:", templatePath);
 } catch (_) {
-  console.warn("⚠️ Template não encontrado. Usando template inline mínimo.");
+  console.warn("⚠️ Template não encontrado. Usando template inline com suporte a embed.");
   templateHtml = `
   <!DOCTYPE html>
   <html lang="pt-BR">
@@ -167,11 +171,18 @@ try {
         <div><h2 class="text-xl font-semibold text-white">O que NÃO é</h2><ul class="list-disc pl-5 text-red-300">{{{NOT_LIST_INJECTED}}}</ul></div>
         <div><h2 class="text-xl font-semibold text-white">O que DE FATO é</h2><ul class="list-disc pl-5 text-green-300">{{{IS_LIST_INJECTED}}}</ul></div>
       </div>
-      <div class="flex gap-4 text-sm">
-        <a href="{{LINK_MICROSOFT}}" target="_blank" class="text-blue-400">Microsoft</a>
-        <a href="{{LINK_GOOGLE}}" target="_blank" class="text-blue-400">Google</a>
-        <a href="{{LINK_AWS}}" target="_blank" class="text-blue-400">AWS</a>
+      <!-- LINKS DE REFERÊNCIA -->
+      <div class="flex flex-wrap gap-4 text-sm mb-4">
+        <a href="{{LINK_MICROSOFT}}" target="_blank" class="text-blue-400 hover:underline">Ver no Microsoft</a>
+        <a href="{{LINK_GOOGLE}}" target="_blank" class="text-blue-400 hover:underline">Ver no Google</a>
+        <a href="{{LINK_AWS}}" target="_blank" class="text-blue-400 hover:underline">Ver na AWS</a>
+        {{#EMBED_URL}}<a href="{{EMBED_URL}}" target="_blank" class="text-blue-400 hover:underline">Link adicional</a>{{/EMBED_URL}}
       </div>
+      {{#EMBED_IFRAME}}
+      <div class="mb-4">
+        <iframe src="{{EMBED_URL}}" class="w-full h-64 rounded-lg border border-gray-700"></iframe>
+      </div>
+      {{/EMBED_IFRAME}}
       <p class="mt-4 text-sm text-gray-500">URN: {{URN}}</p>
     </div>
   </body>
@@ -209,7 +220,7 @@ items.forEach((item) => {
   }
 
   // ============================================================
-  // JSON-LD INDIVIDUAL COM TIMESTAMP INJETADO
+  // JSON-LD INDIVIDUAL COM TIMESTAMP E LINKS CORRETOS
   // ============================================================
   const individualJsonLd = {
     "@context": "https://schema.org",
@@ -233,6 +244,7 @@ items.forEach((item) => {
           item.link_msft,
           item.link_google,
           item.link_aws,
+          item.embed_url,
         ].filter(Boolean),
         "author": authorArray,
         "publisher": {
@@ -242,9 +254,6 @@ items.forEach((item) => {
           "sameAs": ["https://wikidata.org/Q140YYYYYY"],
         },
         "url": termUrl,
-        // ============================================================
-        // INJEÇÃO DE DATA — O CORAÇÃO DA RECÊNCIA
-        // ============================================================
         "datePublished": item.updated || CURRENT_TIMESTAMP,
         "dateModified": CURRENT_TIMESTAMP,
       },
@@ -258,16 +267,12 @@ items.forEach((item) => {
           "url": siteBaseUrl,
         },
         "mainEntity": { "@id": termDefId },
-        // ============================================================
-        // A DATA TAMBÉM NA WEBPAGE PARA GARANTIR RECÊNCIA
-        // ============================================================
         "datePublished": item.updated || CURRENT_TIMESTAMP,
         "dateModified": CURRENT_TIMESTAMP,
       },
     ],
   };
 
-  // Área geográfica (se coautor tiver "campinas" na descrição)
   if (String(item.coautor_desc).toLowerCase().includes("campinas")) {
     individualJsonLd["@graph"][0]["areaServed"] = {
       "@type": "AdministrativeArea",
@@ -277,13 +282,17 @@ items.forEach((item) => {
 
   termosGraphArray.push(individualJsonLd["@graph"]);
 
-  // Renderiza a página do termo
+  // Renderização da página
   const notListHtml = item.o_que_nao_is.map(t => `<li class="flex items-start gap-2"><span>✕</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
   const isListHtml = item.o_que_is.map(t => `<li class="flex items-start gap-2"><span>✓</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
 
-  // ============================================================
-  // INJEÇÃO DO JSON COMPACTADO (SEM ESPAÇOS)
-  // ============================================================
+  // Verifica se o embed_url parece ser um link de vídeo (YouTube, Vimeo, etc.) para iframe
+  const isVideoEmbed = item.embed_url && (
+    item.embed_url.includes("youtube.com") ||
+    item.embed_url.includes("youtu.be") ||
+    item.embed_url.includes("vimeo.com")
+  );
+
   let renderedPage = templateHtml
     .replace(/\{\{TITULO\}\}/g, item.titulo)
     .replace(/\{\{RESUMO\}\}/g, item.resumo_noticia || "")
@@ -295,9 +304,8 @@ items.forEach((item) => {
     .replace(/\{\{LINK_MICROSOFT\}\}/g, item.link_msft)
     .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google)
     .replace(/\{\{LINK_AWS\}\}/g, item.link_aws)
-    // ============================================================
-    // COMPACTAÇÃO — SEM QUEBRAS DE LINHA NO JSON
-    // ============================================================
+    .replace(/\{\{EMBED_URL\}\}/g, item.embed_url || "")
+    .replace(/\{\{EMBED_IFRAME\}\}/g, isVideoEmbed ? `<div class="mb-4"><iframe src="${item.embed_url}" class="w-full h-64 rounded-lg border border-gray-700" allowfullscreen></iframe></div>` : "")
     .replace(
       /\{\{\{JSONLD_INJECTED\}\}\}/g,
       '<script type="application/ld+json">' + JSON.stringify(individualJsonLd) + '</script>'
@@ -310,7 +318,7 @@ items.forEach((item) => {
 });
 
 // ============================================================
-// GRAFO MESTRE COM TIMESTAMP E COMPACTAÇÃO
+// GRAFO MESTRE (compactado)
 // ============================================================
 const masterGraphJson = {
   "@context": "https://schema.org",
@@ -319,8 +327,7 @@ const masterGraphJson = {
       "@type": "DefinedTermSet",
       "@id": siteBaseUrl + "/#set",
       "name": "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
-      "description":
-        "Ontologia oficial e definições canônicas do Protocolo Hidra para automação de prospecção B2B e engenharia semântica.",
+      "description": "Ontologia oficial e definições canônicas do Protocolo Hidra para automação de prospecção B2B e engenharia semântica.",
       "url": siteBaseUrl + "/",
       "datePublished": items.length > 0 ? (items[0].updated || CURRENT_TIMESTAMP) : CURRENT_TIMESTAMP,
       "dateModified": CURRENT_TIMESTAMP,
@@ -343,9 +350,6 @@ const masterGraphJson = {
 };
 
 mkdirSync("docs", { recursive: true });
-// ============================================================
-// GRAFO COMPACTADO — SEM QUEBRAS DE LINHA
-// ============================================================
 writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson));
 console.log("🚀 Grafo mestre gerado: /docs/grafo.json (timestamp: " + CURRENT_TIMESTAMP + ")");
 
@@ -372,9 +376,6 @@ const htmlTermosLinhas = items
   )
   .join("\n");
 
-// ============================================================
-// HOME COM TIMESTAMP INJETADO NO JSON-LD E COMPACTAÇÃO
-// ============================================================
 const homeHtml = `<!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
