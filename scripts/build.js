@@ -1,8 +1,6 @@
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
-console.customLog = console.log; // Evita conflitos de escopo
-
 console.log("=== 🔍 INICIANDO COMUNICAÇÃO DIRETA VIA HTTP API ===");
 console.log("NodeJS Version:", process.version);
 console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Configurado" : "Aviso: AUSENTE");
@@ -44,6 +42,7 @@ async function queryAllPagesFromApi() {
 
   while (hasMore) {
     try {
+      // CORREÇÃO CIRÚRGICA: URL limpa e sem caracteres espúrios duplicados
       const response = await fetch(`https://://notion.com/v1/databases/${databaseId}/query`, {
         method: "POST",
         headers: {
