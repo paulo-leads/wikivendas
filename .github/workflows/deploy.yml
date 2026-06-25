@@ -1,18 +1,4 @@
-# .github/workflows/deploy.yml
-name: Build e Deploy Wikivendas
-
-on:
-  push:
-    branches:
-      - main
-  repository_dispatch:
-    types: [notion_update]
-  workflow_dispatch:
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
+# .github/workflows/deploy.yml (Trecho de passos)
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
@@ -22,12 +8,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: Instalar Dependências e Forçar ES Modules
+      - name: Criar package.json Bruto
         run: |
-          echo "📦 Inicializando package.json com suporte a ES Modules..."
           echo '{"type": "module"}' > package.json
-          echo "📥 Instalando cliente estável do Notion..."
-          npm install @notionhq/client
 
       - name: Executar Script de Engenharia Semântica (Build)
         env:
