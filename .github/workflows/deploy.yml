@@ -6,8 +6,8 @@ on:
     branches:
       - main
   repository_dispatch:
-    types: [notion_update] # Permite disparar o build por automações externas (ex: Make/Zapier)
-  workflow_dispatch: # Permite que você clique num botão no GitHub para buildar manualmente
+    types: [notion_update]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -21,16 +21,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # FIX: Removido o 'cache: npm' para evitar o erro de falta de arquivo lock
 
-      - name: Instalar Dependências
+      - name: Instalar Dependências e Inicializar Ambiente
         run: |
-          if [ -f package.json ]; then
-            npm install
-          else
+          if [ ! -f package.json ]; then
+            echo "📦 Inicializando package.json bruto..."
             npm init -y
-            npm install @notionhq/client
           fi
+          echo "📥 Instalando cliente oficial do Notion..."
+          npm install @notionhq/client
 
       - name: Executar Script de Engenharia Semântica (Build)
         env:
@@ -44,5 +44,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs # Aponta para a pasta onde seu script salvou os arquivos
-          cname: wikivendas.com.br # Força a manutenção do seu domínio personalizado
+          publish_dir: ./docs
+          cname: wikivendas.com.br
