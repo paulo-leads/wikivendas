@@ -43,7 +43,7 @@ async function queryAllPagesFromApi() {
   while (hasMore) {
     try {
       // ENDPOINT BLINDADO: URL estrita sem variáveis de protocolo duplicado
-      const apiUrl = "https://notion.com/v1/databases/" + databaseId + "/query";
+      const apiUrl = "https://api.notion.com/v1/databases/" + databaseId + "/query";
       
       const response = await fetch(apiUrl, {
         method: "POST",
