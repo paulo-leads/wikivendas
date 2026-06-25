@@ -1,0 +1,48 @@
+# .github/workflows/deploy.yml
+name: Build e Deploy Wikivendas
+
+on:
+  push:
+    branches:
+      - main
+  repository_dispatch:
+    types: [notion_update] # Permite disparar o build por automações externas (ex: Make/Zapier)
+  workflow_dispatch: # Permite que você clique num botão no GitHub para buildar manualmente
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Instalar Dependências
+        run: |
+          if [ -f package.json ]; then
+            npm install
+          else
+            npm init -y
+            npm install @notionhq/client
+          fi
+
+      - name: Executar Script de Engenharia Semântica (Build)
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          DATABASE_ID: ${{ secrets.DATABASE_ID }}
+          SITE_BASE_URL: "https://wikivendas.com.br"
+          SITE_TITLE: "Wikivendas — Enciclopédia de Inteligência Comercial"
+        run: node scripts/build.js
+
+      - name: Deploy para o GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs # Aponta para a pasta onde seu script salvou os arquivos
+          cname: wikivendas.com.br # Força a manutenção do seu domínio personalizado
