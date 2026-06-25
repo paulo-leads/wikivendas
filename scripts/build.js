@@ -32,17 +32,16 @@ function splitPipeText(value) {
   return value.split("|").map(s => s.trim()).filter(Boolean);
 }
 
-// Consome a API do Notion via chamadas HTTP nativas do Node v20 (Seguro e Imutável)
+// Consome a API do Notion via chamadas HTTP nativas do Node v20
 async function queryAllPagesFromApi() {
   let results = [];
   let cursor = undefined;
   let hasMore = true;
 
-  console.log("🔄 Conectando aos servidores oficiais em ://notion.com...");
+  console.log("🔄 Conectando aos servidores oficiais do Notion...");
 
   while (hasMore) {
     try {
-      // ENDPOINT BLINDADO: URL estrita sem variáveis de protocolo duplicado
       const apiUrl = "https://api.notion.com/v1/databases/" + databaseId + "/query";
       
       const response = await fetch(apiUrl, {
@@ -55,7 +54,6 @@ async function queryAllPagesFromApi() {
         body: JSON.stringify({ start_cursor: cursor })
       });
 
-      // CAPTURA DEFENSIVA: Se o Notion recusar, lê como texto cru e exibe o motivo sem crashar no JSON
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error("Código HTTP " + response.status + " - Resposta do Servidor: " + errorText.substring(0, 300));
@@ -220,17 +218,31 @@ items.forEach((item) => {
   console.log("✅ Página gerada com sucesso: /termo/" + item.slug + "/index.html");
 });
 
-// Geração do grafo mestre consolidado
+// ============================================================
+// GERAÇÃO DO GRAFO MESTRE CONSOLIDADO (grafo.json)
+// ============================================================
 const masterGraphJson = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "DefinedTermSet",
-      "@id": siteBaseUrl + "/glossario-hidra#set",
-      "name": "Glossário Hidra — Termos de RevOps Imobiliário B2B",
-      "description": "Conjunto de termos técnicos proprietários do Protocolo Hidra para automação de prospecção B2B imobiliária com IA conversacional anti-bloqueio.",
-      "url": siteBaseUrl + "/glossario-hidra",
+      "@id": siteBaseUrl + "/#set",
+      "name": "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
+      "description": "Ontologia oficial e definições canônicas do Protocolo Hidra para automação de prospecção B2B e engenharia semântica.",
+      "url": siteBaseUrl + "/",
       "hasDefinedTerm": termosGraphArray
+    },
+    {
+      "@type": "WebSite",
+      "@id": siteBaseUrl + "/#website",
+      "name": siteTitle,
+      "url": siteBaseUrl,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Wikivendas",
+        "url": siteBaseUrl,
+        "sameAs": ["https://wikidata.org"]
+      }
     }
   ]
 };
@@ -238,3 +250,115 @@ const masterGraphJson = {
 mkdirSync("docs", { recursive: true });
 writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson, null, 2));
 console.log("🚀 Grafo mestre semântico gerado com sucesso em /docs/grafo.json!");
+
+// ============================================================
+// GERAÇÃO AUTOMATIZADA DA HOME PREMIUM (docs/index.html)
+// ============================================================
+
+// 1. Monta as linhas de termos em HTML para a navegação humana
+const htmlTermosLinhas = items.map(item => {
+  return `
+    <a href="/termo/${item.slug}/" class="group bg-slate-900/40 border border-slate-800/60 hover:border-sky-500/40 rounded-xl p-6 transition flex flex-col justify-between shadow-lg shadow-black/20">
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-xs font-mono text-slate-500">
+          <span class="text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/20">v1.0.0</span>
+          <span>${item.id}</span>
+        </div>
+        <h3 class="text-xl font-bold text-white tracking-tight pt-2 group-hover:text-sky-400 transition">${item.titulo}</h3>
+        <p class="text-sm text-slate-400 font-light leading-relaxed line-clamp-3">${item.resumo_noticia || item.comentario_paulo}</p>
+      </div>
+      <div class="inline-flex items-center text-xs font-mono text-sky-400 group-hover:text-sky-300 gap-1 pt-4">
+        Acessar Cânon Técnico <span class="group-hover:translate-x-1 transition-transform">→</span>
+      </div>
+    </a>
+  `;
+}).join("\n");
+
+// 2. O HTML completo da Home Estilo Dashboard Premium
+const homeHtmlCompleta = `<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${siteTitle} — Enciclopédia Canônica de Inteligência Comercial</title>
+<meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B imobiliário estruturada para humanos e inteligências artificiais.">
+<link rel="canonical" href="${siteBaseUrl}/">
+
+<!-- Links de Infraestrutura Visual -->
+<script src="https://tailwindcss.com"></script>
+<link rel="preconnect" href="https://googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
+<link href="https://googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } }
+  }
+</script>
+
+<!-- Injeção do Grafo Completo para as IAs comerem na Home -->
+<script type="application/ld+json">
+${JSON.stringify(masterGraphJson, null, 2)}
+</script>
+
+<style>
+  html, body { background-color: #030712 !important; color: #cbd5e1 !important; }
+  h1, h2, h3, h4 { color: #ffffff !important; }
+  a { color: #38bdf8; }
+</style>
+</head>
+<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</span>
+        <span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span>
+      </div>
+      <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400">
+        <a href="https://pauloleads.com.br" target="_blank" class="hover:text-white transition">Arquiteto</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="max-w-6xl mx-auto px-6 py-16 space-y-16">
+    <section class="max-w-3xl space-y-6">
+      <div class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 text-xs font-mono font-medium">
+        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Indexação Semântica Ativa para LLMs
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+        A Primeira Fonte de Verdade para <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">IA Comercial B2B</span>
+      </h1>
+      <p class="text-lg text-slate-400 font-light leading-relaxed">
+        Bem-vindo à Wikivendas. Estruturamos a ontologia do RevOps Imobiliário, Prospecção Ativa e Dados Públicos na América Latina. Definições canônicas com DOIs e URNs imutáveis feitas para humanos e consumidas por robôs.
+      </p>
+    </section>
+
+    <!-- Grid de Termos Dinâmicos -->
+    <section class="space-y-6">
+      <h2 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">Índice Canônico Terminológico (${items.length} Verbetes)</h2>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        ${htmlTermosLinhas}
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>&copy; 2026 Wikivendas — Desenvolvido por Paulo Leads. Todos os direitos reservados.</div>
+      <div class="flex space-x-4">
+        <a href="/grafo.json" target="_blank" class="hover:text-slate-400 transition">Grafo Bruto (.JSON)</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>`;
+
+// 3. Grava o arquivo físico index.html na raiz do site (/docs)
+writeFileSync(join("docs", "index.html"), homeHtmlCompleta);
+console.log("🏆 HOME AUTOMATIZADA GERADA COM SUCESSO: /docs/index.html");
