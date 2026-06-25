@@ -1,48 +1,24 @@
-import { Client as NotionClient } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
-// ============================================================
-// 🕵️‍♂️ SCRIPT DE AUTO-DIAGNÓSTICO E MONITOREO DE ESCOPO
-// ============================================================
-console.log("=== 🔍 INICIANDO DIAGNÓSTICO DO ECOSSISTEMA ===");
+console.customLog = console.log; // Evita conflitos de escopo
+
+console.log("=== 🔍 INICIANDO COMUNICAÇÃO DIRETA VIA HTTP API ===");
 console.log("NodeJS Version:", process.version);
-console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Configurado" : "✗ AUSENTE");
-console.log("DATABASE_ID:", process.env.DATABASE_ID ? "✓ Configurado" : "✗ AUSENTE");
-
-let ClientConstructor;
-
-// Força a detecção da classe Client em qualquer cenário de importação (ESM vs CommonJS)
-if (typeof NotionClient === "function") {
-  console.log("ℹ️ Injeção estável detectada via importação direta.");
-  ClientConstructor = NotionClient;
-} else if (NotionClient && typeof NotionClient.Client === "function") {
-  console.log("ℹ️ Injeção estável detectada via propriedade desestruturada secundária.");
-  ClientConstructor = NotionClient.Client;
-} else {
-  console.error("❌ FALHA CRÍTICA: Não foi possível mapear o construtor da API do Notion.");
-  process.exit(1);
-}
-
-// Inicializa o cliente com o construtor validado
-const notion = new ClientConstructor({ auth: process.env.NOTION_TOKEN });
-
-// Valida as propriedades de bancos de dados dentro do objeto injetado
-console.log("Mapeamento de Funções no Objeto 'notion':", Object.keys(notion));
-if (notion.databases && typeof notion.databases.query === "function") {
-  console.log("✅ COMPATIBILIDADE CONFIRMADA: notion.databases.query é uma função legítima.");
-} else {
-  console.error("❌ FALHA DE ESCOPO: 'notion.databases' ou 'query' não existem neste formato de objeto.");
-  console.log("Detalhe do nó 'databases':", notion.databases);
-  process.exit(1);
-}
-console.log("==============================================\n");
+console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓ Configurado" : "Aviso: AUSENTE");
+console.log("DATABASE_ID:", process.env.DATABASE_ID ? "✓ Configurado" : "Aviso: AUSENTE");
 
 const databaseId = process.env.DATABASE_ID;
+const notionToken = process.env.NOTION_TOKEN;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const siteTitle = process.env.SITE_TITLE || "Wikivendas";
 
-// Funções Auxiliares de Extração do Notion
+if (!notionToken || !databaseId) {
+  console.error("❌ FALHA CRÍTICA: NOTION_TOKEN ou DATABASE_ID não foram configurados nos Segredos!");
+  process.exit(1);
+}
+
+// Funções Auxiliares de Tratamento de Dados do Notion
 function plainTextFromTitle(prop) { return (prop?.title || []).map(t => t.plain_text).join("").trim(); }
 function plainTextFromRichText(prop) { return (prop?.rich_text || []).map(t => t.plain_text).join("").trim(); }
 function urlFromUrl(prop) { return prop?.url || ""; }
@@ -58,25 +34,48 @@ function splitPipeText(value) {
   return value.split("|").map(s => s.trim()).filter(Boolean);
 }
 
-// Busca todas as páginas do Notion
-async function queryAllPages() {
+// Consome a API do Notion via chamadas HTTP nativas do Node v20 (Seguro e Imutável)
+async function queryAllPagesFromApi() {
   let results = [];
   let cursor = undefined;
-  while (true) {
-    // Execução segura
-    const res = await notion.databases.query({ database_id: databaseId, start_cursor: cursor });
-    results = results.concat(res.results);
-    if (!res.has_more) break;
-    cursor = res.next_cursor;
+  let hasMore = true;
+
+  console.log("🔄 Conectando aos servidores do Notion em ://notion.com...");
+
+  while (hasMore) {
+    try {
+      const response = await fetch(`https://://notion.com/v1/databases/${databaseId}/query`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${notionToken}`,
+          "Notion-Version": "2022-06-28",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ start_cursor: cursor })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Erro na API do Notion: ${response.status} - ${JSON.stringify(errorData)}`);
+      }
+
+      const res = await response.json();
+      results = results.concat(res.results || []);
+      hasMore = res.has_more;
+      cursor = res.next_cursor;
+    } catch (error) {
+      console.error("❌ ERRO AO CONSULTAR BANCO DE DADOS:", error.message);
+      process.exit(1);
+    }
   }
+
   return results;
 }
 
-console.log("🔄 Iniciando barramento de dados do Notion para Wikivendas...");
-const pages = await queryAllPages();
-console.log(`📊 Total de páginas capturadas do Notion: ${pages.length}`);
+const pages = await queryAllPagesFromApi();
+console.log(`📊 Sucesso: ${pages.length} registros puxados do Notion.`);
 
-// Processa as linhas do Notion
+// Processa as linhas mapeadas do Notion para o nosso modelo
 const items = pages.map((p) => {
   const props = p.properties || {};
   const titulo = plainTextFromTitle(getProp(props, ["titulo", "Título"])) || plainTextFromRichText(getProp(props, ["titulo", "Título"]));
@@ -186,13 +185,13 @@ items.forEach((item) => {
   };
 
   if (String(item.coautor_desc).toLowerCase().includes("campinas")) {
-    individualJsonLd["@graph"][0]["areaServed"] = {
+    individualJsonLd["@graph"]["areaServed"] = {
       "@type": "AdministrativeArea",
       "name": "Campinas, SP, Brasil"
     };
   }
 
-  termosGraphArray.push(individualJsonLd["@graph"][0]);
+  termosGraphArray.push(individualJsonLd["@graph"]);
 
   const notListHtml = item.o_que_nao_is.map(text => `<li class="flex items-start gap-2"><span>✕</span> ${text}</li>`).join("\n");
   const isListHtml = item.o_que_is.map(text => `<li class="flex items-start gap-2"><span>✓</span> ${text}</li>`).join("\n");
@@ -217,7 +216,7 @@ items.forEach((item) => {
   console.log(`✅ Página gerada com sucesso: /termo/${item.slug}/index.html`);
 });
 
-// Geração do grafo.json consolidado
+// Geração do grafo mestre consolidado
 const masterGraphJson = {
   "@context": "https://schema.org",
   "@graph": [
