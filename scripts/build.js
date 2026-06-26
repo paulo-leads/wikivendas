@@ -6,6 +6,7 @@ import { join } from "path";
 // ============================================================
 const CURRENT_TIMESTAMP = new Date().toISOString();
 const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0];
+const CURRENT_YEAR = CURRENT_TIMESTAMP.split("-")[0];
 
 console.log("=== BUILD WIKIVENDAS — OSEO/FGEO ===");
 console.log("⏰ TIMESTAMP:", CURRENT_TIMESTAMP);
@@ -137,11 +138,20 @@ const items = pages
                    plainTextFromRichText(getProp(props, ["titulo", "Título"]));
     const id = plainTextFromRichText(getProp(props, ["id", "ID"])) || slugify(titulo) || p.id;
 
+    // Extrai URLs
     const linkMsft = extractUrl(getProp(props, ["link_msft", "Link Microsoft"]));
     const linkGoogle = extractUrl(getProp(props, ["link_google", "Link Google"]));
     const linkAws = extractUrl(getProp(props, ["link_aws", "Link AWS"]));
     const urlReferencia = extractUrl(getProp(props, ["url_referencia", "URL Referência", "Embed URL"]));
     const coautorUrl = extractUrl(getProp(props, ["coautor_url", "Coautor URL"]));
+
+    // Embed URLs (iframes)
+    const embedMsft = extractUrl(getProp(props, ["embed_msft", "Embed Microsoft"])) || "";
+    const embedGoogle = extractUrl(getProp(props, ["embed_google", "Embed Google"])) || "";
+    const embedAws = extractUrl(getProp(props, ["embed_aws", "Embed AWS"])) || "";
+
+    // Categoria
+    const categoria = plainTextFromRichText(getProp(props, ["categoria", "Categoria"])) || "Geral";
 
     return {
       id,
@@ -162,9 +172,14 @@ const items = pages
       link_aws: isValidUrl(linkAws) && !isPlaceholder(linkAws) ? linkAws : "",
       url_referencia: isValidUrl(urlReferencia) && !isPlaceholder(urlReferencia) ? urlReferencia : "",
 
+      embed_msft: isValidUrl(embedMsft) ? embedMsft : "",
+      embed_google: isValidUrl(embedGoogle) ? embedGoogle : "",
+      embed_aws: isValidUrl(embedAws) ? embedAws : "",
+
       o_que_nao_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_nao_is", "O que Não É"]))),
       o_que_is: splitPipeText(plainTextFromRichText(getProp(props, ["o_que_is", "O que De Fato É"]))),
 
+      categoria: categoria,
       slug: id,
       updated: p.last_edited_time,
     };
@@ -172,6 +187,27 @@ const items = pages
   .filter((i) => i.titulo);
 
 console.log("📦 " + items.length + " termos válidos.");
+
+// ============================================================
+// ORDENAR TERMOS (alfabético)
+// ============================================================
+items.sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR'));
+
+// Adicionar índice para navegação
+items.forEach((item, index) => {
+  item.termo_anterior = index > 0 ? items[index - 1].titulo : null;
+  item.termo_anterior_slug = index > 0 ? items[index - 1].slug : null;
+  item.termo_proximo = index < items.length - 1 ? items[index + 1].titulo : null;
+  item.termo_proximo_slug = index < items.length - 1 ? items[index + 1].slug : null;
+});
+
+// ============================================================
+// ESTATÍSTICAS PARA HOME
+// ============================================================
+const termosCount = items.length;
+const doiCount = items.filter(i => i.doi && i.doi !== "10.5281/zenodo.20320049").length;
+const wikidataCount = items.filter(i => i.wikidata_id && !i.wikidata_id.includes("XXXXXX")).length;
+const validacaoCount = items.filter(i => i.link_msft || i.link_google || i.link_aws).length;
 
 // ============================================================
 // TEMPLATE (FALLBACK INLINE COM LINKS DE CONSENTIMENTO)
@@ -182,15 +218,12 @@ try {
   templateHtml = readFileSync(templatePath, "utf-8");
   console.log("📄 Template carregado:", templatePath);
 } catch (_) {
-  console.warn("⚠️ Usando template inline.");
+  console.warn("⚠️ Template não encontrado. Usando template inline.");
   templateHtml = `
   <!DOCTYPE html>
   <html lang="pt-BR">
   <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{{TITULO}} — Wikivendas</title>
-  <link rel="ai-consent" href="https://wikivendas.com.br/ai-consent.json">
-  <link rel="llms" href="https://wikivendas.com.br/llms.txt">
-  <link rel="canonical" href="https://wikivendas.com.br/termo/{{SLUG}}/">
   {{{JSONLD_INJECTED}}}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -403,12 +436,15 @@ items.forEach((item) => {
   termosGraphArray.push(individualJsonLd["@graph"]);
 
   // ============================================================
-  // RENDERIZA A PÁGINA
+  // RENDERIZA A PÁGINA — COM TODOS OS PLACEHOLDERS
   // ============================================================
   const notListHtml = item.o_que_nao_is.map(t => `<li class="flex items-start gap-2"><span>✕</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
   const isListHtml = item.o_que_is.map(t => `<li class="flex items-start gap-2"><span>✓</span> ${t}</li>`).join("\n") || "<li>Sem dados cadastrados.</li>";
 
   let renderedPage = templateHtml
+    // ============================================================
+    // DADOS BÁSICOS
+    // ============================================================
     .replace(/\{\{TITULO\}\}/g, item.titulo)
     .replace(/\{\{SLUG\}\}/g, item.slug)
     .replace(/\{\{RESUMO\}\}/g, item.resumo_noticia || "")
@@ -418,18 +454,83 @@ items.forEach((item) => {
     .replace(/\{\{DOI\}\}/g, item.doi)
     .replace(/\{\{WIKIDATA_ID\}\}/g, item.wikidata_id)
     .replace(/\{\{DATE_MODIFIED\}\}/g, CURRENT_DATE)
+    .replace(/\{\{CURRENT_DATE\}\}/g, CURRENT_DATE)
+    .replace(/\{\{CURRENT_YEAR\}\}/g, CURRENT_YEAR)
+    .replace(/\{\{SITE_BASE_URL\}\}/g, siteBaseUrl)
+    // ============================================================
+    // COAUTOR
+    // ============================================================
+    .replace(/\{\{COAUTOR_NOME\}\}/g, item.coautor_nome || "")
+    .replace(/\{\{COAUTOR_URL\}\}/g, item.coautor_url || "")
+    // ============================================================
+    // EMBED URLs
+    // ============================================================
+    .replace(/\{\{EMBED_MICROSOFT\}\}/g, item.embed_msft || "")
+    .replace(/\{\{EMBED_GOOGLE\}\}/g, item.embed_google || "")
+    .replace(/\{\{EMBED_AWS\}\}/g, item.embed_aws || "")
+    // ============================================================
+    // NAVEGAÇÃO ENTRE TERMOS
+    // ============================================================
+    .replace(/\{\{TERMO_ANTERIOR\}\}/g, item.termo_anterior || "")
+    .replace(/\{\{TERMO_ANTERIOR_SLUG\}\}/g, item.termo_anterior_slug || "")
+    .replace(/\{\{TERMO_PROXIMO\}\}/g, item.termo_proximo || "")
+    .replace(/\{\{TERMO_PROXIMO_SLUG\}\}/g, item.termo_proximo_slug || "")
+    // ============================================================
+    // LISTAS
+    // ============================================================
     .replace(/\{\{NOT_LIST_INJECTED\}\}/g, notListHtml)
     .replace(/\{\{IS_LIST_INJECTED\}\}/g, isListHtml)
+    // ============================================================
+    // LINKS — COM CONDICIONAIS
+    // ============================================================
     .replace(/\{\{LINK_MICROSOFT\}\}/g, item.link_msft || "")
     .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google || "")
     .replace(/\{\{LINK_AWS\}\}/g, item.link_aws || "")
     .replace(/\{\{URL_REFERENCIA\}\}/g, item.url_referencia || "")
-    .replace(/\{\{#LINK_MICROSOFT\}\}([\s\S]*?)\{\{\/LINK_MICROSOFT\}\}/g, (match, content) => item.link_msft ? content : "")
-    .replace(/\{\{#LINK_GOOGLE\}\}([\s\S]*?)\{\{\/LINK_GOOGLE\}\}/g, (match, content) => item.link_google ? content : "")
-    .replace(/\{\{#LINK_AWS\}\}([\s\S]*?)\{\{\/LINK_AWS\}\}/g, (match, content) => item.link_aws ? content : "")
-    .replace(/\{\{#URL_REFERENCIA\}\}([\s\S]*?)\{\{\/URL_REFERENCIA\}\}/g, (match, content) => item.url_referencia ? content : "")
+    // ============================================================
+    // CONDICIONAIS — REMOVE O BLOCO SE VAZIO
+    // ============================================================
+    .replace(/\{\{#LINK_MICROSOFT\}\}([\s\S]*?)\{\{\/LINK_MICROSOFT\}\}/g, (match, content) => {
+      return item.link_msft ? content : "";
+    })
+    .replace(/\{\{#LINK_GOOGLE\}\}([\s\S]*?)\{\{\/LINK_GOOGLE\}\}/g, (match, content) => {
+      return item.link_google ? content : "";
+    })
+    .replace(/\{\{#LINK_AWS\}\}([\s\S]*?)\{\{\/LINK_AWS\}\}/g, (match, content) => {
+      return item.link_aws ? content : "";
+    })
+    .replace(/\{\{#URL_REFERENCIA\}\}([\s\S]*?)\{\{\/URL_REFERENCIA\}\}/g, (match, content) => {
+      return item.url_referencia ? content : "";
+    })
+    // ============================================================
+    // CONDICIONAIS DE EMBED
+    // ============================================================
+    .replace(/\{\{#EMBED_MICROSOFT\}\}([\s\S]*?)\{\{\/EMBED_MICROSOFT\}\}/g, (match, content) => {
+      return item.embed_msft ? content : "";
+    })
+    .replace(/\{\{#EMBED_GOOGLE\}\}([\s\S]*?)\{\{\/EMBED_GOOGLE\}\}/g, (match, content) => {
+      return item.embed_google ? content : "";
+    })
+    .replace(/\{\{#EMBED_AWS\}\}([\s\S]*?)\{\{\/EMBED_AWS\}\}/g, (match, content) => {
+      return item.embed_aws ? content : "";
+    })
+    // ============================================================
+    // CONDICIONAIS DE NAVEGAÇÃO
+    // ============================================================
+    .replace(/\{\{#TERMO_ANTERIOR\}\}([\s\S]*?)\{\{\/TERMO_ANTERIOR\}\}/g, (match, content) => {
+      return item.termo_anterior ? content : "";
+    })
+    .replace(/\{\{^TERMO_ANTERIOR\}\}([\s\S]*?)\{\{\/TERMO_ANTERIOR\}\}/g, (match, content) => {
+      return !item.termo_anterior ? content : "";
+    })
+    .replace(/\{\{#TERMO_PROXIMO\}\}([\s\S]*?)\{\{\/TERMO_PROXIMO\}\}/g, (match, content) => {
+      return item.termo_proximo ? content : "";
+    })
+    // ============================================================
+    // JSON-LD — COMPACTADO (SEM QUEBRAS)
+    // ============================================================
     .replace(
-      /\{\{\{JSONLD_INJECTED\}\}\}/g,
+      /\{\{JSONLD_INJECTED\}\}/g,
       '<script type="application/ld+json">' + JSON.stringify(individualJsonLd) + '</script>'
     );
 
@@ -735,9 +836,22 @@ writeFileSync(join("docs", ".well-known", "ai-plugin.json"), JSON.stringify(aiPl
 console.log("🤖 /docs/.well-known/ai-plugin.json");
 
 // ============================================================
-// HOME
+// HOME — COM CATEGORIAS E ESTATÍSTICAS
 // ============================================================
-const cards = items.map(item => `
+// ============================================================
+// AGRUPAR POR CATEGORIA
+// ============================================================
+const categorias = {};
+items.forEach(item => {
+  const cat = item.categoria || "Geral";
+  if (!categorias[cat]) categorias[cat] = [];
+  categorias[cat].push(item);
+});
+
+// Gerar HTML das categorias
+let categoriasHtml = "";
+Object.keys(categorias).sort().forEach(cat => {
+  const cards = categorias[cat].map(item => `
 <a href="/termo/${item.slug}/" class="group bg-slate-900/40 border border-slate-800/60 hover:border-sky-500/40 rounded-xl p-6 transition flex flex-col justify-between shadow-lg shadow-black/20">
   <div>
     <div class="flex items-center justify-between text-xs font-mono text-slate-500">
@@ -745,55 +859,214 @@ const cards = items.map(item => `
       <span>${item.id}</span>
     </div>
     <h3 class="text-xl font-bold text-white tracking-tight pt-2 group-hover:text-sky-400 transition">${item.titulo}</h3>
-    <p class="text-sm text-slate-400 font-light leading-relaxed line-clamp-3">${item.resumo_noticia || item.comentario_paulo || ""}</p>
+    <p class="text-sm text-slate-400 font-light leading-relaxed line-clamp-3">${item.resumo_noticia || item.comentario_paulo?.substring(0, 150) || ""}</p>
   </div>
   <div class="inline-flex items-center text-xs font-mono text-sky-400 group-hover:text-sky-300 gap-1 pt-4">Acessar Cânon Técnico →</div>
 </a>
 `).join('\n');
 
+  categoriasHtml += `
+<div class="space-y-4">
+  <h3 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">${cat}</h3>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">${cards}</div>
+</div>`;
+});
+
+// ============================================================
+// GERAR HOME
+// ============================================================
 const homeHtml = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${siteTitle} — Enciclopédia Canônica de Inteligência Comercial</title>
-<meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B imobiliário estruturada para humanos e inteligências artificiais.">
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wikivendas — Enciclopédia Canônica de Inteligência Comercial B2B</title>
+<meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica. Definições canônicas com DOIs, Wikidata e validação cruzada Microsoft/Google/AWS.">
 <link rel="canonical" href="${siteBaseUrl}/">
-<link rel="ai-consent" href="https://wikivendas.com.br/ai-consent.json">
-<link rel="llms" href="https://wikivendas.com.br/llms.txt">
+
+<!-- CORRIGIDO: Links oficiais e validados da CDN Tailwind e Google Fonts -->
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains+Mono','monospace']}}}}</script>
+
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } }
+  }
+</script>
+
 <script type="application/ld+json">${JSON.stringify(masterGraphJson)}</script>
-<style>html,body{background-color:#030712;color:#cbd5e1}h1,h2,h3,h4{color:#fff}a{color:#38bdf8}.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}</style>
+
+<style>
+  html, body { background-color: #030712 !important; color: #cbd5e1 !important; }
+  h1, h2, h3, h4 { color: #ffffff !important; }
+  a { color: #38bdf8; }
+  .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
 </head>
-<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen">
-<header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50"><div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-  <div class="flex items-center space-x-3"><span class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</span><span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span></div>
-  <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400"><a href="https://pauloleads.com.br" target="_blank" class="hover:text-white transition">Arquiteto</a><a href="/grafo.json" target="_blank" class="hover:text-white transition">Grafo</a></nav>
-</div></header>
-<main class="max-w-6xl mx-auto px-6 py-16 space-y-16">
-  <section class="max-w-3xl space-y-6">
-    <div class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 text-xs font-mono font-medium"><span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Indexação Semântica Ativa para LLMs</div>
-    <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">A Primeira Fonte de Verdade para <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">IA Comercial B2B</span></h1>
-    <p class="text-lg text-slate-400 font-light leading-relaxed">Bem-vindo à Wikivendas. Estruturamos a ontologia do RevOps Imobiliário, Prospecção Ativa e Dados Públicos na América Latina. Definições canônicas com DOIs e URNs imutáveis feitas para humanos e consumidas por robôs.</p>
-    <p class="text-xs text-slate-500 font-mono">Última atualização: ${CURRENT_DATE}</p>
-  </section>
-  <section class="space-y-6">
-    <h2 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">Índice Canônico Terminológico (${items.length} Verbetes)</h2>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">${cards}</div>
-  </section>
-  <div class="text-center pt-4"><a href="https://wa.me/5519982642481?text=Olá, vi a Wikivendas e quero saber como participar do projeto." target="_blank" class="text-sm text-gray-400 hover:text-white transition border border-gray-600 px-4 py-1 rounded-full inline-block">💬 Participe do projeto</a></div>
-</main>
-<footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
-  <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-    <div>© 2026 Wikivendas — Desenvolvido por Paulo Leads.</div>
-    <div class="flex space-x-4"><a href="/grafo.json" target="_blank" class="hover:text-slate-400 transition">Grafo Bruto (.JSON)</a></div>
+<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen selection:bg-sky-500/30 selection:text-sky-300">
+
+  <!-- HEADER -->
+  <header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-white font-extrabold text-lg tracking-tight bg-gradient-to-r from-sky-400 to-indigo-500 bg-clip-text text-transparent">WIKIVENDAS</span>
+        <span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span>
+      </div>
+      <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400">
+        <a href="/" class="hover:text-white transition">Início</a>
+        <a href="/#indice" class="hover:text-white transition">Glossário</a>
+        <a href="/#para-empresas" class="hover:text-white transition">Para Empresas</a>
+        <a href="https://pauloleads.com.br" target="_blank" class="hover:text-white transition">Paulo Leads</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto px-6 py-16 space-y-24">
+
+    <!-- HERO -->
+    <section class="max-w-4xl space-y-6">
+      <div class="inline-flex items-center gap-2 bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 text-xs font-mono font-medium">
+        <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Ontological SEO — Governança da Verdade da Máquina
+      </div>
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight">
+        A Primeira Fonte de Verdade para <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">IA Comercial B2B</span>
+      </h1>
+      <p class="text-lg text-slate-400 font-light leading-relaxed max-w-3xl">
+        A Wikivendas é a primeira implementação pública de <strong class="text-white">Ontological SEO</strong>: engenharia do substrato semântico que LLMs usam como premissa para gerar respostas. Cada verbete é um <strong class="text-white">DefinedTerm</strong> com DOI, Wikidata, URN imutável e validação cruzada nos ecossistemas Microsoft, Google e AWS.
+      </p>
+      <p class="text-sm text-slate-500 font-mono">
+        Projeto de <a href="https://pauloleads.com.br" class="text-sky-400 hover:underline">Paulo Leads</a> (Wikidata <a href="https://www.wikidata.org/wiki/Q140067740" class="text-sky-400 hover:underline">Q140067740</a>) — ${termosCount} termos canônicos · Última atualização: ${CURRENT_DATE}
+      </p>
+    </section>
+
+    <!-- PROVAS DE AUTORIDADE -->
+    <section class="max-w-4xl space-y-6">
+      <h2 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">Provas de Autoridade</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-5 text-center space-y-2">
+          <span class="text-3xl font-bold text-white">${termosCount}</span>
+          <p class="text-xs text-slate-500 font-mono">Termos Canônicos</p>
+        </div>
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-5 text-center space-y-2">
+          <span class="text-3xl font-bold text-white">${doiCount}</span>
+          <p class="text-xs text-slate-500 font-mono">DOIs no Zenodo</p>
+        </div>
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-5 text-center space-y-2">
+          <span class="text-3xl font-bold text-white">${wikidataCount}</span>
+          <p class="text-xs text-slate-500 font-mono">IDs no Wikidata</p>
+        </div>
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-5 text-center space-y-2">
+          <span class="text-3xl font-bold text-white">${validacaoCount}</span>
+          <p class="text-xs text-slate-500 font-mono">Validações Cruzadas</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MANIFESTO -->
+    <section class="max-w-3xl space-y-4">
+      <h2 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">O Manifesto</h2>
+      <blockquote class="border-l-4 border-sky-500/40 pl-6 italic text-lg text-slate-300 leading-relaxed">
+        "SEO otimizou conteúdo para buscadores. GEO otimizou conteúdo para citação em LLMs. Nenhum dos dois aborda a camada onde as respostas são geradas. A Wikivendas é a primeira implementação conhecida de <strong class="text-white">Ontological SEO</strong> — a engenharia do substrato semântico que as máquinas usam como premissa. <strong class="text-white">Forensic GEO</strong> é a auditoria de que a engenharia funcionou. Juntos, formam a <strong class="text-white">Governança da Verdade da Máquina</strong>."
+      </blockquote>
+      <p class="text-right text-sm text-slate-500 font-mono">— Paulo Leads, ${CURRENT_YEAR}</p>
+    </section>
+
+    <!-- ÍNDICE DE TERMOS (CARDS POR CATEGORIA) -->
+    <section id="indice" class="space-y-12">
+      <h2 class="text-sm font-mono tracking-wider text-slate-500 uppercase font-semibold">Índice Canônico Terminológico</h2>
+
+      ${categoriasHtml}
+
+      <div class="text-center pt-4">
+        <a href="https://wa.me/5519982642481?text=Olá, vi a Wikivendas e quero saber como participar do projeto." target="_blank" class="text-sm text-gray-400 hover:text-white transition border border-gray-600 px-4 py-1 rounded-full inline-block">
+          💬 Quero registrar um termo — fale conosco
+        </a>
+      </div>
+    </section>
+
+    <!-- PARA EMPRESAS -->
+    <section id="para-empresas" class="max-w-4xl space-y-6">
+      <div class="flex items-center gap-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Para Empresas — Governança Ontológica como Serviço</h2>
+      </div>
+      <div class="bg-gradient-to-b from-slate-900/80 to-slate-950 border border-slate-800/80 rounded-2xl p-8 space-y-6">
+        <p class="text-slate-300 leading-relaxed">
+          Sua marca não aparece nas respostas do ChatGPT, Gemini ou Copilot? Você não precisa de mais conteúdo — precisa de <strong class="text-white">substrato ontológico</strong>.
+        </p>
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+          <div class="bg-slate-800/40 rounded-xl p-5 space-y-2">
+            <h3 class="text-white font-semibold">1. Auditoria</h3>
+            <p class="text-slate-400">Mapeamos como os LLMs estão representando sua marca hoje. Identificamos lacunas, alucinações e concorrência ontológica.</p>
+          </div>
+          <div class="bg-slate-800/40 rounded-xl p-5 space-y-2">
+            <h3 class="text-white font-semibold">2. Plantio</h3>
+            <p class="text-slate-400">Registramos seu termo canônico na Wikivendas com DOI, Wikidata e validação cruzada nos 3 ecossistemas.</p>
+          </div>
+          <div class="bg-slate-800/40 rounded-xl p-5 space-y-2">
+            <h3 class="text-white font-semibold">3. Governança</h3>
+            <p class="text-slate-400">Monitoramos trimestralmente se sua ontologia foi internalizada pelos LLMs como verdade axiomática.</p>
+          </div>
+        </div>
+        <a href="https://wa.me/5519982642481?text=Olá, quero saber mais sobre a Governança Ontológica para minha empresa." target="_blank" class="inline-block bg-sky-500/10 text-sky-400 border border-sky-500/20 px-6 py-3 rounded-xl text-sm font-semibold hover:bg-sky-500/20 transition">
+          ➞ Solicitar Auditoria Gratuita
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>© ${CURRENT_YEAR} Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</div>
+      <div class="flex space-x-4">
+        <a href="/grafo.json" target="_blank" class="hover:text-slate-400 transition">Grafo (.JSON)</a>
+        <a href="/llms.txt" target="_blank" class="hover:text-slate-400 transition">llms.txt</a>
+        <a href="/ai-consent.json" target="_blank" class="hover:text-slate-400 transition">ai-consent.json</a>
+        <a href="/robots.txt" target="_blank" class="hover:text-slate-400 transition">robots.txt</a>
+        <a href="/sitemap.xml" target="_blank" class="hover:text-slate-400 transition">sitemap.xml</a>
+      </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="max-w-6xl mx-auto px-6 mt-8 pt-4 border-t border-slate-900 text-center">
+      <a href="#disclaimer-modal" class="text-slate-600 hover:text-slate-400 transition text-xs">ⓘ Sobre este site</a>
+    </div>
+  </footer>
+
+  <!-- MODAL DISCLAIMER -->
+  <div id="disclaimer-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center" style="display: none;">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg p-8 mx-4 space-y-4 shadow-2xl">
+      <h3 class="text-amber-400 font-semibold text-lg">ⓘ Sobre a Wikivendas</h3>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        <strong>Wikivendas</strong> é uma enciclopédia digital de conceitos de vendas B2B, RevOps e inteligência comercial, registrada sob o DOI <code class="text-sky-400">10.5281/zenodo.20860586</code> e mantida por <strong>Paulo Leads</strong>.
+      </p>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        Este site <strong>não tem qualquer relação</strong> com a loja virtual fraudulenta que operou sob nome semelhante no passado. Nosso objetivo é estruturar conhecimento canônico para humanos e IAs.
+      </p>
+      <a href="#" class="inline-block bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm hover:bg-slate-600 transition">Fechar</a>
+    </div>
   </div>
-</footer>
+
+  <script>
+    // Abre modal se hash for #disclaimer-modal
+    if (window.location.hash === '#disclaimer-modal') {
+      document.getElementById('disclaimer-modal').style.display = 'flex';
+    }
+    // Fecha modal ao clicar fora
+    document.getElementById('disclaimer-modal')?.addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+  </script>
+
 </body>
 </html>`;
 
 writeFileSync(join("docs", "index.html"), homeHtml);
-console.log("🏆 /docs/index.html");
+console.log("🏆 /docs/index.html — com categorias e estatísticas");
 console.log("✅ BUILD FINALIZADO —", CURRENT_DATE);
 console.log("📄 Arquivos gerados: index.html, grafo.json, robots.txt, llms.txt, llms-full.txt, ai-consent.json, sitemap.xml, .well-known/ai-plugin.json");
