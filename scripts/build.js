@@ -735,23 +735,9 @@ writeFileSync(join("docs", ".well-known", "ai-plugin.json"), JSON.stringify(aiPl
 console.log("🤖 /docs/.well-known/ai-plugin.json");
 
 // ============================================================
-// HOME — GERA SOMENTE SE NÃO EXISTIR (preserva manual)
+// HOME
 // ============================================================
-const homePath = join("docs", "index.html");
-
-// Verifica se o arquivo já existe
-let homeExists = false;
-try {
-  readFileSync(homePath, "utf-8");
-  homeExists = true;
-} catch (_) {
-  homeExists = false;
-}
-
-if (!homeExists) {
-  console.log("📄 Home não encontrada. Gerando index.html padrão...");
-  
-  const cards = items.map(item => `
+const cards = items.map(item => `
 <a href="/termo/${item.slug}/" class="group bg-slate-900/40 border border-slate-800/60 hover:border-sky-500/40 rounded-xl p-6 transition flex flex-col justify-between shadow-lg shadow-black/20">
   <div>
     <div class="flex items-center justify-between text-xs font-mono text-slate-500">
@@ -765,7 +751,7 @@ if (!homeExists) {
 </a>
 `).join('\n');
 
-  const homeHtml = `<!DOCTYPE html>
+const homeHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${siteTitle} — Enciclopédia Canônica de Inteligência Comercial</title>
@@ -807,13 +793,7 @@ if (!homeExists) {
 </body>
 </html>`;
 
-  writeFileSync(homePath, homeHtml);
-  console.log("🏆 /docs/index.html — gerado (não existia)");
-} else {
-  console.log("⏭️ /docs/index.html — já existe, mantido (não sobrescrito)");
-}
-
+writeFileSync(join("docs", "index.html"), homeHtml);
+console.log("🏆 /docs/index.html");
 console.log("✅ BUILD FINALIZADO —", CURRENT_DATE);
-console.log("📄 Arquivos gerados: grafo.json, robots.txt, llms.txt, llms-full.txt, ai-consent.json, sitemap.xml, .well-known/ai-plugin.json");
-console.log("📄 Páginas individuais: /termo/*/index.html");
-console.log("⏭️ Home mantida manualmente (não foi sobrescrita)");
+console.log("📄 Arquivos gerados: index.html, grafo.json, robots.txt, llms.txt, llms-full.txt, ai-consent.json, sitemap.xml, .well-known/ai-plugin.json");
