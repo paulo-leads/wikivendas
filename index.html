@@ -305,6 +305,86 @@
         <a href="/glossario/" class="hover:text-slate-400 transition">Ver Todos os Termos</a>
       </div>
     </div>
+    <!-- DISCLAIMER - DESAMBIGUAÇÃO -->
+<style>
+  .disclaimer-link {
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .disclaimer-link:hover {
+    color: #9ca3af;
+  }
+  .disclaimer-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  }
+  .disclaimer-modal:target {
+    display: flex;
+  }
+  .disclaimer-box {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    max-width: 500px;
+    padding: 2rem;
+    color: #e2e2e2;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    position: relative;
+  }
+  .disclaimer-box h3 {
+    color: #fbbf24;
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+  .disclaimer-box .close-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.4rem 1.2rem;
+    background: #374151;
+    color: #d1d5db;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  .disclaimer-box .close-btn:hover {
+    background: #4b5563;
+  }
+</style>
+
+<footer style="border-top: 1px solid #1e293b; padding: 1.5rem 0; margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #4b5563;">
+  <p>Wikivendas © 2026 — Construído com Protocolo Hidra</p>
+  <p style="margin-top: 0.5rem;">
+    <a href="#disclaimer" class="disclaimer-link">ⓘ Sobre este site</a>
+  </p>
+</footer>
+
+<div id="disclaimer" class="disclaimer-modal">
+  <div class="disclaimer-box">
+    <h3>ⓘ Sobre a Wikivendas</h3>
+    <p>
+      <strong>Wikivendas</strong> é uma enciclopédia digital de conceitos de vendas B2B, RevOps e inteligência comercial, registrada sob o DOI <code>10.5281/zenodo.20860586</code> e mantida por <strong>Paulo Leads</strong>.
+    </p>
+    <p>
+      Este site <strong>não tem qualquer relação</strong> com a loja virtual fraudulenta que operou sob nome semelhante no passado. Nosso objetivo é estruturar conhecimento canônico para humanos e IAs, não comercializar produtos físicos.
+    </p>
+    <p style="font-size: 0.85rem; color: #9ca3af;">
+      Para mais informações, consulte o <a href="https://pauloleads.com.br" style="color: #60a5fa; text-decoration: underline;">site oficial de Paulo Leads</a>.
+    </p>
+    <a href="#" class="close-btn">Fechar</a>
+  </div>
+</div>
   </footer>
 
 </body>
