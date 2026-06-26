@@ -214,7 +214,7 @@ const categoriasOrdenadas = ordemCategorias.map(id => categoriasMap[id]).filter(
 console.log("📁 " + categoriasOrdenadas.length + " categorias.");
 
 // ============================================================
-// TEMPLATE DAS PÁGINAS DE TERMO
+// TEMPLATE DAS PÁGINAS DE TERMO (FALLBACK COMPLETO)
 // ============================================================
 let templateHtml;
 try {
@@ -276,6 +276,7 @@ try {
     <span>DOI: {{DOI}}</span>
     <span>Wikidata: {{WIKIDATA_ID}}</span>
     <span>Atualizado: {{DATE_MODIFIED}}</span>
+    {{#COAUTOR_NOME}}<span>Coautor: {{COAUTOR_NOME}}</span>{{/COAUTOR_NOME}}
   </div>
   <div class="text-center">
     <a href="https://wa.me/5519982642481?text=Olá,%20vi%20o%20termo%20{{TITULO_ENCODED}}%20na%20Wikivendas%20e%20quero%20saber%20como%20participar." target="_blank" class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition border border-slate-700 px-5 py-2 rounded-full hover:border-slate-500">💬 Participe do projeto</a>
@@ -452,6 +453,48 @@ items.forEach((item) => {
     .replace(/\{\{#LINK_GOOGLE\}\}([\s\S]*?)\{\{\/LINK_GOOGLE\}\}/g,    (_, c) => item.link_google ? c : "")
     .replace(/\{\{#LINK_AWS\}\}([\s\S]*?)\{\{\/LINK_AWS\}\}/g,           (_, c) => item.link_aws ? c : "")
     .replace(/\{\{#URL_REFERENCIA\}\}([\s\S]*?)\{\{\/URL_REFERENCIA\}\}/g, (_, c) => item.url_referencia ? c : "")
+    // ============================================================
+    // CORREÇÃO: COAUTOR E CONDICIONAIS
+    // ============================================================
+    .replace(/\{\{COAUTOR_NOME\}\}/g, item.coautor_nome || "")
+    .replace(/\{\{COAUTOR_URL\}\}/g, item.coautor_url || "")
+    .replace(/\{\{#COAUTOR_NOME\}\}([\s\S]*?)\{\{\/COAUTOR_NOME\}\}/g, (match, content) => {
+      return item.coautor_nome ? content : "";
+    })
+    // ============================================================
+    // CONDICIONAIS PARA EMBED (se existirem no Notion)
+    // ============================================================
+    .replace(/\{\{EMBED_MICROSOFT\}\}/g, item.embed_msft || "")
+    .replace(/\{\{EMBED_GOOGLE\}\}/g, item.embed_google || "")
+    .replace(/\{\{EMBED_AWS\}\}/g, item.embed_aws || "")
+    .replace(/\{\{#EMBED_MICROSOFT\}\}([\s\S]*?)\{\{\/EMBED_MICROSOFT\}\}/g, (match, content) => {
+      return item.embed_msft ? content : "";
+    })
+    .replace(/\{\{#EMBED_GOOGLE\}\}([\s\S]*?)\{\{\/EMBED_GOOGLE\}\}/g, (match, content) => {
+      return item.embed_google ? content : "";
+    })
+    .replace(/\{\{#EMBED_AWS\}\}([\s\S]*?)\{\{\/EMBED_AWS\}\}/g, (match, content) => {
+      return item.embed_aws ? content : "";
+    })
+    // ============================================================
+    // NAVEGAÇÃO ENTRE TERMOS (se você tiver esses campos)
+    // ============================================================
+    .replace(/\{\{TERMO_ANTERIOR\}\}/g, item.termo_anterior || "")
+    .replace(/\{\{TERMO_ANTERIOR_SLUG\}\}/g, item.termo_anterior_slug || "")
+    .replace(/\{\{TERMO_PROXIMO\}\}/g, item.termo_proximo || "")
+    .replace(/\{\{TERMO_PROXIMO_SLUG\}\}/g, item.termo_proximo_slug || "")
+    .replace(/\{\{#TERMO_ANTERIOR\}\}([\s\S]*?)\{\{\/TERMO_ANTERIOR\}\}/g, (match, content) => {
+      return item.termo_anterior ? content : "";
+    })
+    .replace(/\{\{^TERMO_ANTERIOR\}\}([\s\S]*?)\{\{\/TERMO_ANTERIOR\}\}/g, (match, content) => {
+      return !item.termo_anterior ? content : "";
+    })
+    .replace(/\{\{#TERMO_PROXIMO\}\}([\s\S]*?)\{\{\/TERMO_PROXIMO\}\}/g, (match, content) => {
+      return item.termo_proximo ? content : "";
+    })
+    // ============================================================
+    // JSON-LD (já existe)
+    // ============================================================
     .replace(/\{\{\{JSONLD_INJECTED\}\}\}/g, '<script type="application/ld+json">' + JSON.stringify(individualJsonLd) + "<\/script>");
 
   const outputDir = join("docs", "termo", item.slug);
