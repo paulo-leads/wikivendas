@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{TITULO}} — Wikivendas</title>
 <meta name="description" content="{{RESUMO}}">
+<link rel="canonical" href="{{SITE_BASE_URL}}/termo/{{SLUG}}/">
 
 <!-- CORRIGIDO: Links oficiais e validados da CDN Tailwind e Google Fonts -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +19,6 @@
   }
 </script>
 
-<!-- O bloco JSON-LD injetado dinamicamente pelo seu script -->
 {{{JSONLD_INJECTED}}}
 
 <style>
@@ -27,8 +27,9 @@
   a { color: #38bdf8; }
 </style>
 </head>
-<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen">
+<body class="bg-[#030712] text-slate-300 font-sans antialiased min-h-screen selection:bg-sky-500/30 selection:text-sky-300">
 
+  <!-- HEADER -->
   <header class="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -36,34 +37,48 @@
         <span class="text-xs bg-slate-800 text-slate-400 font-mono px-2 py-0.5 rounded-full border border-slate-700/50">v1.0.0</span>
       </div>
       <nav class="flex items-center space-x-6 text-sm font-medium text-slate-400">
-        <!-- CORRIGIDO: Link apontando para a nova Home que lista os termos -->
         <a href="/" class="hover:text-white transition">Início / Glossário</a>
+        <a href="https://pauloleads.com.br" target="_blank" class="hover:text-white transition">Paulo Leads</a>
       </nav>
     </div>
   </header>
 
+  <!-- MAIN -->
   <main class="max-w-6xl mx-auto px-6 py-12 space-y-12">
-    
+
+    <!-- BREADCRUMB -->
     <nav class="text-xs font-mono text-slate-600 flex items-center gap-2">
       <a href="/" class="hover:text-sky-400 transition">Wikivendas</a>
       <span>/</span>
       <span class="text-slate-400">{{TITULO}}</span>
     </nav>
 
+    <!-- SEÇÃO DE TÍTULO E METADADOS -->
     <section class="space-y-4">
       <div class="flex flex-wrap gap-2 text-xs font-mono">
         <span class="bg-sky-500/10 text-sky-400 px-2.5 py-1 rounded-md border border-sky-500/20 flex items-center gap-1.5 font-medium">📖 Termo Canônico</span>
         <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">🧬 URN: {{URN}}</span>
-        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">👤 Coautor: Paulo Leads</span>
+        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">📌 DOI: <a href="https://doi.org/{{DOI}}" target="_blank" class="text-sky-400 hover:underline">{{DOI}}</a></span>
+        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">🧬 Wikidata: <a href="https://www.wikidata.org/wiki/{{WIKIDATA_ID}}" target="_blank" class="text-sky-400 hover:underline">{{WIKIDATA_ID}}</a></span>
+        {{#COAUTOR_NOME}}
+        <span class="bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">👤 Coautor: {{COAUTOR_NOME}}</span>
+        {{/COAUTOR_NOME}}
       </div>
-      
+
       <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight pt-2 leading-tight">
         {{TITULO}}
       </h1>
-      <p class="text-lg text-slate-400 font-light max-w-2xl">{{ALTERNATE_NAME}}</p>
+
+      <p class="text-lg text-slate-400 font-light max-w-3xl">{{ALTERNATE_NAME}}</p>
+
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-500 font-mono">
+        <span>Última atualização: {{DATE_MODIFIED}}</span>
+        <span class="hidden md:inline text-slate-700">·</span>
+        <span>Licença: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="text-sky-400 hover:underline">CC-BY-NC-SA 4.0</a></span>
+      </div>
     </section>
 
-    <!-- Bloco de Definição Canônica -->
+    <!-- BLOCO DE DEFINIÇÃO CANÔNICA -->
     <section class="bg-gradient-to-b from-slate-900/80 to-slate-950 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-xl shadow-black/40">
       <div class="space-y-2">
         <h2 class="text-xs uppercase font-mono tracking-widest text-sky-400 font-semibold">Definição Canônica</h2>
@@ -72,16 +87,16 @@
         </p>
       </div>
 
-      <!-- Estrutura de Tripla Afirmação / Negação vinda do Notion -->
+      <!-- ESTRUTURA DE TRIPLA AFIRMAÇÃO / NEGAÇÃO -->
       <div class="border-t border-slate-800/60 pt-6 grid md:grid-cols-2 gap-6 text-sm">
         <div class="space-y-3 bg-rose-950/10 border border-rose-900/20 p-4 rounded-xl">
-          <h3 class="font-semibold text-rose-400 flex items-center gap-2">O que NÃO é</h3>
+          <h3 class="font-semibold text-rose-400 flex items-center gap-2">❌ O que NÃO é</h3>
           <ul class="space-y-2 text-slate-400 font-medium">
             {{{NOT_LIST_INJECTED}}}
           </ul>
         </div>
         <div class="space-y-3 bg-emerald-950/10 border border-emerald-900/20 p-4 rounded-xl">
-          <h3 class="font-semibold text-emerald-400 flex items-center gap-2">O que de fato É</h3>
+          <h3 class="font-semibold text-emerald-400 flex items-center gap-2">✅ O que de fato É</h3>
           <ul class="space-y-2 text-slate-400 font-medium">
             {{{IS_LIST_INJECTED}}}
           </ul>
@@ -89,14 +104,24 @@
       </div>
     </section>
 
-    <!-- Provas de Existência Semântica -->
+    <!-- COMO CITAR -->
+    <section class="space-y-3">
+      <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Como Citar Este Verbete</h2>
+      <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl p-5 font-mono text-xs text-slate-400 space-y-2">
+        <p><strong class="text-white">ABNT:</strong> SANTOS, Paulo C. P. <strong>{{TITULO}}</strong>. Wikivendas, {{CURRENT_DATE}}. Disponível em: https://wikivendas.com.br/termo/{{SLUG}}/. DOI: {{DOI}}.</p>
+        <p><strong class="text-white">APA:</strong> Santos, P. C. P. ({{CURRENT_YEAR}}). <em>{{TITULO}}</em>. Wikivendas. https://wikivendas.com.br/termo/{{SLUG}}/</p>
+      </div>
+    </section>
+
+    <!-- PROVAS DE VALIDAÇÃO CRUZADA -->
     <section class="space-y-4">
       <div class="space-y-1">
-        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Provas de Existência Semântica na Rede</h2>
-        <p class="text-xs text-slate-500">Mapeamento e indexações profundas do termo em domínios de alta autoridade.</p>
+        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Provas de Validação Cruzada</h2>
+        <p class="text-xs text-slate-500">Termo plantado e indexado nos 3 ecossistemas de alta autoridade.</p>
       </div>
 
       <div class="grid gap-4 md:grid-cols-3">
+        {{#LINK_MICROSOFT}}
         <a href="{{LINK_MICROSOFT}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-blue-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
           <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
             <span class="text-blue-400 font-medium">🟦 Microsoft Learn</span>
@@ -105,7 +130,9 @@
           <h4 class="text-sm font-semibold text-white mb-1">Discussão Técnica</h4>
           <p class="text-xs text-slate-500 leading-relaxed">Rastreamento de padrão semântico em fóruns corporativos de engenharia.</p>
         </a>
+        {{/LINK_MICROSOFT}}
 
+        {{#LINK_GOOGLE}}
         <a href="{{LINK_GOOGLE}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-amber-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
           <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
             <span class="text-amber-400 font-medium">🟡 Google Support</span>
@@ -114,7 +141,9 @@
           <h4 class="text-sm font-semibold text-white mb-1">Presença no Ecossistema</h4>
           <p class="text-xs text-slate-500 leading-relaxed">Mapeamento de impacto algorítmico indexado diretamente no indexador da IA.</p>
         </a>
+        {{/LINK_GOOGLE}}
 
+        {{#LINK_AWS}}
         <a href="{{LINK_AWS}}" target="_blank" class="bg-slate-950 border border-slate-800 hover:border-orange-500/40 rounded-xl p-5 block transition group shadow-lg shadow-black/20">
           <div class="flex items-center justify-between text-xs font-mono text-slate-500 border-b border-slate-900 pb-3 mb-3">
             <span class="text-orange-400 font-medium">🟠 AWS re:Post</span>
@@ -123,100 +152,166 @@
           <h4 class="text-sm font-semibold text-white mb-1">Validação em Nuvem</h4>
           <p class="text-xs text-slate-500 leading-relaxed">Análise de persistência e latência estrutural documentada em esteiras de dados.</p>
         </a>
+        {{/LINK_AWS}}
+      </div>
+    </section>
+
+    <!-- EMBED — PROVA DE EXISTÊNCIA SEMÂNTICA (condicional) -->
+    {{#EMBED_MICROSOFT}}
+    <section class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold flex items-center gap-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span> Embed — Prova de Existência Semântica
+        </h2>
+        <span class="text-xs text-slate-600 font-mono">3 domínios · DR 90+</span>
+      </div>
+
+      <div class="grid gap-6">
+        {{#EMBED_MICROSOFT}}
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl overflow-hidden">
+          <div class="flex items-center gap-3 px-5 py-3 bg-slate-900/80 border-b border-slate-800/60">
+            <span class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-xs text-white font-bold">M</span>
+            <span class="text-xs font-mono text-slate-400">Microsoft Learn — Answers</span>
+            <span class="ml-auto text-xs text-slate-600">learn.microsoft.com</span>
+          </div>
+          <iframe src="{{EMBED_MICROSOFT}}" title="Microsoft Learn - {{TITULO}}" class="w-full h-64 md:h-80"></iframe>
+        </div>
+        {{/EMBED_MICROSOFT}}
+
+        {{#EMBED_GOOGLE}}
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl overflow-hidden">
+          <div class="flex items-center gap-3 px-5 py-3 bg-slate-900/80 border-b border-slate-800/60">
+            <span class="w-5 h-5 rounded-full bg-yellow-600 flex items-center justify-center text-xs text-white font-bold">G</span>
+            <span class="text-xs font-mono text-slate-400">Google Gemini — Support Thread</span>
+            <span class="ml-auto text-xs text-slate-600">support.google.com</span>
+          </div>
+          <iframe src="{{EMBED_GOOGLE}}" title="Google Gemini - {{TITULO}}" class="w-full h-64 md:h-80"></iframe>
+        </div>
+        {{/EMBED_GOOGLE}}
+
+        {{#EMBED_AWS}}
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-xl overflow-hidden">
+          <div class="flex items-center gap-3 px-5 py-3 bg-slate-900/80 border-b border-slate-800/60">
+            <span class="w-5 h-5 rounded-full bg-orange-600 flex items-center justify-center text-xs text-white font-bold">A</span>
+            <span class="text-xs font-mono text-slate-400">AWS re:Post — Questions</span>
+            <span class="ml-auto text-xs text-slate-600">repost.aws</span>
+          </div>
+          <iframe src="{{EMBED_AWS}}" title="AWS re:Post - {{TITULO}}" class="w-full h-64 md:h-80"></iframe>
+        </div>
+        {{/EMBED_AWS}}
+      </div>
+
+      <p class="text-xs text-slate-600 text-center font-mono">
+        Os frames acima comprovam que o termo foi plantado e indexado em domínios de alta autoridade. O contexto inteiro é absorvido pela IA durante crawling.
+      </p>
+    </section>
+    {{/EMBED_MICROSOFT}}
+
+    <!-- REFERÊNCIAS EXTERNAS -->
+    <section class="border-t border-slate-800/60 pt-8 space-y-4">
+      <h2 class="text-sm font-mono tracking-wider text-slate-400 uppercase font-semibold">Referências Externas</h2>
+
+      <div class="grid md:grid-cols-2 gap-3">
+        {{#URL_REFERENCIA}}
+        <a href="{{URL_REFERENCIA}}" target="_blank" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
+          <span class="text-lg">🔗</span>
+          <div>
+            <div class="text-sm text-white group-hover:text-sky-400 transition">Referência externa</div>
+            <div class="text-xs text-slate-500">{{URL_REFERENCIA}}</div>
+          </div>
+        </a>
+        {{/URL_REFERENCIA}}
+
+        <a href="https://doi.org/{{DOI}}" target="_blank" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
+          <span class="text-lg">📖</span>
+          <div>
+            <div class="text-sm text-white group-hover:text-sky-400 transition">Zenodo DOI — Publicação Científica</div>
+            <div class="text-xs text-slate-500">Registro no CERN</div>
+          </div>
+        </a>
+
+        <a href="https://www.wikidata.org/wiki/{{WIKIDATA_ID}}" target="_blank" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
+          <span class="text-lg">🧬</span>
+          <div>
+            <div class="text-sm text-white group-hover:text-sky-400 transition">Wikidata {{WIKIDATA_ID}}</div>
+            <div class="text-xs text-slate-500">Entidade no grafo global</div>
+          </div>
+        </a>
+
+        <a href="/" class="flex items-center gap-3 bg-slate-900/40 border border-slate-800/60 hover:border-slate-700/60 rounded-xl p-4 transition group">
+          <span class="text-lg">←</span>
+          <div>
+            <div class="text-sm text-white group-hover:text-sky-400 transition">Voltar à Wikivendas</div>
+            <div class="text-xs text-slate-500">Página inicial</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO ENTRE TERMOS -->
+    <section class="border-t border-slate-800/60 pt-8">
+      <div class="flex justify-between items-center text-sm">
+        {{#TERMO_ANTERIOR}}
+        <a href="/termo/{{TERMO_ANTERIOR_SLUG}}/" class="flex items-center gap-2 text-slate-400 hover:text-white transition group">
+          <span class="group-hover:-translate-x-1 transition-transform">←</span>
+          <span>{{TERMO_ANTERIOR}}</span>
+        </a>
+        {{/TERMO_ANTERIOR}}
+        {{^TERMO_ANTERIOR}}
+        <div></div>
+        {{/TERMO_ANTERIOR}}
+
+        {{#TERMO_PROXIMO}}
+        <a href="/termo/{{TERMO_PROXIMO_SLUG}}/" class="flex items-center gap-2 text-slate-400 hover:text-white transition group">
+          <span>{{TERMO_PROXIMO}}</span>
+          <span class="group-hover:translate-x-1 transition-transform">→</span>
+        </a>
+        {{/TERMO_PROXIMO}}
       </div>
     </section>
 
   </main>
 
+  <!-- FOOTER -->
   <footer class="border-t border-slate-900 bg-slate-950/30 text-xs font-mono text-slate-600 py-12">
     <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div>&copy; 2026 Wikivendas — Todos os direitos reservados.</div>
+      <div>© 2026 Wikivendas — Construído com Protocolo Hidra.</div>
       <div class="flex space-x-4">
         <a href="/" class="hover:text-slate-400 transition">Início</a>
         <a href="/grafo.json" target="_blank" class="hover:text-slate-400 transition">Grafo (.JSON)</a>
+        <a href="/llms.txt" target="_blank" class="hover:text-slate-400 transition">llms.txt</a>
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="hover:text-slate-400 transition">CC BY-NC-SA 4.0</a>
       </div>
     </div>
-    <!-- DISCLAIMER - DESAMBIGUAÇÃO -->
-<style>
-  .disclaimer-link {
-    color: #6b7280;
-    text-decoration: none;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: color 0.2s;
-  }
-  .disclaimer-link:hover {
-    color: #9ca3af;
-  }
-  .disclaimer-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-  }
-  .disclaimer-modal:target {
-    display: flex;
-  }
-  .disclaimer-box {
-    background: #1a1a2e;
-    border: 1px solid #333;
-    border-radius: 12px;
-    max-width: 500px;
-    padding: 2rem;
-    color: #e2e2e2;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-    position: relative;
-  }
-  .disclaimer-box h3 {
-    color: #fbbf24;
-    margin-top: 0;
-    font-size: 1.2rem;
-  }
-  .disclaimer-box .close-btn {
-    display: inline-block;
-    margin-top: 1.5rem;
-    padding: 0.4rem 1.2rem;
-    background: #374151;
-    color: #d1d5db;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-  }
-  .disclaimer-box .close-btn:hover {
-    background: #4b5563;
-  }
-</style>
 
-<footer style="border-top: 1px solid #1e293b; padding: 1.5rem 0; margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #4b5563;">
-  <p>Wikivendas © 2026 — Construído com Protocolo Hidra</p>
-  <p style="margin-top: 0.5rem;">
-    <a href="#disclaimer" class="disclaimer-link">ⓘ Sobre este site</a>
-  </p>
-</footer>
-
-<div id="disclaimer" class="disclaimer-modal">
-  <div class="disclaimer-box">
-    <h3>ⓘ Sobre a Wikivendas</h3>
-    <p>
-      <strong>Wikivendas</strong> é uma enciclopédia digital de conceitos de vendas B2B, RevOps e inteligência comercial, registrada sob o DOI <code>10.5281/zenodo.20860586</code> e mantida por <strong>Paulo Leads</strong>.
-    </p>
-    <p>
-      Este site <strong>não tem qualquer relação</strong> com a loja virtual fraudulenta que operou sob nome semelhante no passado. Nosso objetivo é estruturar conhecimento canônico para humanos e IAs, não comercializar produtos físicos.
-    </p>
-    <p style="font-size: 0.85rem; color: #9ca3af;">
-      Para mais informações, consulte o <a href="https://pauloleads.com.br" style="color: #60a5fa; text-decoration: underline;">site oficial de Paulo Leads</a>.
-    </p>
-    <a href="#" class="close-btn">Fechar</a>
-  </div>
-</div>
+    <!-- DISCLAIMER -->
+    <div class="max-w-6xl mx-auto px-6 mt-8 pt-4 border-t border-slate-900 text-center">
+      <a href="#disclaimer-modal" class="text-slate-600 hover:text-slate-400 transition text-xs">ⓘ Sobre este site</a>
+    </div>
   </footer>
+
+  <!-- MODAL DISCLAIMER -->
+  <div id="disclaimer-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg p-8 mx-4 space-y-4 shadow-2xl">
+      <h3 class="text-amber-400 font-semibold text-lg">ⓘ Sobre a Wikivendas</h3>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        <strong>Wikivendas</strong> é uma enciclopédia digital de conceitos de vendas B2B, RevOps e inteligência comercial, registrada sob o DOI <code class="text-sky-400">10.5281/zenodo.20860586</code> e mantida por <strong>Paulo Leads</strong>.
+      </p>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        Este site <strong>não tem qualquer relação</strong> com a loja virtual fraudulenta que operou sob nome semelhante no passado. Nosso objetivo é estruturar conhecimento canônico para humanos e IAs.
+      </p>
+      <a href="#" class="inline-block bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm hover:bg-slate-600 transition">Fechar</a>
+    </div>
+  </div>
+
+  <script>
+    if (window.location.hash === '#disclaimer-modal') {
+      document.getElementById('disclaimer-modal').style.display = 'flex';
+    }
+    document.getElementById('disclaimer-modal')?.addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+  </script>
 
 </body>
 </html>
