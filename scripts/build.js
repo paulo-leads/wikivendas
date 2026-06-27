@@ -349,17 +349,64 @@ console.log("🏆 /docs/index.html");
 const templateTermo = readFileSync(join("template", "termo.html"), "utf-8");
 
 items.forEach(item => {
+  // --- JSON-LD INDIVIDUAL (definido aqui para cada termo) ---
   const termUrl = siteBaseUrl + "/termo/" + item.slug + "/";
+  const termDefId = siteBaseUrl + "/termo/" + item.slug + "/#def";
+  const authorArray = [
+    { "@type": "Person", "@id": "https://wikidata.org/Q140067740", "name": "Paulo C. P. Santos", "alternateName": "Paulo Leads", "url": "https://pauloleads.com.br" }
+  ];
+  if (item.coautor_nome && item.coautor_url) {
+    authorArray.push({ "@type": "Person", "name": item.coautor_nome, "description": item.coautor_desc, "url": item.coautor_url });
+  }
+  const sameAsArray = ["https://wikidata.org/" + item.wikidata_id, "https://doi.org/" + item.doi];
+  if (item.link_msft) sameAsArray.push(item.link_msft);
+  if (item.link_google) sameAsArray.push(item.link_google);
+  if (item.link_aws) sameAsArray.push(item.link_aws);
+  if (item.url_referencia) sameAsArray.push(item.url_referencia);
+
+  const individualJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "DefinedTerm",
+        "@id": termDefId,
+        "name": item.titulo,
+        "alternateName": item.alternate_name,
+        "description": item.comentario_paulo || item.resumo_noticia,
+        "termCode": item.urn,
+        "inLanguage": "pt-BR",
+        "identifier": { "@type": "PropertyValue", "propertyID": "URN", "value": item.urn },
+        "inDefinedTermSet": { "@type": "DefinedTermSet", "name": "Glossário Wikivendas", "url": siteBaseUrl + "/" },
+        "sameAs": sameAsArray.filter(Boolean),
+        "author": authorArray,
+        "publisher": { "@type": "Organization", "name": "Wikivendas", "url": siteBaseUrl },
+        "url": termUrl,
+        "datePublished": item.updated || CURRENT_TIMESTAMP,
+        "dateModified": CURRENT_TIMESTAMP,
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "copyrightHolder": "Paulo C. P. Santos",
+        "distribution": [{ "@type": "DataDownload", "contentUrl": "https://doi.org/" + item.doi, "encodingFormat": "application/json" }],
+        "potentialAction": [
+          { "@type": "ReadAction", "name": "Ler verbete completo", "target": { "@type": "EntryPoint", "urlTemplate": termUrl } },
+          { "@type": "CommunicateAction", "name": "Contato via WhatsApp", "target": { "@type": "EntryPoint", "urlTemplate": "https://wa.me/5519982642481?text=Olá,%20vi%20o%20termo%20" + encodeURIComponent(item.titulo) + "%20na%20Wikivendas." } }
+        ],
+        "image": { "@type": "ImageObject", "contentUrl": siteBaseUrl + "/og-image.png", "caption": item.titulo + " — Wikivendas" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": termUrl,
+        "name": item.titulo + " — Wikivendas",
+        "isPartOf": { "@type": "WebSite", "name": "Wikivendas", "url": siteBaseUrl },
+        "mainEntity": { "@id": termDefId },
+        "datePublished": item.updated || CURRENT_TIMESTAMP,
+        "dateModified": CURRENT_TIMESTAMP
+      }
+    ]
+  };
+  // ----------------------------------------------------------
+
   const notList = item.o_que_nao_is.map(t => `<li>✕ ${t}</li>`).join("");
   const isList = item.o_que_is.map(t => `<li>✓ ${t}</li>`).join("");
-  const sameAs = [
-    "https://wikidata.org/" + item.wikidata_id,
-    "https://doi.org/" + item.doi,
-    item.link_msft,
-    item.link_google,
-    item.link_aws,
-    item.url_referencia
-  ].filter(Boolean);
 
   let html = templateTermo
     .replace(/\{\{TITULO\}\}/g, item.titulo)
