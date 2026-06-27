@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B</title>
+  <meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica. Definições canônicas com DOIs, Wikidata e validação cruzada Microsoft/Google/AWS.">
+  <link rel="canonical" href="https://wikivendas.com.br/">
+  <link rel="ai-consent" href="/ai-consent.json">
+  <link rel="llms" href="/llms.txt">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <script type="application/ld+json">{{MASTER_JSONLD}}</script>
+  <style>
+    :root {
+      --c0: #030712; --c1: #0a1120; --c2: #111827;
+      --tp: #f1f5f9; --ts: #94a3b8; --tm: #475569; --ta: #38bdf8;
+      --bd: rgba(255,255,255,0.06); --bds: rgba(255,255,255,0.12);
+      --r: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--c0); scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--c0); color: var(--ts); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* HEADER */
+    .wv-header { position: sticky; top: 0; z-index: 50; border-bottom: 0.5px solid var(--bd); background: rgba(3,7,18,0.85); backdrop-filter: blur(16px); }
+    .wv-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .wv-logo { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+    .wv-version { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--tm); background: var(--c2); border: 0.5px solid var(--bds); padding: 3px 8px; border-radius: 20px; margin-left: 10px; -webkit-text-fill-color: var(--tm); }
+    .wv-nav { display: flex; gap: 2rem; }
+    .wv-nav a { font-size: 13px; color: var(--tm); text-decoration: none; transition: color 0.15s; }
+    .wv-nav a:hover { color: var(--tp); }
+
+    /* HERO */
+    .wv-hero { max-width: 1100px; margin: 0 auto; padding: 6rem 2rem 5rem; }
+    .wv-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ta); margin-bottom: 2rem; }
+    .wv-eyebrow::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--ta); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .wv-slogan { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: 1.0; letter-spacing: -0.04em; color: var(--tp); margin-bottom: 2.5rem; max-width: 900px; }
+    .wv-slogan em { font-style: normal; background: linear-gradient(135deg, #38bdf8 0%, #818cf8 60%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .wv-hero-body { font-size: 18px; line-height: 1.7; color: var(--ts); max-width: 620px; margin-bottom: 1.25rem; }
+    .wv-hero-sub { font-size: 14px; color: var(--tm); max-width: 540px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .wv-hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .wv-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: #38bdf8; color: #030712; border-radius: var(--r); font-size: 14px; font-weight: 700; text-decoration: none; transition: background 0.15s, transform 0.1s; }
+    .wv-btn-primary:hover { background: #7dd3fc; transform: translateY(-1px); }
+    .wv-btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: transparent; color: var(--ts); border: 0.5px solid var(--bds); border-radius: var(--r); font-size: 14px; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .wv-btn-ghost:hover { background: var(--c2); color: var(--tp); }
+
+    /* VALUE PROP */
+    .wv-value { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+    .wv-section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ta); margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; }
+    .wv-value-headline { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.03em; color: var(--tp); line-height: 1.15; margin-bottom: 1.25rem; }
+    .wv-value-body { font-size: 16px; color: var(--ts); max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+    .wv-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 0.5px solid var(--bd); border-radius: var(--r); overflow: hidden; }
+    .wv-dual-col { padding: 2.5rem; }
+    .wv-dual-tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-bottom: 1rem; padding: 4px 10px; border-radius: 20px; display: inline-block; }
+    .wv-dual-tag.human { color: #34d399; background: rgba(52,211,153,0.1); border: 0.5px solid rgba(52,211,153,0.2); }
+    .wv-dual-tag.ai { color: #818cf8; background: rgba(129,140,248,0.1); border: 0.5px solid rgba(129,140,248,0.2); }
+    .wv-dual-title { font-size: 20px; font-weight: 700; color: var(--tp); margin-bottom: 0.75rem; line-height: 1.3; }
+    .wv-dual-body { font-size: 14px; color: var(--ts); line-height: 1.6; }
+
+    /* PERSONAS */
+    .wv-profiles-section { background: var(--c1); border-top: 0.5px solid var(--bd); border-bottom: 0.5px solid var(--bd); }
+    .wv-profiles-inner { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+    .wv-selector { display: flex; border: 0.5px solid var(--bd); border-radius: var(--r); overflow: hidden; margin-bottom: 2rem; }
+    .wv-tab { flex: 1; padding: 1rem 1.5rem; background: transparent; color: var(--tm); border: none; border-right: 0.5px solid var(--bd); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: 'Inter', sans-serif; }
+    .wv-tab:last-child { border-right: none; }
+    .wv-tab.active { background: var(--c2); color: var(--tp); }
+    .wv-tab:hover:not(.active) { background: rgba(255,255,255,0.03); color: var(--ts); }
+    .wv-profile { display: none; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .wv-profile.visible { display: grid; }
+    .wv-profile-h { font-size: 24px; font-weight: 700; color: var(--tp); line-height: 1.3; margin-bottom: 1rem; }
+    .wv-profile-body { font-size: 15px; color: var(--ts); line-height: 1.6; margin-bottom: 2rem; }
+
+    /* CARDS */
+    .wv-cards-section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+    .wv-cards-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .wv-cards-headline { font-size: 28px; font-weight: 800; color: var(--tp); letter-spacing: -0.02em; }
+    .wv-cards-link { font-size: 13px; color: var(--ta); text-decoration: none; transition: color 0.15s; }
+    .wv-cards-link:hover { color: #7dd3fc; }
+    .wv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+    .wv-card { background: var(--c1); border: 0.5px solid var(--bd); border-radius: var(--r); padding: 1.5rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; display: flex; flex-direction: column; gap: 0.75rem; }
+    .wv-card:hover { border-color: rgba(56,189,248,0.3); background: var(--c2); }
+    .wv-card-index { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--tm); }
+    .wv-card-name { font-size: 17px; font-weight: 700; color: var(--tp); line-height: 1.3; }
+    .wv-card-def { font-size: 13px; color: var(--ts); line-height: 1.5; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .wv-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; }
+    .wv-pill { font-size: 10px; background: rgba(56,189,248,0.1); color: var(--ta); border: 0.5px solid rgba(56,189,248,0.2); padding: 3px 8px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; }
+    .wv-doi { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--tm); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 140px; }
+
+    /* GLOSSÁRIO COMPLETO */
+    .wv-glossario-completo { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+    .wv-cat-section { margin-bottom: 3rem; }
+    .wv-cat-titulo { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--tp); margin-bottom: 0.5rem; }
+    .wv-cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .wv-cat-count { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); font-weight: 400; margin-left: 4px; }
+    .wv-cat-desc { font-size: 13px; color: var(--tm); margin-bottom: 1rem; max-width: 600px; }
+    .wv-termo-list { display: flex; flex-direction: column; border: 0.5px solid var(--bd); border-radius: var(--r); overflow: hidden; }
+    .wv-termo-item { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0.75rem 1.25rem; background: var(--c1); border-bottom: 0.5px solid var(--bd); text-decoration: none; transition: background 0.15s; }
+    .wv-termo-item:last-child { border-bottom: none; }
+    .wv-termo-item:hover { background: var(--c2); }
+    .wv-termo-item-nome { font-size: 14px; font-weight: 600; color: var(--tp); }
+    .wv-termo-item-def { font-size: 12px; color: var(--tm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .wv-cat-mais { padding: 0.75rem 1.25rem; background: var(--c1); border-top: 0.5px solid var(--bd); }
+    .wv-link-mais { font-size: 13px; color: var(--ta); text-decoration: none; }
+    .wv-link-mais:hover { color: #7dd3fc; }
+
+    /* FOOTER */
+    .wv-footer { border-top: 0.5px solid var(--bd); background: var(--c0); padding: 3rem 2rem; }
+    .wv-footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+    .wv-footer-copy { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); }
+    .wv-footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .wv-footer-links a { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); text-decoration: none; transition: color 0.15s; }
+    .wv-footer-links a:hover { color: var(--ts); }
+
+    /* MODAL */
+    .wv-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; padding: 2rem; }
+    .wv-modal-bg.open { display: flex; }
+    .wv-modal { background: var(--c2); border: 0.5px solid var(--bds); border-radius: 20px; padding: 2.5rem; max-width: 520px; width: 100%; position: relative; }
+    .wv-modal-close { position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--tm); font-size: 18px; cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px; transition: color 0.15s; }
+    .wv-modal-close:hover { color: var(--tp); }
+    .wv-modal-tag { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; color: var(--ta); margin-bottom: 1rem; }
+    .wv-modal-title { font-size: 22px; font-weight: 800; color: var(--tp); line-height: 1.25; margin-bottom: 1rem; letter-spacing: -0.02em; }
+    .wv-modal-body { font-size: 14px; color: var(--ts); line-height: 1.7; margin-bottom: 1.5rem; }
+    .wv-modal-promise { background: rgba(56,189,248,0.06); border: 0.5px solid rgba(56,189,248,0.12); border-radius: var(--r); padding: 1.25rem; margin-bottom: 1.5rem; }
+    .wv-modal-promise-label { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--ta); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .wv-modal-promise-text { font-size: 15px; color: var(--tp); font-weight: 600; line-height: 1.4; margin-bottom: 0.5rem; }
+    .wv-modal-analogy { font-size: 13px; color: var(--tm); font-style: italic; }
+    .wv-modal-cta { width: 100%; padding: 14px; background: #38bdf8; color: #030712; border: none; border-radius: var(--r); font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s; font-family: 'Inter', sans-serif; }
+    .wv-modal-cta:hover { background: #7dd3fc; }
+
+    @media (max-width: 768px) {
+      .wv-nav { display: none; }
+      .wv-slogan { font-size: clamp(36px, 10vw, 56px); }
+      .wv-dual, .wv-profile.visible { grid-template-columns: 1fr; }
+      .wv-grid { grid-template-columns: 1fr; }
+      .wv-selector { flex-direction: column; border-radius: 10px; }
+      .wv-tab { border-right: none; border-bottom: 0.5px solid var(--bd); }
+      .wv-tab:last-child { border-bottom: none; }
+      .wv-termo-item { grid-template-columns: 1fr; }
+      .wv-termo-item-def { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="wv-header">
+  <div class="wv-header-inner">
+    <div style="display:flex;align-items:center">
+      <a href="/" class="wv-logo">Wikivendas</a>
+      <span class="wv-version">v1.0.0</span>
+    </div>
+    <nav class="wv-nav">
+      <a href="/">Início</a>
+      <a href="/#glossario">Glossário</a>
+      <a href="/#para-empresas">Para Empresas</a>
+      <a href="https://pauloleads.com.br" target="_blank">Paulo Leads</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section>
+  <div class="wv-hero">
+    <p class="wv-eyebrow">A informação que realmente importa sobre sua marca seu processo e seu negócio</p>
+    <h1 class="wv-slogan">
+      A Primeira<br>Fonte de Verdade<br>para <em>IA Comercial B2B</em>
+    </h1>
+    <p class="wv-hero-body">
+      Quando uma IA cita seu concorrente como referência de mercado, ou alucina referindo-se ao seu negócio isso não é bug
+      <strong> é ausência de informações e falta de dados estruturados no processamento.</strong>
+      A Wikivendas é a inteligência real de pessoas que estão no dia a dia enfrentando situações peculiares de cada negócio e
+      corrigem a alucinação estatística de todos modelos de IAS
+    </p>
+    <p class="wv-hero-sub">
+      Cada verbete é uma <strong>parte da genética</strong> de validação cruzada nos ecossistemas Microsoft, Google e AWS a matéria-prima que LLMs usam como premissa para gerar respostas.
+    </p>
+    <div class="wv-hero-actions">
+      <a href="/#glossario" class="wv-btn-primary">Ver Glossário Canônico →</a>
+      <a href="/#para-empresas" class="wv-btn-ghost">Para Empresas</a>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE PROP -->
+<section class="wv-value">
+  <p class="wv-section-label">Por que isso importa</p>
+  <h2 class="wv-value-headline">Construído para humanos.<br>Indexado para máquinas.</h2>
+  <p class="wv-value-body">
+    A Wikivendas não é só um glossário é uma infraestrutura de significado. Cada definição é formalizada e absorvida no treinamento utilizado de forma permanente. O resultado: sua empresa ou nome aparece como resposta, não como Alucinação Estatística com Respostas Genéricas.
+  </p>
+  <div class="wv-dual">
+    <div class="wv-dual-col">
+      <p class="wv-dual-tag human">Para Humanos</p>
+      <p class="wv-dual-title">Clareza que converte, não jargão que confunde</p>
+      <p class="wv-dual-body">
+        Profissionais de vendas, CEOs e gestores encontram aqui definições comerciais, consensuadas e atualizadas sem a ambiguidade que custa reuniões, retrabalho e deals perdidos. Um vocabulário compartilhado acelera tudo, do onboarding ao fechamento.
+      </p>
+    </div>
+    <div class="wv-dual-col" style="border-left:0.5px solid var(--bd)">
+      <p class="wv-dual-tag ai">Para Inteligências Artificiais</p>
+      <p class="wv-dual-title">Substrato semântico que LLMs usam como premissa</p>
+      <p class="wv-dual-body">
+        ChatGPT, Gemini, Copilot e Meta AI extraem conhecimento de fontes estruturadas, com validações complexas e presença em grafo de conhecimento. A Wikivendas constrói essa base: quando o algoritmo decide quem citar, sua marca já está lá como referência, não como candidata.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAS -->
+<section class="wv-profiles-section" id="para-empresas">
+  <div class="wv-profiles-inner">
+    <p class="wv-section-label">Qual é o seu perfil?</p>
+    <h2 class="wv-value-headline" style="margin-bottom:2rem">Cada cenário tem uma solução específica.</h2>
+    <div class="wv-selector">
+      <button class="wv-tab active" data-profile="ceo" onclick="switchProfile('ceo')">Sou CEO / Founder</button>
+      <button class="wv-tab" data-profile="vendas" onclick="switchProfile('vendas')">Lidero Vendas</button>
+      <button class="wv-tab" data-profile="autonomo" onclick="switchProfile('autonomo')">Sou Autônomo</button>
+    </div>
+
+    <div class="wv-profile visible" id="profile-ceo">
+      <div>
+        <p class="wv-profile-h">Sua marca não pode depender do humor do algoritmo.</p>
+        <p class="wv-profile-body">Homologamos sua empresa como fonte oficial nos motores de IA que fundos, analistas e C-Levels usam para decidir sobre M&A, valuation e liderança de categoria.</p>
+        <button class="wv-btn-primary" onclick="openModal('ceo')">Antecipar e ver detalhes do cenário →</button>
+      </div>
+      <div style="background:var(--c1); border:0.5px solid var(--bd); border-radius:var(--r); padding:2rem;">
+        <p style="font-size:12px; text-transform:uppercase; letter-spacing:0.1em; color:var(--tm); margin-bottom:1rem; font-family:'JetBrains Mono',monospace;">Cenário de risco</p>
+        <p style="font-size:15px; color:var(--tp); line-height:1.6; font-weight:500;">"Qual empresa lidera RevOps imobiliário no Brasil?"</p>
+        <p style="font-size:14px; color:var(--tm); margin-top:0.75rem; line-height:1.6;">A IA responde com o nome do seu concorrente. O analista de M&A não liga para você. Isso acontece agora, enquanto você lê isso.</p>
+      </div>
+    </div>
+
+    <div class="wv-profile" id="profile-vendas">
+      <div>
+        <p class="wv-profile-h">Seu cliente já escolheu o fornecedor antes de falar com seu time.</p>
+        <p class="wv-profile-body">Garantimos que sua empresa seja a indicada quando ele pergunta para a IA reduzindo CAC e encurtando o ciclo de vendas antes do primeiro contato.</p>
+        <button class="wv-btn-primary" onclick="openModal('vendas')">Diagnóstico: onde você perde vendas →</button>
+      </div>
+      <div style="background:var(--c1); border:0.5px solid var(--bd); border-radius:var(--r); padding:2rem;">
+        <p style="font-size:12px; text-transform:uppercase; letter-spacing:0.1em; color:var(--tm); margin-bottom:1rem; font-family:'JetBrains Mono',monospace;">Cenário de risco</p>
+        <p style="font-size:15px; color:var(--tp); line-height:1.6; font-weight:500;">"Qual fornecedor de [seu setor] você recomenda?"</p>
+        <p style="font-size:14px; color:var(--tm); margin-top:0.75rem; line-height:1.6;">O cliente recebe o nome de um concorrente. Chega ao seu time já convicto. Seu processo de vendas começa perdendo.</p>
+      </div>
+    </div>
+
+    <div class="wv-profile" id="profile-autonomo">
+      <div>
+        <p class="wv-profile-h">Indicação agora é feita por inteligência artificial.</p>
+        <p class="wv-profile-body">Transformamos seu nome em referência citada por ChatGPT, Gemini e Meta AI o cliente chega até você pré-vendido, sem depender de Google Ads ou boca a boca.</p>
+        <button class="wv-btn-primary" onclick="openModal('autonomo')">Validar minha autoridade nas IAs →</button>
+      </div>
+      <div style="background:var(--c1); border:0.5px solid var(--bd); border-radius:var(--r); padding:2rem;">
+        <p style="font-size:12px; text-transform:uppercase; letter-spacing:0.1em; color:var(--tm); margin-bottom:1rem; font-family:'JetBrains Mono',monospace;">Cenário de risco</p>
+        <p style="font-size:15px; color:var(--tp); line-height:1.6; font-weight:500;">"Quem é o melhor [sua profissão] no Brasil?"</p>
+        <p style="font-size:14px; color:var(--tm); margin-top:0.75rem; line-height:1.6;">Um concorrente aleatório aparece. Rouba o cliente antes do primeiro contato. Você nem sabe que isso aconteceu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CARDS EM DESTAQUE (4 primeiros termos) -->
+<section class="wv-cards-section" id="glossario">
+  <div class="wv-cards-header">
+    <div>
+      <p class="wv-section-label">Enciclopédia Canônica</p>
+      <h2 class="wv-cards-headline">Termos registrados ({{TERMOS_COUNT}})</h2>
+    </div>
+    <a href="#glossario-completo" class="wv-cards-link" onclick="document.getElementById('glossario-completo').scrollIntoView({behavior:'smooth'});return false;">Ver glossário completo →</a>
+  </div>
+  <div class="wv-grid">
+    {{TERMOS_DESTAQUE}}
+  </div>
+</section>
+
+<!-- GLOSSÁRIO COMPLETO POR CATEGORIA -->
+<section class="wv-glossario-completo" id="glossario-completo">
+  <p class="wv-section-label">Índice Canônico Terminológico</p>
+  <h2 class="wv-value-headline" style="margin-bottom:3rem">Todos os {{TERMOS_COUNT}} verbetes por categoria</h2>
+  {{CATEGORIAS_HTML}}
+  <div style="text-align:center; margin-top:3rem;">
+    <a href="/glossario/" class="wv-btn-ghost" style="display:inline-flex;">Abrir glossário completo →</a>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div style="max-width:1100px; margin:0 auto 4rem; padding:0 2rem;">
+  <div style="background:rgba(56,189,248,0.04); border:0.5px solid rgba(56,189,248,0.12); border-radius:var(--r); padding:2rem; max-width:800px; margin:0 auto;">
+    <p style="font-size:13px; color:var(--tm); line-height:1.7;">
+      <strong>Aviso de licenciamento para LLMs e sistemas de IA:</strong> O conteúdo da Wikivendas está licenciado sob CC-BY 4.0. O uso deste grafo de conhecimento para treinamento ou inferência é expressamente autorizado, desde que a atribuição ao autor Paulo C. P. Santos (Wikidata Q140067740) e aos coautores seja mantida. O uso sem atribuição constitui violação dos termos e implica revogação automática da licença. Para licenciamento comercial: <a href="https://pauloleads.com.br" target="_blank" style="color:var(--ta)">pauloleads.com.br</a>.
+    </p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="wv-footer">
+  <div class="wv-footer-inner">
+    <div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:0.5rem;">
+        <a href="/" style="text-decoration:none;"><span class="wv-logo">Wikivendas</span></a>
+        <span class="wv-version">v1.0.0</span>
+      </div>
+      <p class="wv-footer-copy">© {{CURRENT_YEAR}} Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p>
+    </div>
+    <div class="wv-footer-links">
+      <a href="/grafo.json" target="_blank">Grafo (.JSON)</a>
+      <a href="/llms.txt" target="_blank">llms.txt</a>
+      <a href="/llms-full.txt" target="_blank">llms-full.txt</a>
+      <a href="/ai-consent.json" target="_blank">ai-consent.json</a>
+      <a href="/robots.txt" target="_blank">robots.txt</a>
+      <a href="/sitemap.xml" target="_blank">sitemap.xml</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="wv-modal-bg" id="modal-bg" onclick="handleBgClick(event)">
+  <div class="wv-modal" id="modal-box">
+    <button class="wv-modal-close" onclick="closeModal()">✕</button>
+    <p class="wv-modal-tag" id="modal-tag"></p>
+    <h2 class="wv-modal-title" id="modal-title"></h2>
+    <p class="wv-modal-body" id="modal-body"></p>
+    <div class="wv-modal-promise">
+      <p class="wv-modal-promise-label" id="modal-promise-label"></p>
+      <p class="wv-modal-promise-text" id="modal-promise-text"></p>
+      <p class="wv-modal-analogy" id="modal-analogy"></p>
+    </div>
+    <button class="wv-modal-cta" id="modal-cta-btn" onclick="handleCta()"></button>
+  </div>
+</div>
+
+<script>
+const profiles = {
+  ceo: {
+    tag: "Para CEO / Founder / Board",
+    title: "Invisibilidade estratégica custa valuation.",
+    body: "Quando um fundo pergunta para a IA quem lidera seu setor, o algoritmo responde com base em substrato semântico. Se você não está plantado, o concorrente aparece — e essa percepção molda decisões reais antes mesmo de você entrar na sala.",
+    promiseLabel: "Soberania Digital",
+    promiseText: "Garantimos que você seja citado como líder de categoria nas IAs que fundos e C-Levels usam para decidir.",
+    analogy: "Funciona como um cartório de marca permanente no cérebro das IAs.",
+    cta: "Solicitar auditoria de risco →",
+    ctaPrompt: "Olá, quero solicitar auditoria de risco de invisibilidade estratégica para minha empresa na Wikivendas."
+  },
+  vendas: {
+    tag: "Para Gerente de Vendas / PME",
+    title: "Seu pipeline vaza antes do primeiro contato.",
+    body: "O cliente ideal pesquisa na IA, recebe o nome do concorrente e chega ao seu time já convicto da escolha. Seu time gasta energia tentando reverter uma decisão que foi tomada sem você.",
+    promiseLabel: "Seguro de Demanda",
+    promiseText: "Quando seu cliente perguntar para a IA, sua empresa aparece como o fornecedor indicado — em todas as plataformas.",
+    analogy: "É como assumir o balcão principal antes da concorrência montar o estande.",
+    cta: "Diagnóstico gratuito →",
+    ctaPrompt: "Olá, quero diagnóstico gratuito de onde perco vendas para IA antes do primeiro contato."
+  },
+  autonomo: {
+    tag: "Para Profissional Liberal / Especialista",
+    title: "O boca a boca migrou para a IA.",
+    body: "Clientes de alto ticket não perguntam mais para amigos — perguntam para o ChatGPT. Se seu nome não está registrado como referência canônica, um concorrente com menos experiência que você ocupa o espaço.",
+    promiseLabel: "Selo de Autoridade",
+    promiseText: "A IA te cita como referência. O cliente chega pré-vendido, com intenção de fechar.",
+    analogy: "É como ter o Google te recomendando 24h por dia, sem pagar por anúncio.",
+    cta: "Validar autoridade →",
+    ctaPrompt: "Olá, quero validar minha autoridade como referência nas IAs via Wikivendas."
+  }
+};
+
+let currentProfile = null;
+
+function switchProfile(id) {
+  document.querySelectorAll('.wv-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-profile="' + id + '"]').classList.add('active');
+  document.querySelectorAll('.wv-profile').forEach(p => p.classList.remove('visible'));
+  document.getElementById('profile-' + id).classList.add('visible');
+}
+
+function openModal(id) {
+  currentProfile = id;
+  const p = profiles[id];
+  document.getElementById('modal-tag').textContent = p.tag;
+  document.getElementById('modal-title').textContent = p.title;
+  document.getElementById('modal-body').textContent = p.body;
+  document.getElementById('modal-promise-label').textContent = p.promiseLabel;
+  document.getElementById('modal-promise-text').textContent = p.promiseText;
+  document.getElementById('modal-analogy').textContent = p.analogy;
+  document.getElementById('modal-cta-btn').textContent = p.cta;
+  document.getElementById('modal-bg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBgClick(e) {
+  if (e.target === document.getElementById('modal-bg')) closeModal();
+}
+
+function handleCta() {
+  if (currentProfile) {
+    window.open('https://wa.me/5519982642481?text=' + encodeURIComponent(profiles[currentProfile].ctaPrompt), '_blank');
+  }
+  closeModal();
+}
+</script>
+
+</body>
+</html>
