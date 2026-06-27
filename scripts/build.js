@@ -564,5 +564,16 @@ const aiPlugin = {
 writeFileSync(join("docs", ".well-known", "ai-plugin.json"), JSON.stringify(aiPlugin));
 console.log("🤖 /docs/.well-known/ai-plugin.json");
 
+// ============================================================
+// 🆕 CNAME (DOMÍNIO PERSONALIZADO) — ESSE É O FIX PARA O 404!
+// ============================================================
+try {
+  const cnameContent = readFileSync(join(process.cwd(), "CNAME"), "utf-8").trim();
+  writeFileSync(join("docs", "CNAME"), cnameContent);
+  console.log("🌐 /docs/CNAME (" + cnameContent + ")");
+} catch (e) {
+  console.log("⚠️ CNAME não encontrado na raiz, ignorando. (Verifique se o arquivo CNAME existe)");
+}
+
 console.log("\n✅ BUILD FINALIZADO —", CURRENT_DATE);
-console.log("📄 " + items.length + " termos, home, grafo, robots, llms, sitemap, ai-consent, plugin");
+console.log("📄 " + items.length + " termos, home, grafo, robots, llms, sitemap, ai-consent, plugin e CNAME.");
