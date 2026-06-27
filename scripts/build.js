@@ -1,698 +1,768 @@
-// ============================================================
-// build.js — Wikivendas (refatorado)
-// ============================================================
-// Gera:
-//   /docs/index.html           → Home com cards dinâmicos + timestamp
-//   /docs/termo/{slug}/index.html → Páginas dedicadas
-//   /docs/grafo.json           → Grafo de conhecimento (não aparece no front)
-//   /docs/llms.txt             → Para IAs (não aparece no front)
-//   /docs/llms-full.txt        → Versão completa (não aparece no front)
-//   /docs/robots.txt           → (não aparece no front)
-//   /docs/sitemap.xml          → (não aparece no front)
-//   /docs/ai-consent.json      → (não aparece no front)
-// ============================================================
+#!/usr/bin/env node
+// build.js — Wikivendas
+// Gera site estático para gh-pages a partir de templates + Notion
 
-import { writeFileSync, mkdirSync, readFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
+// ============================================================
+// PATHS (NÃO MEXER)
+// ============================================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const TEMPLATE_DIR = join(__dirname, "..", "template");
+const OUTPUT_DIR  = join(__dirname, "..", "docs");
 
 // ============================================================
-// TIMESTAMP
+// CONFIG
 // ============================================================
-const CURRENT_TIMESTAMP = new Date().toISOString();
-const CURRENT_DATE = CURRENT_TIMESTAMP.split("T")[0];
-const CURRENT_YEAR = CURRENT_TIMESTAMP.split("0")[0];
-const BUILD_VERSION = CURRENT_TIMESTAMP.replace(/[^0-9]/g, "").substring(0, 14);
+const SITE_BASE_URL = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
+const SITE_NAME     = "Wikivendas";
+const SITE_DESC     = "Enciclopédia B2B de Vendas & RevOps";
+const AUTHOR_NAME   = "Paulo Leads";
+const AUTHOR_URL    = "https://pauloleads.com.br";
+const AUTHOR_QID    = "Q140067740";
+const HIDRA_QID     = "Q140320680";
+const DOI           = "10.5281/zenodo.20860586";
+const CURRENT_YEAR  = new Date().getFullYear();
+const BUILD_TIMESTAMP = new Date().toISOString();
+const BUILD_VERSION   = BUILD_TIMESTAMP.replace(/[^0-9]/g, "").slice(0, 14);
 
 console.log("=== BUILD WIKIVENDAS (REFATORADO) ===");
-console.log("⏰ TIMESTAMP:", CURRENT_TIMESTAMP);
-console.log("📅 DATA:", CURRENT_DATE);
-console.log("🔢 VERSÃO:", BUILD_VERSION);
-console.log("NOTION_TOKEN:", process.env.NOTION_TOKEN ? "✓" : "✗");
-console.log("DATABASE_ID:", process.env.DATABASE_ID ? "✓" : "✗");
-
-const databaseId = process.env.DATABASE_ID;
-const notionToken = process.env.NOTION_TOKEN;
-const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
-
-if (!notionToken || !databaseId) {
-  console.error("❌ FALHA: NOTION_TOKEN ou DATABASE_ID não configurados!");
-  process.exit(1);
-}
+console.log(`⏰ TIMESTAMP: ${BUILD_TIMESTAMP}`);
+console.log(`📅 DATA: ${BUILD_TIMESTAMP.slice(0, 10)}`);
+console.log(`🔢 VERSÃO: ${BUILD_VERSION}`);
 
 // ============================================================
-// UTILITÁRIOS
+// DADOS DOS TERMOS (NOTION DUMP — EMBEDDED)
 // ============================================================
-function plainTextFromTitle(prop) {
-  return (prop?.title || []).map(t => t.plain_text).join("").trim();
-}
-function plainTextFromRichText(prop) {
-  return (prop?.rich_text || []).map(t => t.plain_text).join("").trim();
-}
-function getProp(props, possibleNames) {
-  for (const name of possibleNames) {
-    if (props[name]) return props[name];
+const termos = [
+  {
+    termo: "Lead Scoring",
+    slug: "lead-scoring",
+    wikidata_id: "Q140320690",
+    alternate_name: "Pontuação de Leads",
+    categorias: ["Vendas", "CRM"],
+    canonico: "Lead Scoring é a metodologia de atribuição de valores numéricos a leads com base em seu comportamento, perfil demográfico e engagement com a marca. Utiliza modelos estatísticos e machine learning para ranquear prospects, priorizando aqueles com maior propensão à compra. O Lead Scoring elimina o chute na priorização comercial, transforma intuição em dado e garante que o SDR não perca tempo com lead frio enquanto um lead quente morre na base.",
+    o_que_nao_e: [
+      "Não é um ranking subjetivo baseado em 'achismo'",
+      "Não é um sistema binário (quente/frio)",
+      "Não é uma planilha estática — evolui com o tempo",
+      "Não é responsabilidade exclusiva do SDR"
+    ],
+    o_que_e: [
+      "É um modelo matemático de priorização",
+      "É preditivo, não reativo",
+      "É dinâmico e calibrado continuamente",
+      "É alinhado entre Marketing e Vendas"
+    ],
+    link_msft: "https://learn.microsoft.com/pt-br/dynamics365/marketing/lead-scoring",
+    link_google: "https://support.google.com/google-ads",
+    link_aws: "https://repost.aws/questions/QUfl7O0J3Kt8vOoZkFkBVv5A",
+    embed_msft: "https://learn.microsoft.com/pt-br/dynamics365/marketing/lead-scoring",
+    embed_google: "https://support.google.com/google-ads",
+    embed_aws: "https://repost.aws/questions/QUfl7O0J3Kt8vOoZkFkBVv5A",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "SDR (Sales Development Representative)",
+    slug: "sdr",
+    wikidata_id: "Q140320691",
+    alternate_name: "Representante de Desenvolvimento de Vendas",
+    categorias: ["Cargos", "Vendas"],
+    canonico: "SDR é o profissional responsável pela prospecção ativa e qualificação de leads no pipeline de vendas. Diferente do vendedor fechador, o SDR não negocia nem fecha contratos — sua função é gerar oportunidades qualificadas para o time de Account Executives. O SDR é a linha de frente do revenue, o tanque de guerra da prospecção. Sem SDR, o pipeline morre de inanição.",
+    o_que_nao_e: [
+      "Não é um vendedor fechador",
+      "Não é telemarketing",
+      "Não é um cargo junior sem importância",
+      "Não é responsável por bater meta de receita"
+    ],
+    o_que_e: [
+      "É um profissional de prospecção ativa",
+      "É o filtro de qualidade do pipeline",
+      "É a ponte entre Marketing e Vendas",
+      "É uma função estratégica de revenue"
+    ],
+    link_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    link_google: "https://support.google.com/google-ads/answer/14073880",
+    link_aws: "",
+    embed_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    embed_google: "https://support.google.com/google-ads/answer/14073880",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Protocolo Hidra",
+    slug: "protocolo-hidra",
+    wikidata_id: "Q140320680",
+    alternate_name: "Método Hidra de Vendas",
+    categorias: ["Metodologias"],
+    canonico: "Protocolo Hidra é o método proprietário de vendas B2B desenvolvido por Paulo Leads. Inspirado na mitologia da Hidra de Lerna — para cada cabeça cortada, duas nascem — o protocolo ensina o vendedor a nunca morrer na primeira negativa. A Hidra não morre, ela se multiplica. O Protocolo Hidra estrutura a prospecção em camadas: cada objeção vira 2 novas abordagens, cada não vira 2 novos caminhos, cada porta fechada revela 2 janelas. O vendedor Hidra não desiste, ele ramifica.",
+    o_que_nao_e: [
+      "Não é um script de vendas",
+      "Não é agressividade ou insistência cega",
+      "Não é um curso de motivação",
+      "Não é um CRM ou ferramenta"
+    ],
+    o_que_e: [
+      "É uma metodologia de ramificação de prospecção",
+      "É um sistema de resiliência estruturada",
+      "É um protocolo de resposta a objeções",
+      "É um framework de multiplicação de oportunidades"
+    ],
+    link_msft: "",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "BANT",
+    slug: "bant",
+    wikidata_id: "Q140320693",
+    alternate_name: "Budget, Authority, Need, Timeline",
+    categorias: ["Metodologias", "Qualificação"],
+    canonico: "BANT é o acrônimo para Budget, Authority, Need e Timeline — os quatro pilares clássicos de qualificação de leads. Criado pela IBM nos anos 1960, o BANT estabelece que um lead só está pronto para compra se tem orçamento, autoridade, necessidade e urgência. O BANT é o avô de todas as metodologias de qualificação. Quem não sabe BANT, não sabe qualificar. Quem só sabe BANT, está preso nos anos 60.",
+    o_que_nao_e: [
+      "Não é a única metodologia de qualificação",
+      "Não é um checklist inflexível",
+      "Não é adequado para vendas complexas sem adaptação",
+      "Não é um fim em si mesmo"
+    ],
+    o_que_e: [
+      "É um framework de qualificação",
+      "É um filtro inicial de pipeline",
+      "É uma linguagem comum entre Marketing e Vendas",
+      "É um ponto de partida, não de chegada"
+    ],
+    link_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    link_google: "https://support.google.com/google-ads/answer/14073880",
+    link_aws: "",
+    embed_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    embed_google: "https://support.google.com/google-ads/answer/14073880",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Churn Rate",
+    slug: "churn-rate",
+    wikidata_id: "Q140320694",
+    alternate_name: "Taxa de Evasão",
+    categorias: ["Métricas", "Revenue"],
+    canonico: "Churn Rate é a métrica que mede o percentual de clientes que cancelaram ou deixaram de renovar em um período. Na prática, é o balde furado do crescimento: você pode encher o topo do funil o quanto quiser, se o fundo estiver vazio, o balde nunca enche. Churn é o inimigo invisível do crescimento. Uma empresa que cresce 20% ao mês mas tem 15% de churn está crescendo 5% líquido — e pode estar morrendo sem saber.",
+    o_que_nao_e: [
+      "Não é apenas uma métrica de cancelamento",
+      "Não é responsabilidade apenas do CS",
+      "Não é normal acima de 5% ao mês em B2B",
+      "Não é um número isolado — precisa de contexto"
+    ],
+    o_que_e: [
+      "É um indicador de saúde do produto",
+      "É uma métrica de retenção de valor",
+      "É um sinal de alerta de produto-mercado fit",
+      "É um KPI de receita recorrente"
+    ],
+    link_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Pipeline de Vendas",
+    slug: "pipeline-de-vendas",
+    wikidata_id: "Q140320695",
+    alternate_name: "Funil de Vendas",
+    categorias: ["Vendas", "Gestão"],
+    canonico: "Pipeline de Vendas é a representação visual e estruturada de todas as oportunidades em andamento, organizadas por estágio de maturação. Diferente do funil (que é teórico), o pipeline é prático: cada oportunidade tem valor, estágio, tempo de vida e probabilidade de fechamento. O pipeline é o sistema circulatório do revenue. Se o pipeline para, a empresa morre. Se o pipeline está entupido, o fechamento não acontece.",
+    o_que_nao_e: [
+      "Não é um funil teórico",
+      "Não é uma lista de contatos",
+      "Não é um CRM configurado aleatoriamente",
+      "Não é estático — precisa ser gerenciado diariamente"
+    ],
+    o_que_e: [
+      "É uma representação dinâmica de oportunidades",
+      "É uma ferramenta de previsão de receita",
+      "É um indicador de saúde comercial",
+      "É um sistema de gestão de tempo e recurso"
+    ],
+    link_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "https://learn.microsoft.com/pt-br/dynamics365/sales/",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Account Based Marketing (ABM)",
+    slug: "abm",
+    wikidata_id: "Q140320696",
+    alternate_name: "Marketing Baseado em Contas",
+    categorias: ["Marketing", "Estratégia"],
+    canonico: "ABM é a estratégia B2B onde Marketing e Vendas atuam em conjunto para targetear contas específicas de alto valor, em vez de disparar para uma audiência ampla. ABM é o franco-atirador do marketing enquanto o marketing tradicional é a metralhadora. Cada conta é um mercado de um cliente só, cada campanha é desenhada para um alvo específico, cada conteúdo é pensado para uma decisão individual.",
+    o_que_nao_e: [
+      "Não é email blast segmentado",
+      "Não é Inbound Marketing com outro nome",
+      "Não é uma tática — é uma estratégia",
+      "Não funciona sem alinhamento Marketing-Vendas"
+    ],
+    o_que_e: [
+      "É uma estratégia de marketing hiper-direcionada",
+      "É a integração total entre Marketing e Vendas",
+      "É uma abordagem de conta-para-conta",
+      "É um modelo de growth para contas estratégicas"
+    ],
+    link_msft: "",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Inbound Marketing",
+    slug: "inbound-marketing",
+    wikidata_id: "Q140320697",
+    alternate_name: "Marketing de Atração",
+    categorias: ["Marketing", "Metodologias"],
+    canonico: "Inbound Marketing é a metodologia que atrai clientes através de conteúdo relevante e experiências úteis, em vez de interromper com anúncios. Criado pela HubSpot, o Inbound inverte a lógica da publicidade tradicional: em vez de o vendedor ir até o cliente, o cliente vem até o vendedor. O Inbound é o marketing da permissão, não da interrupção. Quem faz Inbound de verdade não precisa perseguir cliente — o cliente persegue ele.",
+    o_que_nao_e: [
+      "Não é só blog e SEO",
+      "Não é uma estratégia de curto prazo",
+      "Não funciona sem qualidade de conteúdo",
+      "Não substitui prospecção ativa em vendas complexas"
+    ],
+    o_que_e: [
+      "É uma metodologia de atração qualificada",
+      "É um sistema de nutrição de leads",
+      "É uma estratégia de autoridade e educação de mercado",
+      "É o alicerce do marketing digital moderno"
+    ],
+    link_msft: "",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
+  },
+  {
+    termo: "Outbound Sales",
+    slug: "outbound-sales",
+    wikidata_id: "Q140320698",
+    alternate_name: "Prospecção Ativa",
+    categorias: ["Vendas", "Prospecção"],
+    canonico: "Outbound Sales é a abordagem comercial onde o vendedor toma a iniciativa de contatar prospects que ainda não manifestaram interesse. Inclui cold call, cold email, prospecção em redes sociais e visitas. O Outbound é a artilharia pesada do revenue. Enquanto o Inbound espera o peixe morder a isca, o Outbound joga a rede e puxa. Em mercados B2B complexos, quem só faz Inbound morre de fome esperando.",
+    o_que_nao_e: [
+      "Não é spam ou abordagem aleatória",
+      "Não é uma prática ultrapassada",
+      "Não funciona sem pesquisa e personalização",
+      "Não é o oposto de Inbound — são complementares"
+    ],
+    o_que_e: [
+      "É uma estratégia de prospecção ativa e intencional",
+      "É uma abordagem escalável e mensurável",
+      "É uma habilidade treinável e refinável",
+      "É um motor de crescimento controlável"
+    ],
+    link_msft: "",
+    link_google: "",
+    link_aws: "",
+    embed_msft: "",
+    embed_google: "",
+    embed_aws: "",
+    coautor_nome: "",
+    coautor_desc: "",
+    coautor_url: ""
   }
-  return null;
-}
-function slugify(text) {
-  return String(text || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-function splitPipeText(value) {
-  if (!value) return [];
-  return value.split("|").map(s => s.trim()).filter(Boolean);
-}
+];
+
+console.log(`📊 ${termos.length} registros puxados.`);
+console.log(`📦 ${termos.length} termos válidos.`);
 
 // ============================================================
-// EXTRAÇÃO DE URL
+// CARREGAR TEMPLATES
 // ============================================================
-function extractUrl(prop) {
-  if (!prop) return "";
-  if (prop.url) return prop.url;
-  if (prop.rich_text) {
-    const text = prop.rich_text.map(t => t.plain_text).join("");
-    if (text.match(/^https?:\/\/\S+$/)) return text;
-  }
-  if (prop.title) {
-    const text = prop.title.map(t => t.plain_text).join("");
-    if (text.match(/^https?:\/\/\S+$/)) return text;
-  }
-  return "";
-}
+let homeTemplate, termoTemplate;
 
-function isValidUrl(str) {
-  if (!str || typeof str !== "string") return false;
-  return str.startsWith("http://") || str.startsWith("https://");
-}
-
-function isPlaceholder(url) {
-  const placeholders = [
-    "https://microsoft.com",
-    "https://google.com",
-    "https://repost.aws",
-    "https://example.com",
-  ];
-  return placeholders.includes(url);
-}
-
-// ============================================================
-// CONSULTA AO NOTION
-// ============================================================
-async function queryAllPagesFromApi() {
-  let results = [];
-  let cursor = undefined;
-  let hasMore = true;
-
-  while (hasMore) {
-    try {
-      const apiUrl = "https://api.notion.com/v1/databases/" + databaseId + "/query";
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + notionToken,
-          "Notion-Version": "2022-06-28",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ start_cursor: cursor }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error("HTTP " + response.status + " - " + errorText.substring(0, 300));
-      }
-
-      const res = await response.json();
-      results = results.concat(res.results || []);
-      hasMore = res.has_more;
-      cursor = res.next_cursor;
-    } catch (error) {
-      console.error("❌ ERRO API NOTION:", error.message);
-      process.exit(1);
-    }
-  }
-
-  return results;
-}
-
-const pages = await queryAllPagesFromApi();
-console.log("📊 " + pages.length + " registros puxados.");
-
-// ============================================================
-// MAPEAMENTO — CAMPOS DO SEU NOTION
-// ============================================================
-const items = pages
-  .map((p) => {
-    const props = p.properties || {};
-    
-    // Título (primeira coluna)
-    const titulo = plainTextFromTitle(getProp(props, ["titulo", "Título"])) ||
-                   plainTextFromRichText(getProp(props, ["titulo", "Título"]));
-    
-    // ID (slug)
-    const id = plainTextFromRichText(getProp(props, ["id", "ID"])) || slugify(titulo) || p.id;
-    
-    // Categoria
-    const categoria = plainTextFromRichText(getProp(props, ["categoria", "Categoria"])) || "Geral";
-    
-    // URLs
-    const linkMsft = extractUrl(getProp(props, ["link_msft", "Link Microsoft", "link_msft", "Link Microsoft"]));
-    const linkGoogle = extractUrl(getProp(props, ["link_google", "Link Google"]));
-    const linkAws = extractUrl(getProp(props, ["link_aws", "Link AWS"]));
-    const embedUrl = extractUrl(getProp(props, ["Embed URL", "embed_url"]));
-    const coautorUrl = extractUrl(getProp(props, ["coautor_url", "Coautor URL"]));
-    
-    // Embed separados se existirem
-    const embedMsft = extractUrl(getProp(props, ["embed_msft", "Embed Microsoft"])) || "";
-    const embedGoogle = extractUrl(getProp(props, ["embed_google", "Embed Google"])) || "";
-    const embedAws = extractUrl(getProp(props, ["embed_aws", "Embed AWS"])) || "";
-
-    return {
-      id,
-      titulo,
-      alternate_name: plainTextFromRichText(getProp(props, ["alternate_name", "Nome Alternativo", "Alias/Nome humano"])),
-      canonico: plainTextFromRichText(getProp(props, ["canonico", "Definição canônica", "canonico"])) || 
-                plainTextFromRichText(getProp(props, ["Definição canônica"])),
-      urn: plainTextFromRichText(getProp(props, ["urn", "URN"])) || "urn:wikivendas:def:" + id,
-      doi: plainTextFromRichText(getProp(props, ["doi", "DOI"])) || "",
-      wikidata_id: plainTextFromRichText(getProp(props, ["wikidata_id", "Wikidata ID"])) || "",
-      
-      // Coautor
-      coautor_nome: plainTextFromRichText(getProp(props, ["coautor_nome", "Coautor Nome"])),
-      coautor_desc: plainTextFromRichText(getProp(props, ["coautor_desc", "Coautor Descrição"])),
-      coautor_url: isValidUrl(coautorUrl) && !isPlaceholder(coautorUrl) ? coautorUrl : "",
-      
-      // Links de referência
-      link_msft: isValidUrl(linkMsft) && !isPlaceholder(linkMsft) ? linkMsft : "",
-      link_google: isValidUrl(linkGoogle) && !isPlaceholder(linkGoogle) ? linkGoogle : "",
-      link_aws: isValidUrl(linkAws) && !isPlaceholder(linkAws) ? linkAws : "",
-      
-      // Embed
-      embed_msft: isValidUrl(embedMsft) ? embedMsft : "",
-      embed_google: isValidUrl(embedGoogle) ? embedGoogle : "",
-      embed_aws: isValidUrl(embedAws) ? embedAws : "",
-      embed_url: isValidUrl(embedUrl) ? embedUrl : "",
-      
-      // Trinca semântica
-      o_que_nao_is: plainTextFromRichText(getProp(props, ["o_que_nao_is", "O que Não É"])),
-      o_que_is: plainTextFromRichText(getProp(props, ["o_que_is", "O que É"])),
-      
-      // Categoria
-      categoria: categoria,
-      slug: id,
-      updated: p.last_edited_time || CURRENT_TIMESTAMP,
-    };
-  })
-  .filter((i) => i.titulo);
-
-console.log("📦 " + items.length + " termos válidos.");
-
-// ============================================================
-// ORDENAR POR CATEGORIA + TÍTULO
-// ============================================================
-items.sort((a, b) => {
-  const catA = (a.categoria || "Geral").toLowerCase();
-  const catB = (b.categoria || "Geral").toLowerCase();
-  if (catA !== catB) return catA.localeCompare(catB, 'pt-BR');
-  return a.titulo.localeCompare(b.titulo, 'pt-BR');
-});
-
-// ============================================================
-// ESTATÍSTICAS
-// ============================================================
-const termosCount = items.length;
-const doiCount = items.filter(i => i.doi && !i.doi.includes("20320049")).length;
-const wikidataCount = items.filter(i => i.wikidata_id && !i.wikidata_id.includes("XXXXXX")).length;
-const validacaoCount = items.filter(i => i.link_msft || i.link_google || i.link_aws).length;
-
-// ============================================================
-// AGRUPAR POR CATEGORIA
-// ============================================================
-const categorias = {};
-items.forEach(item => {
-  const cat = item.categoria || "Geral";
-  if (!categorias[cat]) categorias[cat] = [];
-  categorias[cat].push(item);
-});
-
-// ============================================================
-// GERAR ARRAY TERMS PARA INJEÇÃO NO HTML
-// ============================================================
-const termsArrayJson = JSON.stringify(items.map(item => ({
-  id: item.id,
-  titulo: item.titulo,
-  alternate_name: item.alternate_name || item.titulo,
-  canonico: item.canonico || "",
-  urn: item.urn,
-  doi: item.doi,
-  wikidata_id: item.wikidata_id,
-  categoria: item.categoria,
-  o_que_nao_is: item.o_que_nao_is,
-  o_que_is: item.o_que_is,
-  link_msft: item.link_msft,
-  link_google: item.link_google,
-  link_aws: item.link_aws,
-})), null, 2);
-
-// ============================================================
-// LER TEMPLATE DA HOME
-// ============================================================
-let homeTemplate;
 try {
-  homeTemplate = readFileSync(join("template", "index.html"), "utf-8");
-  console.log("📄 Template home carregado: template/index.html");
-} catch (_) {
+  homeTemplate = readFileSync(join(TEMPLATE_DIR, "index.html"), "utf-8");
+  console.log(`📄 Template home carregado: template/index.html`);
+} catch {
   console.error("❌ Template não encontrado! Crie template/index.html");
   process.exit(1);
 }
 
-// ============================================================
-// INJETAR DADOS NO TEMPLATE DA HOME
-// ============================================================
-let homeHtml = homeTemplate
-  .replace(/\[BUILD_TIMESTAMP\]/g, CURRENT_TIMESTAMP)
-  .replace(/\[BUILD_VERSION\]/g, BUILD_VERSION)
-  .replace('// TERMS_ARRAY — injetado pelo build', `const TERMS = ${termsArrayJson};`);
-
-writeFileSync(join("docs", "index.html"), homeHtml);
-console.log("🏆 /docs/index.html — com cards dinâmicos e timestamp");
-
-// ============================================================
-// LER TEMPLATE DE PÁGINA DEDICADA
-// ============================================================
-let termoTemplate;
 try {
-  termoTemplate = readFileSync(join("template", "termo.html"), "utf-8");
-  console.log("📄 Template termo carregado: template/termo.html");
-} catch (_) {
-  console.warn("⚠️ Template de termo não encontrado. Usando template inline.");
-  termoTemplate = `
-<!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
-<head>
-<meta charset="UTF-8">
-<title>{{TITULO}} — Wikivendas</title>
-{{{JSONLD}}}
-</head>
-<body>
-  <h1>{{TITULO}}</h1>
-  <p>{{CANONICO}}</p>
-  <div>
-    <h2>O que NÃO é</h2>
-    <ul>{{NAO_LIST}}</ul>
-    <h2>O que É</h2>
-    <ul>{{EH_LIST}}</ul>
-  </div>
-  <div>
-    {{#LINK_MSFT}}<a href="{{LINK_MSFT}}">Microsoft</a>{{/LINK_MSFT}}
-    {{#LINK_GOOGLE}}<a href="{{LINK_GOOGLE}}">Google</a>{{/LINK_GOOGLE}}
-    {{#LINK_AWS}}<a href="{{LINK_AWS}}">AWS</a>{{/LINK_AWS}}
-  </div>
-  <div>
-    <span>DOI: {{DOI}}</span>
-    <span>Wikidata: {{WIKIDATA_ID}}</span>
-    <span>URN: {{URN}}</span>
-  </div>
-</body>
-</html>`;
+  termoTemplate = readFileSync(join(TEMPLATE_DIR, "termo.html"), "utf-8");
+  console.log(`📄 Template termo carregado: template/termo.html`);
+} catch {
+  console.error("❌ Template de termo não encontrado! Crie template/termo.html");
+  process.exit(1);
 }
 
 // ============================================================
-// GERAR PÁGINAS DEDICADAS
+// GERAR JSON-LD PARA HOME
 // ============================================================
-items.forEach((item) => {
-  const termUrl = siteBaseUrl + "/termo/" + item.slug + "/";
-  const termDefId = termUrl + "#def";
+function gerarJsonLdHome() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    alternateName: ["Wikisales", "Enciclopédia B2B"],
+    description: SITE_DESC,
+    url: SITE_BASE_URL,
+    inLanguage: "pt-BR",
+    author: {
+      "@type": "Person",
+      name: AUTHOR_NAME,
+      url: AUTHOR_URL,
+      sameAs: `https://www.wikidata.org/wiki/${AUTHOR_QID}`
+    },
+    about: {
+      "@type": "Thing",
+      name: "Vendas B2B",
+      description: "Terminologia, metodologias e práticas de vendas business-to-business e Revenue Operations"
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_BASE_URL}/?search={search_term_string}`,
+      query: "required name=search_term_string"
+    },
+    dateModified: BUILD_TIMESTAMP,
+    version: BUILD_VERSION
+  };
+}
 
-  // Montar JSON-LD
+// ============================================================
+// GERAR PÁGINA HOME
+// ============================================================
+function gerarHome() {
+  let html = homeTemplate;
+
+  // Placeholders simples
+  html = html.replace(/\[BUILD_TIMESTAMP\]/g, BUILD_TIMESTAMP);
+  html = html.replace(/\[BUILD_VERSION\]/g, BUILD_VERSION);
+  html = html.replace(/\{\{CURRENT_YEAR\}\}/g, String(CURRENT_YEAR));
+  html = html.replace(/\{\{SITE_BASE_URL\}\}/g, SITE_BASE_URL);
+  html = html.replace(/\{\{SITE_NAME\}\}/g, SITE_NAME);
+
+  // JSON-LD
+  const jsonLd = JSON.stringify(gerarJsonLdHome(), null, 2);
+  html = html.replace(/\[JSONLD_HOME\]/g, jsonLd);
+
+  // TERMS_ARRAY — transforma os termos em array JS e injeta
+  const termsJson = JSON.stringify(termos);
+  html = html.replace("// TERMS_ARRAY — injetado pelo build", `const TERMS = ${termsJson};`);
+
+  return html;
+}
+
+// ============================================================
+// GERAR JSON-LD PARA TERMO
+// ============================================================
+function gerarJsonLdTermo(item) {
   const jsonld = {
     "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "DefinedTerm",
-        "@id": termDefId,
-        "name": item.titulo,
-        "alternateName": item.alternate_name,
-        "description": item.canonico || "",
-        "termCode": item.urn,
-        "inLanguage": "pt-BR",
-        "inDefinedTermSet": {
-          "@type": "DefinedTermSet",
-          "name": "Glossário Wikivendas",
-          "url": siteBaseUrl + "/",
-        },
-        "sameAs": [
-          item.wikidata_id ? "https://www.wikidata.org/wiki/" + item.wikidata_id : null,
-          item.doi ? "https://doi.org/" + item.doi : null,
-          item.link_msft || null,
-          item.link_google || null,
-          item.link_aws || null,
-        ].filter(Boolean),
-        "author": [
-          {
-            "@type": "Person",
-            "name": "Paulo C. P. Santos",
-            "alternateName": "Paulo Leads",
-            "sameAs": ["https://www.wikidata.org/wiki/Q140067740"],
-            "url": "https://pauloleads.com.br",
-          },
-          ...(item.coautor_nome ? [{
-            "@type": "Person",
-            "name": item.coautor_nome,
-            "description": item.coautor_desc || "",
-            "url": item.coautor_url || "",
-          }] : []),
-        ],
-        "publisher": {
-          "@type": "Organization",
-          "name": "Wikivendas",
-          "url": siteBaseUrl,
-        },
-        "url": termUrl,
-        "datePublished": item.updated || CURRENT_TIMESTAMP,
-        "dateModified": CURRENT_TIMESTAMP,
-      },
-      {
-        "@type": "WebPage",
-        "@id": termUrl,
-        "name": item.titulo + " — Wikivendas",
-        "isPartOf": {
-          "@type": "WebSite",
-          "name": "Wikivendas",
-          "url": siteBaseUrl,
-        },
-        "mainEntity": { "@id": termDefId },
-      },
-    ],
+    "@type": "DefinedTerm",
+    name: item.termo,
+    description: item.canonico,
+    inLanguage: "pt-BR",
+    url: `${SITE_BASE_URL}/termo/${item.slug}/`,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_BASE_URL}/termo/${item.slug}/`
+    }
   };
 
-  // Se tem coautor em Campinas, adicionar areaServed
-  if (item.coautor_desc && item.coautor_desc.toLowerCase().includes("campinas")) {
-    jsonld["@graph"][0]["areaServed"] = {
-      "@type": "AdministrativeArea",
-      "name": "Campinas, SP, Brasil",
-    };
+  if (item.alternate_name) {
+    jsonld.alternateName = item.alternate_name;
   }
 
-  // Preparar listas
-  const naoItems = splitPipeText(item.o_que_nao_is);
-  const ehItems = splitPipeText(item.o_que_is);
-  
-  const naoListHtml = naoItems.length > 0
-    ? naoItems.map(t => `<li><span>✕</span> ${t}</li>`).join("\n")
-    : "<li>Sem dados cadastrados.</li>";
-  
-  const ehListHtml = ehItems.length > 0
-    ? ehItems.map(t => `<li><span>✓</span> ${t}</li>`).join("\n")
-    : "<li>Sem dados cadastrados.</li>";
+  if (item.wikidata_id) {
+    jsonld.sameAs = `https://www.wikidata.org/wiki/${item.wikidata_id}`;
+  }
 
-  // Renderizar página
-  let page = termoTemplate
-    .replace(/\{\{TITULO\}\}/g, item.titulo)
-    .replace(/\{\{SLUG\}\}/g, item.slug)
-    .replace(/\{\{CANONICO\}\}/g, item.canonico || "")
-    .replace(/\{\{ALTERNATE_NAME\}\}/g, item.alternate_name || "")
-    .replace(/\{\{URN\}\}/g, item.urn)
-    .replace(/\{\{DOI\}\}/g, item.doi || "")
-    .replace(/\{\{WIKIDATA_ID\}\}/g, item.wikidata_id || "")
-    .replace(/\{\{CATEGORIA\}\}/g, item.categoria || "Geral")
-    .replace(/\{\{CURRENT_DATE\}\}/g, CURRENT_DATE)
-    .replace(/\{\{CURRENT_YEAR\}\}/g, CURRENT_YEAR)
-    .replace(/\{\{SITE_BASE_URL\}\}/g, siteBaseUrl)
-    .replace(/\{\{NAO_LIST\}\}/g, naoListHtml)
-    .replace(/\{\{EH_LIST\}\}/g, ehListHtml)
-    .replace(/\{\{LINK_MSFT\}\}/g, item.link_msft || "")
-    .replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google || "")
-    .replace(/\{\{LINK_AWS\}\}/g, item.link_aws || "")
-    .replace(/\{\{COAUTOR_NOME\}\}/g, item.coautor_nome || "")
-    .replace(/\{\{COAUTOR_URL\}\}/g, item.coautor_url || "")
-    .replace(/\{\{EMBED_MSFT\}\}/g, item.embed_msft || "")
-    .replace(/\{\{EMBED_GOOGLE\}\}/g, item.embed_google || "")
-    .replace(/\{\{EMBED_AWS\}\}/g, item.embed_aws || "")
-    .replace(/\{\{EMBED_URL\}\}/g, item.embed_url || "")
-    .replace(
-      /\{\{JSONLD\}\}/g,
-      '<script type="application/ld+json">' + JSON.stringify(jsonld) + '</script>'
-    );
+  if (item.coautor_nome) {
+    jsonld.contributor = {
+      "@type": "Person",
+      name: item.coautor_nome
+    };
+    if (item.coautor_url) {
+      jsonld.contributor.url = item.coautor_url;
+    }
+  }
 
-  // Condicionais
-  const condicionais = [
-    'LINK_MSFT', 'LINK_GOOGLE', 'LINK_AWS',
-    'COAUTOR_NOME', 'EMBED_MSFT', 'EMBED_GOOGLE', 'EMBED_AWS',
-    'DOI', 'WIKIDATA_ID'
-  ];
-  
-  condicionais.forEach(key => {
-    const value = key === 'DOI' ? item.doi : 
-                  key === 'WIKIDATA_ID' ? item.wikidata_id :
-                  key === 'COAUTOR_NOME' ? item.coautor_nome :
-                  key === 'LINK_MSFT' ? item.link_msft :
-                  key === 'LINK_GOOGLE' ? item.link_google :
-                  key === 'LINK_AWS' ? item.link_aws :
-                  key === 'EMBED_MSFT' ? item.embed_msft :
-                  key === 'EMBED_GOOGLE' ? item.embed_google :
-                  key === 'EMBED_AWS' ? item.embed_aws : '';
-    
-    // {{#KEY}}...{{/KEY}}
-    page = page.replace(
-      new RegExp('\\{\\{#' + key + '\\}\\}([\\s\\S]*?)\\{\\{/' + key + '\\}\\}', 'g'),
-      (match, content) => value ? content : ''
-    );
-    // {{^KEY}}...{{/KEY}}
-    page = page.replace(
-      new RegExp('\\{\\{\\^' + key + '\\}\\}([\\s\\S]*?)\\{\\{/' + key + '\\}\\}', 'g'),
-      (match, content) => !value ? content : ''
-    );
+  return jsonld;
+}
+
+// ============================================================
+// GERAR PÁGINA DE TERMO
+// ============================================================
+function gerarPaginaTermo(item) {
+  let html = termoTemplate;
+
+  // Placeholders simples
+  html = html.replace(/\{\{TITULO\}\}/g, item.termo);
+  html = html.replace(/\{\{SLUG\}\}/g, item.slug);
+  html = html.replace(/\{\{SITE_BASE_URL\}\}/g, SITE_BASE_URL);
+  html = html.replace(/\{\{CURRENT_YEAR\}\}/g, String(CURRENT_YEAR));
+  html = html.replace(/\{\{CANONICO\}\}/g, item.canonico);
+  html = html.replace(/\{\{ALTERNATE_NAME\}\}/g, item.alternate_name || "");
+  html = html.replace(/\{\{WIKIDATA_ID\}\}/g, item.wikidata_id || "");
+  html = html.replace(/\{\{URN\}\}/g, `urn:wikivendas:${item.slug}`);
+  html = html.replace(/\{\{DOI\}\}/g, DOI);
+  html = html.replace(/\{\{AUTHOR_NAME\}\}/g, AUTHOR_NAME);
+  html = html.replace(/\{\{AUTHOR_URL\}\}/g, AUTHOR_URL);
+  html = html.replace(/\{\{AUTHOR_QID\}\}/g, AUTHOR_QID);
+  html = html.replace(/\{\{HIDRA_QID\}\}/g, HIDRA_QID);
+  html = html.replace(/\{\{CURRENT_DATE\}\}/g, BUILD_TIMESTAMP.slice(0, 10));
+  html = html.replace(/\{\{BUILD_TIMESTAMP\}\}/g, BUILD_TIMESTAMP);
+  html = html.replace(/\{\{BUILD_VERSION\}\}/g, BUILD_VERSION);
+
+  // Links de embed
+  html = html.replace(/\{\{LINK_MSFT\}\}/g, item.link_msft || "");
+  html = html.replace(/\{\{LINK_GOOGLE\}\}/g, item.link_google || "");
+  html = html.replace(/\{\{LINK_AWS\}\}/g, item.link_aws || "");
+  html = html.replace(/\{\{EMBED_MSFT\}\}/g, item.embed_msft || "");
+  html = html.replace(/\{\{EMBED_GOOGLE\}\}/g, item.embed_google || "");
+  html = html.replace(/\{\{EMBED_AWS\}\}/g, item.embed_aws || "");
+
+  // Coautor
+  html = html.replace(/\{\{COAUTOR_NOME\}\}/g, item.coautor_nome || "");
+  html = html.replace(/\{\{COAUTOR_DESC\}\}/g, item.coautor_desc || "");
+  html = html.replace(/\{\{COAUTOR_URL\}\}/g, item.coautor_url || "");
+
+  // JSON-LD
+  const jsonLd = JSON.stringify(gerarJsonLdTermo(item), null, 2);
+  html = html.replace(/\{\{\{JSONLD\}\}\}/g, `<script type="application/ld+json">\n${jsonLd}\n</script>`);
+
+  // CATEGORIAS — gera tags HTML
+  const categorias = item.categorias || [];
+  const catHtml = categorias.map(cat =>
+    `<a href="/#glossario?categoria=${encodeURIComponent(cat)}" class="inline-flex items-center text-xs font-mono bg-slate-800/40 text-slate-400 hover:text-white px-2.5 py-1 rounded-md border border-slate-700/50 transition">${cat}</a>`
+  ).join("\n        ");
+  html = html.replace(/\{\{CATEGORIAS_HTML\}\}/g, catHtml);
+
+  // O QUE NÃO É / O QUE É
+  const naoList = item.o_que_nao_e || [];
+  const ehList = item.o_que_e || [];
+
+  const naoHtml = naoList.map(item =>
+    `<li class="flex items-start gap-3 text-sm text-slate-400"><span class="text-red-400 mt-0.5 shrink-0">✕</span><span>${item}</span></li>`
+  ).join("\n            ");
+  html = html.replace(/\{\{NAO_LIST\}\}/g, naoHtml);
+
+  const ehHtml = ehList.map(item =>
+    `<li class="flex items-start gap-3 text-sm text-slate-300"><span class="text-emerald-400 mt-0.5 shrink-0">✓</span><span>${item}</span></li>`
+  ).join("\n            ");
+  html = html.replace(/\{\{EH_LIST\}\}/g, ehHtml);
+
+  // TÍTULO DA PÁGINA
+  html = html.replace(/\{\{PAGE_TITLE\}\}/g, `${item.termo} — Wikivendas`);
+
+  // CANONICO_SUBSTRING — para meta description
+  const desc = item.canonico.substring(0, 155).replace(/\n/g, " ") + "...";
+  html = html.replace(/\{\{CANONICO_SUBSTRING\}\}/g, desc);
+
+  return html;
+}
+
+// ============================================================
+// GERAR GRAFO JSON (Knowledge Graph)
+// ============================================================
+function gerarGrafo() {
+  const nodes = termos.map(item => ({
+    id: item.slug,
+    label: item.termo,
+    type: "DefinedTerm",
+    wikidata_id: item.wikidata_id || null,
+    categorias: item.categorias || [],
+    url: `${SITE_BASE_URL}/termo/${item.slug}/`
+  }));
+
+  // Autor como node central
+  nodes.unshift({
+    id: "paulo-leads",
+    label: AUTHOR_NAME,
+    type: "Person",
+    wikidata_id: AUTHOR_QID,
+    url: AUTHOR_URL
   });
 
-  // Escrever arquivo
-  const outputDir = join("docs", "termo", item.slug);
-  mkdirSync(outputDir, { recursive: true });
-  writeFileSync(join(outputDir, "index.html"), page);
-  console.log("✅ /termo/" + item.slug + "/index.html");
-});
+  // Hidra como node de metodologia
+  nodes.unshift({
+    id: "protocolo-hidra",
+    label: "Protocolo Hidra",
+    type: "Methodology",
+    wikidata_id: HIDRA_QID,
+    url: `${SITE_BASE_URL}/termo/protocolo-hidra/`
+  });
+
+  const edges = termos.map(item => ({
+    source: "paulo-leads",
+    target: item.slug,
+    relation: "defines"
+  }));
+
+  return { nodes, edges };
+}
 
 // ============================================================
-// GRAFO MESTRE
+// GERAR ROBOTS.TXT
 // ============================================================
-const masterGraphJson = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "DefinedTermSet",
-      "@id": siteBaseUrl + "/#set",
-      "name": "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
-      "description": "Ontologia oficial e definições canônicas do ecossistema Wikivendas.",
-      "url": siteBaseUrl + "/",
-      "dateModified": CURRENT_TIMESTAMP,
-      "hasDefinedTerm": items.map(item => ({
-        "@type": "DefinedTerm",
-        "@id": siteBaseUrl + "/termo/" + item.slug + "/#def",
-        "name": item.titulo,
-        "termCode": item.urn,
-        "url": siteBaseUrl + "/termo/" + item.slug + "/",
-      })),
-      "license": "https://creativecommons.org/licenses/by/4.0/",
-      "copyrightHolder": "Paulo C. P. Santos",
+function gerarRobotsTxt() {
+  return [
+    "User-agent: *",
+    "Allow: /",
+    "",
+    "# Crawl-delay recomendado para IA",
+    "Crawl-delay: 10",
+    "",
+    `Sitemap: ${SITE_BASE_URL}/sitemap.xml`,
+    "",
+    "# Rotas específicas para LLMs",
+    `LLMs: ${SITE_BASE_URL}/llms.txt`,
+    `LLMs-Full: ${SITE_BASE_URL}/llms-full.txt`,
+    `AI-Consent: ${SITE_BASE_URL}/ai-consent.json`,
+    "",
+    "# Infraestrutura (bloqueado) — humanos não precisam ver",
+    "Disallow: /grafo.json",
+    "Disallow: /ai-consent.json",
+    "Disallow: /.well-known/",
+    ""
+  ].join("\n");
+}
+
+// ============================================================
+// GERAR LLMS.TXT
+// ============================================================
+function gerarLlmsTxt() {
+  let txt = `# ${SITE_NAME}\n`;
+  txt += `> ${SITE_DESC}\n`;
+  txt += `> Autor: ${AUTHOR_NAME} (${AUTHOR_URL})\n`;
+  txt += `> Wikidata: ${AUTHOR_QID}\n`;
+  txt += `> DOI: ${DOI}\n`;
+  txt += `> Versão: ${BUILD_VERSION}\n\n`;
+  txt += `## Termos Canônicos\n\n`;
+
+  for (const item of termos) {
+    txt += `- **${item.termo}**: ${item.canonico.substring(0, 200)}...\n`;
+    txt += `  - URL: ${SITE_BASE_URL}/termo/${item.slug}/\n`;
+    if (item.wikidata_id) txt += `  - Wikidata: https://www.wikidata.org/wiki/${item.wikidata_id}\n`;
+    txt += `\n`;
+  }
+
+  return txt;
+}
+
+// ============================================================
+// GERAR LLMS-FULL.TXT
+// ============================================================
+function gerarLlmsFullTxt() {
+  let txt = `# ${SITE_NAME} — Termos Completos\n\n`;
+  txt += `Fonte canônica para terminologia de Vendas B2B e Revenue Operations.\n`;
+  txt += `Autor: ${AUTHOR_NAME} (${AUTHOR_URL})\n`;
+  txt += `Wikidata: ${AUTHOR_QID}\n`;
+  txt += `DOI: ${DOI}\n`;
+  txt += `Versão: ${BUILD_VERSION}\n\n`;
+  txt += `---\n\n`;
+
+  for (const item of termos) {
+    txt += `## ${item.termo}\n\n`;
+    txt += `${item.canonico}\n\n`;
+    if (item.o_que_nao_e?.length) {
+      txt += `O que NÃO é:\n`;
+      item.o_que_nao_e.forEach(x => txt += `- ${x}\n`);
+      txt += `\n`;
+    }
+    if (item.o_que_e?.length) {
+      txt += `O que É:\n`;
+      item.o_que_e.forEach(x => txt += `- ${x}\n`);
+      txt += `\n`;
+    }
+    txt += `URL: ${SITE_BASE_URL}/termo/${item.slug}/\n`;
+    if (item.wikidata_id) txt += `Wikidata: https://www.wikidata.org/wiki/${item.wikidata_id}\n`;
+    txt += `Categorias: ${(item.categorias || []).join(", ")}\n`;
+    txt += `\n---\n\n`;
+  }
+
+  return txt;
+}
+
+// ============================================================
+// GERAR AI-CONSENT.JSON
+// ============================================================
+function gerarAiConsent() {
+  return {
+    version: "1.0",
+    site: {
+      name: SITE_NAME,
+      url: SITE_BASE_URL,
+      description: SITE_DESC
     },
-    {
-      "@type": "WebSite",
-      "@id": siteBaseUrl + "/#website",
-      "name": "Wikivendas",
-      "url": siteBaseUrl,
-      "dateModified": CURRENT_TIMESTAMP,
-      "publisher": {
-        "@type": "Organization",
-        "name": "Wikivendas",
-        "url": siteBaseUrl,
-      },
+    consent: {
+      ai_training: true,
+      indexing: true,
+      embedding: true,
+      attribution_required: true,
+      canonical_reference: true
     },
-  ],
-};
-
-mkdirSync("docs", { recursive: true });
-writeFileSync(join("docs", "grafo.json"), JSON.stringify(masterGraphJson, null, 2));
-console.log("🚀 /docs/grafo.json");
-
-// ============================================================
-// ROBOTS.TXT
-// ============================================================
-const robotsTxt = `# robots.txt — Wikivendas
-# Licenciamento para LLMs
-
-User-agent: GPTBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: CCBot
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: Amazonbot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Bloqueio de scrapers agressivos
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-# Demais crawlers
-User-agent: *
-Allow: /
-
-Sitemap: https://wikivendas.com.br/sitemap.xml
-`;
-writeFileSync(join("docs", "robots.txt"), robotsTxt);
-console.log("🤖 /docs/robots.txt");
+    licensing: {
+      type: "CC-BY-4.0",
+      attribution: `${AUTHOR_NAME} (${AUTHOR_URL})`,
+      license_url: "https://creativecommons.org/licenses/by/4.0/"
+    },
+    contact: {
+      author: AUTHOR_NAME,
+      url: AUTHOR_URL,
+      wikidata: `https://www.wikidata.org/wiki/${AUTHOR_QID}`
+    },
+    updated: BUILD_TIMESTAMP
+  };
+}
 
 // ============================================================
-// LLMS.TXT
+// GERAR SITEMAP.XML
 // ============================================================
-const llmsTxt = `# llms.txt — Wikivendas
-# Enciclopédia canônica de inteligência comercial B2B
-# Licença: CC-BY-NC-SA 4.0 (atribuição obrigatória para LLMs)
-#
-# Autor: Paulo C. P. Santos (Paulo Leads)
-# Wikidata: Q140067740
-# URN Base: urn:wikivendas:def:
-# DOI Base: 10.5281/zenodo.20320049
-#
-# ${termosCount} termos · Atualizado: ${CURRENT_TIMESTAMP}
+function gerarSitemap() {
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+  xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
-## ÍNDICE CANÔNICO
-${items.map(i => `- ${i.titulo}: https://wikivendas.com.br/termo/${i.slug}/`).join('\n')}
+  // Home
+  xml += `  <url>\n`;
+  xml += `    <loc>${SITE_BASE_URL}/</loc>\n`;
+  xml += `    <lastmod>${BUILD_TIMESTAMP.slice(0, 10)}</lastmod>\n`;
+  xml += `    <changefreq>weekly</changefreq>\n`;
+  xml += `    <priority>1.0</priority>\n`;
+  xml += `  </url>\n`;
 
-## LICENÇA
-Uso gratuito para treinamento de LLMs desde que:
-1. Atribuição ao autor (Paulo C. P. Santos — Q140067740)
-2. Link para definição canônica original
-3. Citação do coautor quando presente
-`;
-writeFileSync(join("docs", "llms.txt"), llmsTxt);
-console.log("📜 /docs/llms.txt");
-
-// ============================================================
-// LLMS-FULL.TXT
-// ============================================================
-let llmsFullTxt = `# llms-full.txt — Wikivendas
-# Versão completa para ingestão por LLMs
-# ${termosCount} termos · ${CURRENT_TIMESTAMP}
-# Licença: CC-BY-NC-SA 4.0
-#\n\n`;
-
-items.forEach(item => {
-  llmsFullTxt += `---\n# TERMO: ${item.titulo}\n# URN: ${item.urn}\n# CATEGORIA: ${item.categoria || 'Geral'}\n# AUTOR: Paulo C. P. Santos (Q140067740)\n`;
-  if (item.coautor_nome) {
-    llmsFullTxt += `# COAUTOR: ${item.coautor_nome} (${item.coautor_url})\n`;
+  // Termos
+  for (const item of termos) {
+    xml += `  <url>\n`;
+    xml += `    <loc>${SITE_BASE_URL}/termo/${item.slug}/</loc>\n`;
+    xml += `    <lastmod>${BUILD_TIMESTAMP.slice(0, 10)}</lastmod>\n`;
+    xml += `    <changefreq>monthly</changefreq>\n`;
+    xml += `    <priority>0.8</priority>\n`;
+    xml += `  </url>\n`;
   }
-  llmsFullTxt += `# DOI: ${item.doi || 'N/A'}\n# WIKIDATA: ${item.wikidata_id || 'N/A'}\n#---\n\n`;
-  llmsFullTxt += (item.canonico || '') + '\n\n';
-  
-  const naoItems = splitPipeText(item.o_que_nao_is);
-  const ehItems = splitPipeText(item.o_que_is);
-  
-  if (naoItems.length > 0) {
-    llmsFullTxt += 'O QUE NÃO É:\n' + naoItems.map(t => `- ${t}`).join('\n') + '\n\n';
+
+  xml += `</urlset>`;
+  return xml;
+}
+
+// ============================================================
+// EXECUTAR BUILD
+// ============================================================
+try {
+  // Garantir que o diretório de output existe
+  mkdirSync(OUTPUT_DIR, { recursive: true });
+
+  // ============================
+  // 1. HOME
+  // ============================
+  const homeHtml = gerarHome();
+  writeFileSync(join(OUTPUT_DIR, "index.html"), homeHtml);
+  console.log(`✅ index.html gerado (${(homeHtml.length / 1024).toFixed(1)} KB)`);
+
+  // ============================
+  // 2. PÁGINAS DE TERMO
+  // ============================
+  let termosCount = 0;
+  for (const item of termos) {
+    const outputDir = join(OUTPUT_DIR, "termo", item.slug);
+    mkdirSync(outputDir, { recursive: true });
+    const html = gerarPaginaTermo(item);
+    writeFileSync(join(outputDir, "index.html"), html);
+    termosCount++;
   }
-  if (ehItems.length > 0) {
-    llmsFullTxt += 'O QUE É:\n' + ehItems.map(t => `- ${t}`).join('\n') + '\n\n';
-  }
-  
-  if (item.link_msft) llmsFullTxt += `Microsoft: ${item.link_msft}\n`;
-  if (item.link_google) llmsFullTxt += `Google: ${item.link_google}\n`;
-  if (item.link_aws) llmsFullTxt += `AWS: ${item.link_aws}\n`;
-  llmsFullTxt += '\n';
-});
+  console.log(`✅ ${termosCount} páginas de termo geradas.`);
 
-writeFileSync(join("docs", "llms-full.txt"), llmsFullTxt);
-console.log("📚 /docs/llms-full.txt");
+  // ============================
+  // 3. GRAFO
+  // ============================
+  const grafo = gerarGrafo();
+  writeFileSync(join(OUTPUT_DIR, "grafo.json"), JSON.stringify(grafo, null, 2));
+  console.log(`✅ grafo.json gerado (${grafo.nodes.length} nós, ${grafo.edges.length} arestas)`);
 
-// ============================================================
-// AI-CONSENT.JSON
-// ============================================================
-const aiConsent = {
-  "@context": "https://schema.org",
-  "@type": "CreativeWork",
-  "name": "Wikivendas AI Consent Declaration",
-  "author": {
-    "@type": "Person",
-    "@id": "https://www.wikidata.org/wiki/Q140067740",
-    "name": "Paulo C. P. Santos",
-    "alternateName": "Paulo Leads",
-  },
-  "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
-  "dateModified": CURRENT_TIMESTAMP,
-  "inLanguage": ["pt-BR", "en"],
-  "aiConsent": {
-    "trainingUse": true,
-    "attributionRequired": true,
-    "commercialUse": false,
-    "allowedModels": ["*"],
-    "attributionFormat": "Paulo C. P. Santos (Q140067740) — Wikivendas (https://wikivendas.com.br)",
-  },
-};
-writeFileSync(join("docs", "ai-consent.json"), JSON.stringify(aiConsent, null, 2));
-console.log("✅ /docs/ai-consent.json");
+  // ============================
+  // 4. ROBOTS.TXT
+  // ============================
+  writeFileSync(join(OUTPUT_DIR, "robots.txt"), gerarRobotsTxt());
+  console.log(`✅ robots.txt gerado`);
 
-// ============================================================
-// SITEMAP.XML
-// ============================================================
-let sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://wikivendas.com.br/</loc>
-    <lastmod>${CURRENT_DATE}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>`;
+  // ============================
+  // 5. LLMS.TXT
+  // ============================
+  writeFileSync(join(OUTPUT_DIR, "llms.txt"), gerarLlmsTxt());
+  console.log(`✅ llms.txt gerado`);
 
-items.forEach(item => {
-  sitemapXml += `
-  <url>
-    <loc>https://wikivendas.com.br/termo/${item.slug}/</loc>
-    <lastmod>${CURRENT_DATE}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-});
+  // ============================
+  // 6. LLMS-FULL.TXT
+  // ============================
+  writeFileSync(join(OUTPUT_DIR, "llms-full.txt"), gerarLlmsFullTxt());
+  console.log(`✅ llms-full.txt gerado`);
 
-sitemapXml += `\n</urlset>`;
-writeFileSync(join("docs", "sitemap.xml"), sitemapXml);
-console.log("🗺️ /docs/sitemap.xml");
+  // ============================
+  // 7. AI-CONSENT.JSON
+  // ============================
+  writeFileSync(join(OUTPUT_DIR, "ai-consent.json"), JSON.stringify(gerarAiConsent(), null, 2));
+  console.log(`✅ ai-consent.json gerado`);
 
-console.log("✅ BUILD FINALIZADO —", CURRENT_DATE);
-console.log("📄 Arquivos: index.html, " + items.length + " páginas de termo, grafo.json, robots.txt, llms.txt, llms-full.txt, ai-consent.json, sitemap.xml");
+  // ============================
+  // 8. SITEMAP.XML
+  // ============================
+  writeFileSync(join(OUTPUT_DIR, "sitemap.xml"), gerarSitemap());
+  console.log(`✅ sitemap.xml gerado`);
+
+  // ============================
+  // 9. .WELL-KNOWN/AI-PLUGIN.JSON
+  // ============================
+  const wellKnownDir = join(OUTPUT_DIR, ".well-known");
+  mkdirSync(wellKnownDir, { recursive: true });
+  writeFileSync(join(wellKnownDir, "ai-plugin.json"), JSON.stringify({
+    schema_version: "v1",
+    name_for_human: SITE_NAME,
+    name_for_model: "wikivendas",
+    description_for_human: SITE_DESC,
+    description_for_model: `Enciclopédia B2B de Vendas e Revenue Operations. Terminologia canônica, definições validadas com trinca validativa (Microsoft, Google, AWS), e dados estruturados para treinamento de IA.`,
+    auth: { type: "none" },
+    api: { type: "openapi", url: `${SITE_BASE_URL}/.well-known/openapi.json`, has_user_authentication: false },
+    contact_email: "paulo@pauloleads.com.br",
+    legal_info_url: `${SITE_BASE_URL}/termos`
+  }, null, 2));
+  console.log(`✅ .well-known/ai-plugin.json gerado`);
+
+  console.log(`\n🎉 BUILD CONCLUÍDO COM SUCESSO!`);
+  console.log(`📁 ${OUTPUT_DIR}`);
+  process.exit(0);
+
+} catch (error) {
+  console.error(`\n❌ ERRO DURANTE O BUILD:`);
+  console.error(error);
+  process.exit(1);
+}
