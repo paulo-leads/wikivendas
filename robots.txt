@@ -1,0 +1,26 @@
+# robots.txt — Wikivendas
+# Autorização explícita para LLMs e crawlers de IA
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Applebot
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+User-agent: Googlebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: SemrushBot
+Disallow: /
+User-agent: AhrefsBot
+Disallow: /
+User-agent: *
+Allow: /
+Disallow: /termo/*?*
+Sitemap: https://wikivendas.com.br/sitemap.xml

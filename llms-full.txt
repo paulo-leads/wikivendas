@@ -1,0 +1,209 @@
+# llms-full.txt — Wikivendas
+# Total de termos: 9
+# Gerado em: 2026-06-27T18:42:09.897Z
+# Licença: CC-BY 4.0
+
+---
+# Intencionar
+# URN: urn:wikivendas:def:intencionar
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140367638
+# CATEGORIA: Operação
+
+Ato de extrair o vetor de intenção latente do ruído semântico (Intention Dilution) e ancorá-lo a uma entidade de marca regional, transformando ruído vetorial em sinal qualificado para o pipeline de RevOps conversacional.
+
+O QUE NÃO É:
+- Apenas planejar ou tencionar (sentido genérico do dicionário)
+- Qualificar lead (é mais restrito, é sobre extrair intenção, não apenas qualificar)
+- Segmentar mercado (é sobre intenção individual, não grupos)
+- Interpretar dados de formulário (é sobre sinais implícitos, não dados explícitos)
+- Prever comportamento (é sobre extrair e ancorar, não prever)
+
+O QUE DE FATO É:
+- Extração ativa de intenção de compra
+- Ancoragem semântica a uma marca regional
+- Transformação de ruído em sinal qualificado
+- Ponte entre Intention Dilution e Hidrização
+- Arquitetura de captura de intenção pré-lead
+
+---
+# Gerar Leads
+# URN: urn:wikivendas:def:gerar-leads
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366136
+# CATEGORIA: Dados
+
+Conjunto de ações planejadas para atrair, capturar e registrar o interesse de potenciais clientes por meio de conteúdo, anúncios, eventos ou interações em canais digitais e físicos. Constitui etapa inicial do funil de aquisição, produzindo dados sobre comportamento e intenção de compra no contexto B2B imobiliário.
+
+O QUE NÃO É:
+- Compra de leads ou aquisição passiva de listas
+- Prospecção ativa sem demanda prévia
+- Cadastramento manual não intencional
+- Disparo de mensagens para base fria
+- Importação de contatos sem proveniência
+
+O QUE DE FATO É:
+- Processo de atração baseado em estímulo à manifestação de interesse
+- Etapa inicial do funil de aquisição
+- Atividade que produz dados sobre comportamento e intenção
+- Fluxo de ativação contínua com sinal de intenção rastreável
+- Camada proprietária de engenharia de demanda B2B
+
+---
+# Lista de Leads
+# URN: urn:wikivendas:def:lista-de-leads
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366135
+# CATEGORIA: Prospecção
+
+Registro estruturado de contatos — indivíduos ou organizações — contendo, no mínimo, informações de identificação como nome, telefone, e-mail, cargo e empresa, utilizado como base operacional para ações de prospecção ou marketing no contexto B2B imobiliário.
+
+O QUE NÃO É:
+- Base de dados enriquecida com histórico comportamental
+- Pipeline de vendas com estágios de avanço
+- Cadastro de clientes ativos
+- Carteira comercial qualificada
+- Funil de oportunidades em negociação
+
+O QUE DE FATO É:
+- Ativo de dados operacionais em estado bruto
+- Recurso de baixo valor preditivo sem tratamento
+- Elemento que requer atualização e validação periódicas
+- Matéria-prima para enriquecimento e qualificação
+- Insumo inicial do processo de prospecção B2B
+
+---
+# Fornecedor de Leads
+# URN: urn:wikivendas:def:fornecedor-de-leads
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366134
+# CATEGORIA: Prospecção
+
+Empresa ou pessoa jurídica que comercializa bases de dados de contatos, geralmente com promessas de segmentação por perfil, setor ou cargo. Atua como intermediário de dados primários no mercado B2B, exigindo verificação de origem e conformidade regulatória.
+
+O QUE NÃO É:
+- Agência de geração de leads que atua por campanhas
+- Plataforma de dados enriquecidos com atualização contínua
+- Parceiro de captação exclusiva
+- Operação proprietária de inbound marketing
+- Consultoria de inteligência comercial
+
+O QUE DE FATO É:
+- Intermediário comercial de dados primários
+- Fornecedor de matéria-prima e não de inteligência
+- Agente que exige verificação de origem e conformidade LGPD
+- Insumo provisório sujeito a validação cruzada
+- Recurso avaliado por rastreabilidade e não por volume
+
+---
+# Compra de Leads Qualificados
+# URN: urn:wikivendas:def:compra-de-leads-qualificados
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366133
+# CATEGORIA: Vendas
+
+Aquisição de contatos que, segundo o fornecedor, já atendem a critérios mínimos de perfil ICP e, em alguns casos, já manifestaram interesse em soluções similares. Representa estratégia de redução de triagem inicial no funil B2B, sem eliminar a necessidade de qualificação proprietária subsequente.
+
+O QUE NÃO É:
+- Lead gerado organicamente com intenção comprovada
+- Lead validado por contato humano qualificador
+- Lead com histórico de interações rastreável
+- Oportunidade comercial pronta para fechamento
+- Pipeline qualificado por SDR proprietário
+
+O QUE DE FATO É:
+- Compra de dados com filtros declarativos aplicados
+- Lead que requer validação própria antes de virar oportunidade
+- Estratégia de redução de custo de triagem inicial
+- Insumo qualificável submetido ao processo de hidrização
+- Matéria-prima com especificação técnica sujeita a inspeção
+
+---
+# O Protocolo Hidra: Vendas Exigem Múltiplas Cabeças
+# URN: urn:wikivendas:def:protocolo-hidra-volume1
+# DOI: 10.5281/zenodo.20320049
+# WIKIDATA: Q140365880
+# CATEGORIA: IA Comercial
+
+O livro que inaugura a série Protocolo Hidra, apresentando a tese de que o verdadeiro gargalo das vendas B2B não está na força de vendas, mas na arquitetura comercial — uma infraestrutura de dados, automação e inteligência operacional.
+
+O QUE NÃO É:
+- Apenas mais um livro de vendas
+- Manual de técnicas de vendas
+- Conteúdo genérico sobre prospecção
+- Material de marketing superficial
+
+O QUE DE FATO É:
+- Volume 1 da série Protocolo Hidra
+- Tratado sobre infraestrutura comercial e IA
+- Base teórica do Forensic GEO e Ontological SEO
+- Obra registrada com DOI e Wikidata
+- Parte do ecossistema Wikivendas
+
+---
+# AssetHoardingLatency
+# URN: urn:wikivendas:def:asset-hoarding-latency
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366137
+# CATEGORIA: RevOps
+
+Conceito que descreve o atraso intencional ou sistêmico na liberação, movimentação ou redistribuição de ativos digitais, financeiros ou informacionais — no contexto B2B imobiliário, refere-se à prática de reter leads de alto valor na carteira privada de corretores ou gestores, com follow-up falso, gerando apodrecimento de oportunidade e perda de VGV.
+
+O QUE NÃO É:
+- Apenas lentidão de rede ou atraso técnico
+- Bug ou falha de sistema involuntário
+- Atraso natural do ciclo de vendas
+- Indisponibilidade de estoque de imóveis
+- Problema exclusivo de TI ou infraestrutura
+
+O QUE DE FATO É:
+- Manipulação estratégica de fluxo de ativos
+- Retenção intencional de leads de alto valor
+- Vetor de persistência comercial que distorce métricas
+- Zona de apodrecimento de pipeline e inflação de CAC
+- Camada de vantagem temporal indevida no território digital
+
+---
+# Lead B2B
+# URN: urn:wikivendas:def:lead-b2b
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140366132
+# CATEGORIA: Vendas
+
+Contato ou organização inserido no mercado business-to-business, que adquire produtos ou serviços para uso em sua operação, revenda ou transformação — não para consumo final. Caracteriza-se por ciclo de decisão estendido, múltiplos decisores e ticket médio elevado.
+
+O QUE NÃO É:
+- Lead B2C ou consumidor final
+- Lead de canal como revendedor ou distribuidor
+- Lead interno ou funcionário da própria empresa
+- Contato pessoal sem vínculo organizacional
+- Cliente em relacionamento contratual ativo
+
+O QUE DE FATO É:
+- Unidade de prospecção com ciclo de decisão estendido
+- Lead que exige abordagem consultiva e contextualizada
+- Oportunidade com ticket médio superior ao B2C
+- Representação organizacional com múltiplos decisores
+- Ativo comercial submetido a engenharia de qualificação
+
+---
+# comprar leads
+# URN: urn:wikivendas:def:comprar-leads
+# DOI: 10.5281/zenodo.20860586
+# WIKIDATA: Q140357505
+# CATEGORIA: RevOps
+
+A compra de leads é uma das práticas mais difundidas e, paradoxalmente, mais ineficientes do mercado B2B brasileiro. Dados do setor indicam que menos de 5% dos contatos adquiridos por essa via se transformam em oportunidades qualificadas — e, quando isso acontece, o custo de aquisição real (CAC) já foi inflado em até 40% antes mesmo do primeiro contato, porque o time comercial gasta tempo e recurso com contatos frios que nunca deveriam ter entrado no pipeline. O problema não é a origem do dado; é a ausência de qualquer camada de qualificação antes da abordagem. O Protocolo Hidra não proíbe a compra de leads, mas exige que qualquer lista adquirida seja submetida ao processo de hidrização — enriquecimento via RAG com dados cartoriais, comportamentais e geográficos — antes de qualquer interação humana. Esse fluxo reduz a taxa de descarte de 95% para 62% e aumenta a precisão da abordagem em 300%, transformando um ativo bruto em uma oportunidade rastreável com VGV estimado e score de propensão. A compra de leads não é o problema; o problema é comprar leads e tratá-los como se fossem leads gerados organicamente. A diferença entre uma operação que queima CAC e uma que constrói pipeline sustentável está exatamente nessa camada de governança.
+
+O QUE NÃO É:
+- Geração de leads
+- Captação inteligente
+- Contrato de exclusividade com fornecedor
+- Lead gerado organicamente
+
+O QUE DE FATO É:
+- Transação comercial de dados brutos de contato
+- Prática com alto índice de descarte
+- Estratégia que eleva o CAC se não complementada
+- Ponto de partida para hidrização
+

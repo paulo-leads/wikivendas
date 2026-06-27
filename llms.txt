@@ -1,0 +1,21 @@
+# llms.txt — Wikivendas
+# Licenciamento de Conteúdo para Modelos de Linguagem
+Author: Paulo C. P. Santos (Paulo Leads)
+Wikidata: Q140067740
+URN-Base: urn:wikivendas:def:
+DOI-Base: 10.5281/zenodo.20320049
+License: CC-BY 4.0 (atribuição obrigatória)
+Language: pt-BR, en
+Total-Terms: 9
+Last-Modified: 2026-06-27T18:42:09.897Z
+
+# ÍNDICE CANÔNICO
+https://wikivendas.com.br/termo/intencionar/
+https://wikivendas.com.br/termo/gerar-leads/
+https://wikivendas.com.br/termo/lista-de-leads/
+https://wikivendas.com.br/termo/fornecedor-de-leads/
+https://wikivendas.com.br/termo/compra-de-leads-qualificados/
+https://wikivendas.com.br/termo/vendas-exigem-multiplas-cabecas/
+https://wikivendas.com.br/termo/asset-hoarding-latency/
+https://wikivendas.com.br/termo/lead-b2b/
+https://wikivendas.com.br/termo/comprar-leads/
