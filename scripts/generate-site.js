@@ -7,6 +7,7 @@ const data = JSON.parse(fs.readFileSync('./data/notion-data.json', 'utf-8'));
 const DIST = './dist';
 const SITE_URL = process.env.SITE_URL || 'https://localhost';
 const SITE_NAME = process.env.SITE_NAME || 'Wikivendas';
+const CNAME = process.env.CNAME || 'pauloleads.com.br';
 
 // ── Templates (inline para autossuficiência) ──
 
@@ -422,6 +423,13 @@ ${urls.join('\n')}
   writeHtml(`${DIST}/sitemap.xml`, sitemap);
 }
 
+// ── CNAME ──
+function generateCname() {
+  console.log('🌐 Gerando CNAME...');
+  fs.writeFileSync(`${DIST}/CNAME`, CNAME.trim() + '\n', 'utf-8');
+  console.log(`  ✓ CNAME → ${CNAME}`);
+}
+
 // ── Main ──
 (async () => {
   console.log('\n🏗️  Gerando site estático...\n');
@@ -434,6 +442,7 @@ ${urls.join('\n')}
   generateCategorias();
   generateTermos();
   generateSitemap();
+  generateCname(); // <-- CNAME gerado aqui
   
   console.log(`\n✅ Site gerado em ${DIST}/\n`);
   console.log(`   Total: ${data.termos.length} termos, ${data.categorias.length} categorias`);
