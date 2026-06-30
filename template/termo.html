@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITULO}} — Wikivendas</title>
+  <meta name="description" content="{{RESUMO}}">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="{{CANONICAL_URL}}">
+  <link rel="ai-consent" href="/ai-consent.json">
+  <link rel="llms" href="/llms.txt">
+
+  <!-- Open Graph / WhatsApp / social preview -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Wikivendas">
+  <meta property="og:title" content="{{TITULO}} — Wikivendas">
+  <meta property="og:description" content="{{RESUMO}}">
+  <meta property="og:url" content="{{CANONICAL_URL}}">
+  <meta property="og:image" content="{{OG_IMAGE_URL}}">
+  <meta property="og:locale" content="pt_BR">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{TITULO}} — Wikivendas">
+  <meta name="twitter:description" content="{{RESUMO}}">
+  <meta name="twitter:image" content="{{OG_IMAGE_URL}}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } } }
+  </script>
+  {{JSONLD_INJECTED}}
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #030712; color: #cbd5e1; }
+    a { color: #38bdf8; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="max-w-4xl mx-auto px-6 py-12">
+  <a href="/" class="text-sky-400 text-sm hover:underline mono">← Wikivendas</a>
+  <div class="mt-6 mb-2 flex items-center gap-2">
+    <span class="text-xs mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">{{CATEGORIA_NOME}}</span>
+    <span class="text-xs mono text-slate-600">{{URN}}</span>
+  </div>
+  <h1 class="text-4xl font-bold text-white mt-2 mb-1 tracking-tight">{{TITULO}}</h1>
+  <p class="text-sm text-slate-500 mono mb-6">{{ALTERNATE_NAME}}</p>
+  <p class="text-slate-300 text-lg leading-relaxed mb-6">{{RESUMO}}</p>
+  <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 text-slate-300 leading-relaxed">{{DEFINICAO_LONGA}}</div>
+  <div class="grid md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-red-950/20 border border-red-900/30 rounded-xl p-5">
+      <h2 class="text-sm font-semibold text-red-400 mb-3 mono uppercase tracking-wider">✕ O que NÃO é</h2>
+      <ul class="space-y-2 text-sm text-slate-400">{{NOT_LIST}}</ul>
+    </div>
+    <div class="bg-emerald-950/20 border border-emerald-900/30 rounded-xl p-5">
+      <h2 class="text-sm font-semibold text-emerald-400 mb-3 mono uppercase tracking-wider">✓ O que DE FATO é</h2>
+      <ul class="space-y-2 text-sm text-slate-400">{{IS_LIST}}</ul>
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm mb-6">
+    {{LINKS_HTML}}
+  </div>
+  <div class="border-t border-slate-800 pt-6 text-xs mono text-slate-600 flex flex-wrap gap-4 mb-8">
+    <span>DOI: {{DOI}}</span>
+    <span>Wikidata: {{WIKIDATA_ID}}</span>
+    <span>Atualizado: {{DATE_MODIFIED}}</span>
+  </div>
+  <div class="text-center">
+    <a href="https://wa.me/5519982642481?text={{WHATSAPP_TEXT}}" target="_blank" class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition border border-slate-700 px-5 py-2 rounded-full hover:border-slate-500">💬 Participe do projeto</a>
+  </div>
+  <div class="mt-12 text-xs mono text-slate-700 text-center border-t border-slate-900 pt-6">
+    <a href="/" class="hover:text-slate-500 transition">Wikivendas</a> © {{CURRENT_YEAR}} — Construído com Protocolo Hidra por <a href="https://pauloleads.com.br" target="_blank" class="hover:text-slate-500 transition">Paulo Leads</a>
+  </div>
+</body>
+</html>
