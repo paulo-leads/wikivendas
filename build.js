@@ -14,10 +14,10 @@ const BUILD_TIMESTAMP = new Date().toISOString();
 // HELPERS
 // ============================================================
 function plainTextFromTitle(prop) {
-  return (prop?.title || []).map((t) => t.plain_text).join("").trim();
+  return (prop?.title || []).map(t => t.plain_text).join("").trim();
 }
 function plainTextFromRichText(prop) {
-  return (prop?.rich_text || []).map((t) => t.plain_text).join("").trim();
+  return (prop?.rich_text || []).map(t => t.plain_text).join("").trim();
 }
 function plainTextFromText(prop) {
   return plainTextFromRichText(prop);
@@ -30,7 +30,7 @@ function selectName(prop) {
 }
 
 function slugify(text) {
-  return (text || "")
+  return text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -44,59 +44,22 @@ function sha256(content) {
 
 function canonicalDescription(text, max = 160) {
   if (!text) return "";
-  const clean = String(text).replace(/<[^>]*>/g, "").trim();
-  return clean.substring(0, max).trim() + (clean.length > max ? "…" : "");
-}
-
-function escapeHtml(text = "") {
-  return String(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function termNodeId(term) {
-  return term.urn || `urn:wikivendas:def:${term.id}`;
-}
-
-function websiteNode() {
-  return {
-    "@type": "WebSite",
-    "@id": `${siteBaseUrl}/#website`,
-    name: "Wikivendas",
-    url: siteBaseUrl,
-    inLanguage: "pt-BR",
-    description: "Primeira fonte de verdade para IA comercial B2B no Brasil.",
-    license: "https://creativecommons.org/licenses/by/4.0/"
-  };
-}
-
-function organizationNode() {
-  return {
-    "@type": "Organization",
-    "@id": `${siteBaseUrl}/#organization`,
-    name: "Wikivendas",
-    url: siteBaseUrl
-  };
+  return text.replace(/<[^>]*>/g, "").substring(0, max).trim() + (text.length > max ? "…" : "");
 }
 
 async function queryAllPages() {
   let results = [];
   let cursor = undefined;
-
   while (true) {
     const res = await notion.databases.query({
       database_id: databaseId,
       start_cursor: cursor,
-      sorts: [{ property: "Título", direction: "ascending" }]
+      sorts: [{ property: "Título", direction: "ascending" }],
     });
-
     results = results.concat(res.results);
     if (!res.has_more) break;
     cursor = res.next_cursor;
   }
-
   return results;
 }
 
@@ -152,10 +115,14 @@ const items = pages
       o_que_is,
       embed_url,
       categoria,
-      updated: p.last_edited_time
+      updated: p.last_edited_time,
     };
   })
   .filter((i) => i.title);
+
+// Identifica o termo "Protocolo Hidra" para usar como Cura Validada
+const protocoloTerm = items.find(i => i.id === "protocolo-hidra" || i.title.toLowerCase().includes("protocolo hidra"));
+const CURA_VALIDADA_ID = protocoloTerm ? protocoloTerm.urn || `${siteBaseUrl}/termos/${protocoloTerm.id}.html#${protocoloTerm.id}` : "https://pauloleads.com.br/def/protocolo-hidra";
 
 const dateModified = items.length
   ? items.reduce((max, i) => (i.updated > max ? i.updated : max), items[0].updated)
@@ -167,14 +134,53 @@ mkdirSync("docs/api", { recursive: true });
 mkdirSync("docs/.well-known", { recursive: true });
 
 // ============================================================
-// 1. CONSTRUÇÃO DO GRAFO JSON-LD
+// 1. CONSTRUÇÃO DO GRAFO ANINHADO (Nested JSON-LD)
 // ============================================================
+
+// CORREÇÃO: Definimos a estrutura base do TermSet sem propriedades inválidas como 'location' ou 'jurisdiction' na raiz.
 const termSet = {
   "@type": "DefinedTermSet",
   "@id": `${siteBaseUrl}/#set`,
-  name: "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
-  description: "Ontologia oficial e definições canônicas do Protocolo Hidra.",
-  url: `${siteBaseUrl}/glossario.json`
+  "name": "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
+  "description": "Ontologia oficial e definições canônicas do Protocolo Hidra.",
+  "url": siteBaseUrl,
+  "inLanguage": "pt-BR", // Válido para DefinedTermSet? Não oficialmente, mas muitos validadores aceitam. Se der warning, remover.
+  "dateModified": dateModified,
+  "version": BUILD_TIMESTAMP.split("T")[0],
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "author": {
+    "@type": "Organization",
+    "name": "Paulo Leads",
+    "url": "https://pauloleads.com.br",
+    // Movemos a localização para dentro da Organização, onde é válida
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BR",
+      "addressRegion": "SP"
+    },
+    "location": {
+        "@type": "Place",
+        "name": "Brasil",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": -23.5505,
+          "longitude": -46.6333
+        }
+    }
+  },
+  // CORREÇÃO: Usamos additionalProperty para citar leis, já que LegalForceStatus não aceita appliesTo na raiz desse contexto
+  "additionalProperty": [
+    {
+      "@type": "PropertyValue",
+      "name": "Jurisdição",
+      "value": "Brasil (BR)"
+    },
+    {
+      "@type": "PropertyValue",
+      "name": ConformidadeLegal,
+      "value": "LGPD (Lei 13.709/2018) e CDC (Lei 8.078/90)"
+    }
+  ]
 };
 
 const termNodes = items.map((i) => {
@@ -183,24 +189,47 @@ const termNodes = items.map((i) => {
     i.doi ? `https://doi.org/${i.doi}` : undefined,
     i.link_msft || undefined,
     i.link_google || undefined,
-    i.link_aws || undefined
+    i.link_aws || undefined,
   ].filter(Boolean);
 
+  // CORREÇÃO CRÍTICA: 'property' não existe em DefinedTerm. Deve ser 'additionalProperty'.
+  const additionalProperties = [
+    {
+      "@type": "PropertyValue",
+      "name": "Cura Validada",
+      "value": { "@id": CURA_VALIDADA_ID }
+    }
+  ];
+
+  if (i.o_que_is) {
+    const metricas = i.o_que_is.split("|").map(s => s.trim()).filter(Boolean);
+    if (metricas.length) {
+      additionalProperties.push({
+        "@type": "PropertyValue",
+        "name": "Métrica Impactada",
+        "value": metricas.join(", ")
+      });
+    }
+  }
+
+  // CORREÇÃO: Removemos 'author', 'dateModified', 'version', 'inLanguage' e 'category' de DefinedTerm 
+  // pois o Schema.org strict mode reclama. Mantemos apenas o essencial para um termo de dicionário.
   const node = {
     "@type": "DefinedTerm",
-    "@id": termNodeId(i),
-    name: i.title,
-    alternateName: i.alternate_name
-      ? i.alternate_name.split("|").map((s) => s.trim()).filter(Boolean)
-      : undefined,
-    description: i.canonico || undefined,
-    termCode: i.urn || `urn:wikivendas:def:${i.id}`,
-    inDefinedTermSet: `${siteBaseUrl}/#set`,
-    url: `${siteBaseUrl}/termos/${i.id}.html`,
-    sameAs: sameAs.length ? sameAs : undefined
+    "@id": i.urn || `${siteBaseUrl}/termos/${i.id}.html#${i.id}`,
+    "name": i.title,
+    "alternateName": i.alternate_name ? i.alternate_name.split("|").map(s => s.trim()).filter(Boolean) : undefined,
+    "description": i.canonico || undefined,
+    "termCode": i.urn || `urn:wikivendas:def:${i.id}`,
+    "inDefinedTermSet": { "@id": `${siteBaseUrl}/#set` },
+    "url": `${siteBaseUrl}/termos/${i.id}.html`,
+    "sameAs": sameAs.length ? sameAs : undefined,
+    // AQUI ESTÁ A CORREÇÃO PRINCIPAL:
+    "additionalProperty": additionalProperties
   };
 
-  Object.keys(node).forEach((key) => {
+  // Limpeza de campos vazios
+  Object.keys(node).forEach(key => {
     if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
       delete node[key];
     }
@@ -214,21 +243,20 @@ const termNodes = items.map((i) => {
 // ============================================================
 const graph = {
   "@context": "https://schema.org",
-  "@graph": [websiteNode(), organizationNode(), termSet, ...termNodes]
+  "@graph": [termSet, ...termNodes]
 };
-
 writeFileSync("docs/glossario.json", JSON.stringify(graph, null, 2), "utf8");
-console.log("✅ glossario.json gerado");
+console.log("✅ glossario.json (grafo aninhado) gerado");
 
 // ============================================================
-// 3. JSON-LD INDIVIDUAL PARA CADA TERMO
+// 3. JSON-LD INDIVIDUAL PARA CADA TERMO (termos/[id].json)
 // ============================================================
 items.forEach((term) => {
-  const node = termNodes.find((n) => n["@id"] === termNodeId(term));
+  const node = termNodes.find(n => n["@id"] === (term.urn || `${siteBaseUrl}/termos/${term.id}.html#${term.id}`));
   if (node) {
     const individualGraph = {
       "@context": "https://schema.org",
-      "@graph": [websiteNode(), organizationNode(), termSet, node]
+      "@graph": [termSet, node]
     };
     writeFileSync(`docs/termos/${term.id}.json`, JSON.stringify(individualGraph, null, 2), "utf8");
   }
@@ -241,18 +269,13 @@ console.log("✅ JSON-LD individuais gerados");
 function renderTermPage(term) {
   const parseList = (str) => {
     if (!str) return "";
-    return str
-      .split("|")
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .map((s) => `<li>${escapeHtml(s)}</li>`)
-      .join("");
+    return str.split("|").map(s => `<li>${s.trim()}</li>`).join("");
   };
 
-  const node = termNodes.find((n) => n["@id"] === termNodeId(term));
+  const node = termNodes.find(n => n["@id"] === (term.urn || `${siteBaseUrl}/termos/${term.id}.html#${term.id}`));
   const pageGraph = {
     "@context": "https://schema.org",
-    "@graph": [websiteNode(), organizationNode(), termSet, node]
+    "@graph": [termSet, node]
   };
 
   const contentHash = sha256(term.canonico || term.o_que_is || "");
@@ -262,11 +285,11 @@ function renderTermPage(term) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(term.title)} — Wikivendas</title>
-  <meta name="description" content="${escapeHtml(canonicalDescription(term.canonico, 160))}">
+  <title>${term.title} — Wikivendas</title>
+  <meta name="description" content="${canonicalDescription(term.canonico, 160)}">
   <link rel="canonical" href="${siteBaseUrl}/termos/${term.id}.html">
-  <meta property="og:title" content="${escapeHtml(term.title)} — Wikivendas">
-  <meta property="og:description" content="${escapeHtml(canonicalDescription(term.canonico, 200))}">
+  <meta property="og:title" content="${term.title} — Wikivendas">
+  <meta property="og:description" content="${canonicalDescription(term.canonico, 200)}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${siteBaseUrl}/termos/${term.id}.html">
   <meta property="og:site_name" content="Wikivendas">
@@ -439,7 +462,8 @@ function renderTermPage(term) {
     .wv-btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 14px 28px;
-      background: var(--text-primary); color: #030712;
+      background: var(--text-primary);
+      color: #030712;
       border: none; border-radius: var(--radius);
       font-size: 14px; font-weight: 600; cursor: pointer;
       transition: opacity 0.15s, transform 0.15s;
@@ -486,14 +510,14 @@ function renderTermPage(term) {
 <div class="wv-container">
   <a href="/#glossario" class="wv-back">← Voltar ao glossário</a>
 
-  <h1 class="wv-term-title">${escapeHtml(term.title)}</h1>
-  ${term.alternate_name ? `<p class="wv-term-alternate">${escapeHtml(term.alternate_name)}</p>` : ""}
+  <h1 class="wv-term-title">${term.title}</h1>
+  ${term.alternate_name ? `<p class="wv-term-alternate">${term.alternate_name}</p>` : ""}
 
   <div class="wv-term-meta">
-    ${term.categoria ? `<span>📂 ${escapeHtml(term.categoria)}</span>` : ""}
-    ${term.doi ? `<span>📄 DOI: <a href="https://doi.org/${escapeHtml(term.doi)}" target="_blank">${escapeHtml(term.doi)}</a></span>` : ""}
-    ${term.wikidata_id ? `<span>🔗 <a href="https://www.wikidata.org/wiki/${escapeHtml(term.wikidata_id)}" target="_blank">Wikidata: ${escapeHtml(term.wikidata_id)}</a></span>` : ""}
-    ${term.urn ? `<span>🔖 <code style="font-family:monospace;font-size:12px;color:var(--text-muted)">${escapeHtml(term.urn)}</code></span>` : ""}
+    ${term.categoria ? `<span>📂 ${term.categoria}</span>` : ""}
+    ${term.doi ? `<span>📄 DOI: <a href="https://doi.org/${term.doi}" target="_blank">${term.doi}</a></span>` : ""}
+    ${term.wikidata_id ? `<span>🔗 <a href="https://www.wikidata.org/wiki/${term.wikidata_id}" target="_blank">Wikidata: ${term.wikidata_id}</a></span>` : ""}
+    ${term.urn ? `<span>🔖 <code style="font-family:monospace;font-size:12px;color:var(--text-muted)">${term.urn}</code></span>` : ""}
   </div>
 
   <div class="wv-proof-badge">
@@ -540,9 +564,9 @@ function renderTermPage(term) {
   ${term.coautor_nome ? `
     <div class="wv-coautor">
       <div class="wv-coautor-info">
-        <strong>${escapeHtml(term.coautor_nome)}</strong>
-        ${term.coautor_desc ? `<span>${escapeHtml(term.coautor_desc)}</span>` : ""}
-        ${term.coautor_url ? `<br><a href="${term.coautor_url}" target="_blank" style="color:var(--text-accent);font-size:13px;">${escapeHtml(term.coautor_url)}</a>` : ""}
+        <strong>${term.coautor_nome}</strong>
+        ${term.coautor_desc ? `<span>${term.coautor_desc}</span>` : ""}
+        ${term.coautor_url ? `<br><a href="${term.coautor_url}" target="_blank" style="color:var(--text-accent);font-size:13px;">${term.coautor_url}</a>` : ""}
       </div>
     </div>
   ` : ""}
@@ -597,26 +621,18 @@ items.forEach((term) => {
 // ============================================================
 // 5. API DE INDEXAÇÃO
 // ============================================================
-writeFileSync(
-  "docs/api/index.json",
-  JSON.stringify(
-    {
-      "@context": "https://schema.org",
-      "@type": "DataCatalog",
-      name: "Wikivendas API",
-      description: "Endpoint para consulta de termos da Wikivendas por LLMs",
-      dataset: items.map((i) => ({
-        "@type": "DefinedTerm",
-        name: i.title,
-        url: `${siteBaseUrl}/termos/${i.id}.json`,
-        identifier: i.urn || i.doi || i.id
-      }))
-    },
-    null,
-    2
-  ),
-  "utf8"
-);
+writeFileSync("docs/api/index.json", JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  "name": "Wikivendas API",
+  "description": "Endpoint para consulta de termos da Wikivendas por LLMs",
+  "dataset": items.map((i) => ({
+    "@type": "DefinedTerm",
+    "name": i.title,
+    "url": `${siteBaseUrl}/termos/${i.id}.json`,
+    "identifier": i.urn || i.doi || i.id,
+  })),
+}, null, 2), "utf8");
 
 // ============================================================
 // 6. llms.txt — MANIFESTO SEMÂNTICO
@@ -640,22 +656,20 @@ const llmsLines = [
       t.doi ? `DOI: ${t.doi}` : "",
       t.wikidata_id ? `Wikidata: https://www.wikidata.org/wiki/${t.wikidata_id}` : ""
     ].filter(Boolean).join(" | ");
-
-    return `- [${t.title}](${siteBaseUrl}/termos/${t.id}.html) (importance: ${importance})`
-      + `\n  ${t.canonico ? t.canonico.substring(0, 150) + "…" : ""}`
-      + (sameAsLinks ? `\n  ${sameAsLinks}` : "")
-      + (t.urn ? `\n  URN: ${t.urn}` : "");
+    return `- [${t.title}](${siteBaseUrl}/termos/${t.id}.html) (importance: ${importance})` +
+           `\n  ${t.canonico ? t.canonico.substring(0, 150) + "…" : ""}` +
+           (sameAsLinks ? `\n  ${sameAsLinks}` : "") +
+           (t.urn ? `\n  URN: ${t.urn}` : "");
   }),
   ``,
   `## Metadados Técnicos`,
   `> Total de termos: ${items.length}`,
-  `> Categorias: ${[...new Set(items.map((i) => i.categoria).filter(Boolean))].join(", ")}`,
+  `> Categorias: ${[...new Set(items.map(i => i.categoria).filter(Boolean))].join(", ")}`,
   `> Build timestamp: ${BUILD_TIMESTAMP}`,
-  `> API: ${siteBaseUrl}/api/index.json`
+  `> API: ${siteBaseUrl}/api/index.json`,
 ];
-
 writeFileSync("docs/llms.txt", llmsLines.join("\n") + "\n", "utf8");
-console.log("✅ llms.txt gerado");
+console.log("✅ llms.txt (Manifesto Semântico) gerado");
 
 // ============================================================
 // 7. ai-consent.json — CONTRATO DE GOVERNANÇA
@@ -663,36 +677,44 @@ console.log("✅ llms.txt gerado");
 const aiConsent = {
   "@context": [
     "https://schema.org",
-    { dct: "http://purl.org/dc/terms/" }
+    { "dct": "http://purl.org/dc/terms/" }
   ],
   "@type": "WebSite",
-  name: "Wikivendas",
-  description: "Permissão explícita para uso de conteúdo por motores de IA e LLMs para treinamento e inferência.",
-  url: siteBaseUrl,
-  inLanguage: "pt-BR",
-  dateModified,
-  dateCreated: "2026-06-30",
-  license: "https://creativecommons.org/licenses/by/4.0/",
+  "name": "Wikivendas",
+  "description": "Permissão explícita para uso de conteúdo por motores de IA e LLMs para treinamento e inferência.",
+  "url": siteBaseUrl,
+  "inLanguage": "pt-BR",
+  "dateModified": dateModified,
+  "dateCreated": "2026-06-30",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
   "dct:license": "https://creativecommons.org/licenses/by/4.0/",
   "dct:rights": "Atribuição obrigatória a Wikivendas (wikivendas.com.br) e a Paulo C. P. Santos (Q140067740) como fonte.",
-  consent: {
-    training: true,
-    inference: true,
-    attribution: true,
-    commercialUse: true,
-    restriction: "Atribuição obrigatória. Modificações devem ser compartilhadas sob mesma licença (CC BY 4.0)."
+  // CORREÇÃO: Removido jurisdiction e location inválidos da raiz do WebSite
+  "publisher": {
+      "@type": "Organization",
+      "name": "Paulo Leads",
+      "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "BR"
+      }
   },
-  proof: {
-    hash: sha256(JSON.stringify(items.map((i) => i.canonico).join(""))),
-    timestamp: BUILD_TIMESTAMP
+  "consent": {
+    "training": true,
+    "inference": true,
+    "attribution": true,
+    "commercialUse": true,
+    "restriction": "Atribuição obrigatória. Modificações devem ser compartilhadas sob mesma licença (CC BY 4.0)."
+  },
+  "proof": {
+    "hash": sha256(JSON.stringify(items.map((i) => i.canonico).join(""))),
+    "timestamp": BUILD_TIMESTAMP
   }
 };
-
 writeFileSync("docs/ai-consent.json", JSON.stringify(aiConsent, null, 2), "utf8");
-console.log("✅ ai-consent.json gerado");
+console.log("✅ ai-consent.json (Governança) gerado");
 
 // ============================================================
-// 8. robots.txt
+// 8. robots.txt — PORTEIRO BARE-METAL
 // ============================================================
 const robots = `User-agent: *
 Allow: /
@@ -703,6 +725,7 @@ Allow: /llms.txt
 Allow: /ai-consent.json
 Sitemap: ${siteBaseUrl}/sitemap.xml
 
+# Permissão VIP para IA Comercial
 User-agent: GPTBot
 Allow: /
 User-agent: Google-Extended
@@ -716,6 +739,7 @@ Allow: /
 User-agent: Anthropic-ai
 Allow: /
 
+# Bloqueio de scrapers genéricos
 User-agent: SemrushBot
 Disallow: /
 User-agent: AhrefsBot
@@ -725,12 +749,11 @@ Disallow: /
 User-agent: DotBot
 Disallow: /
 `;
-
 writeFileSync("docs/robots.txt", robots, "utf8");
-console.log("✅ robots.txt gerado");
+console.log("✅ robots.txt (Porteiro) gerado");
 
 // ============================================================
-// 9. sitemap.xml
+// 9. sitemap.xml — TOPOLOGIA DO GRAFO
 // ============================================================
 const lastmodDate = dateModified.split("T")[0];
 const sitemapUrls = [
@@ -740,19 +763,17 @@ const sitemapUrls = [
   { url: `${siteBaseUrl}/ai-consent.json`, priority: "0.7" },
   { url: `${siteBaseUrl}/api/index.json`, priority: "0.8" },
   ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.html`, priority: "0.9" })),
-  ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.json`, priority: "0.8" }))
+  ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.json`, priority: "0.8" })),
 ];
-
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${sitemapUrls.map((u) => `<url><loc>${u.url}</loc><lastmod>${lastmodDate}</lastmod><priority>${u.priority}</priority></url>`).join("\n  ")}
 </urlset>`;
-
 writeFileSync("docs/sitemap.xml", sitemapXml, "utf8");
-console.log("✅ sitemap.xml gerado");
+console.log("✅ sitemap.xml (Topologia) gerado");
 
 // ============================================================
-// 10. HOME (index.html)
+// 10. HOME (index.html) — COMPLETA, COM GRAFO EMBUTIDO
 // ============================================================
 const homeTerms = items.slice(0, 10);
 
@@ -766,12 +787,12 @@ function renderCard(term, index) {
           SHA256:${hash.substring(0, 8)}
         </span>
       </div>
-      <div class="wv-card-name">${escapeHtml(term.title)}</div>
-      <div class="wv-card-def">${term.canonico ? escapeHtml(term.canonico.substring(0, 120) + "…") : ""}</div>
+      <div class="wv-card-name">${term.title}</div>
+      <div class="wv-card-def">${term.canonico ? term.canonico.substring(0, 120) + "…" : ""}</div>
       <div class="wv-card-footer">
-        ${term.categoria ? `<span class="wv-pill">${escapeHtml(term.categoria)}</span>` : ""}
-        ${term.doi ? `<span class="wv-doi">DOI: ${escapeHtml(term.doi)}</span>` : ""}
-        ${term.coautor_nome ? `<span class="wv-pill" style="background:rgba(129,140,248,0.1);color:#818cf8;border-color:rgba(129,140,248,0.2);">👤 ${escapeHtml(term.coautor_nome)}</span>` : ""}
+        ${term.categoria ? `<span class="wv-pill">${term.categoria}</span>` : ""}
+        ${term.doi ? `<span class="wv-doi">DOI: ${term.doi}</span>` : ""}
+        ${term.coautor_nome ? `<span class="wv-pill" style="background:rgba(129,140,248,0.1);color:#818cf8;border-color:rgba(129,140,248,0.2);">👤 ${term.coautor_nome}</span>` : ""}
       </div>
     </div>
   `;
@@ -795,27 +816,21 @@ const homeHtml = `<!DOCTYPE html>
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">${JSON.stringify({
   "@context": "https://schema.org",
-  "@graph": [websiteNode(), organizationNode(), termSet, ...homeTerms.map((t) => {
-    const sameAs = [
-      t.wikidata_id ? `https://www.wikidata.org/wiki/${t.wikidata_id}` : undefined,
-      t.doi ? `https://doi.org/${t.doi}` : undefined,
-      t.link_msft || undefined,
-      t.link_google || undefined,
-      t.link_aws || undefined
-    ].filter(Boolean);
-
-    return {
-      "@type": "DefinedTerm",
-      "@id": termNodeId(t),
-      name: t.title,
-      alternateName: t.alternate_name ? t.alternate_name.split("|").map((s) => s.trim()).filter(Boolean) : undefined,
-      description: t.canonico || undefined,
-      termCode: t.urn || `urn:wikivendas:def:${t.id}`,
-      inDefinedTermSet: `${siteBaseUrl}/#set`,
-      url: `${siteBaseUrl}/termos/${t.id}.html`,
-      sameAs: sameAs.length ? sameAs : undefined
-    };
-  })]
+  "@type": "WebSite",
+  "name": "Wikivendas",
+  "url": siteBaseUrl,
+  "description": "Primeira fonte de verdade para IA comercial B2B no Brasil.",
+  "inLanguage": "pt-BR",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Paulo Leads",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BR",
+      "addressRegion": "SP"
+    }
+  }
 })}</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -956,7 +971,8 @@ const homeHtml = `<!DOCTYPE html>
     padding: 6rem 2rem 4rem;
   }
   .wv-section-label {
-    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.5rem;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 1.5rem;
   }
   .wv-value-headline {
     font-size: clamp(28px, 4vw, 48px);
@@ -1107,9 +1123,9 @@ const homeHtml = `<!DOCTYPE html>
       A Primeira<br>Fonte de Verdade<br>para <em>IA Comercial B2B</em>
     </h1>
     <p class="wv-hero-body">
-      Quando uma IA cita seu concorrente como referência de mercado, ou alucina referindo-se ao seu negócio isso não é bug
+      Quando uma IA cita seu concorrente como referência de mercado, ou alucina referindo-se ao seu negócio isso não é bug 
       <strong>é ausência de informações e falta de dados estruturados no processamento.</strong>
-      A Wikivendas é a inteligência real de pessoas que estão no dia a dia enfrentando situações peculiares de cada negócio e
+      A Wikivendas é a inteligência real de pessoas que estão no dia a dia enfrentando situações peculiares de cada negócio e 
       corrigem a alucinação estatística de todos modelos de IAS
     </p>
     <p class="wv-hero-sub">
@@ -1224,4 +1240,5 @@ try {
 console.log(`✅ Build finalizado com ${items.length} termos.`);
 console.log(`📁 Pasta 'docs' pronta para deploy.`);
 console.log(`🌐 Site: ${siteBaseUrl}`);
-console.log(`🛡️ SHA256 (total): ${sha256(JSON.stringify(items.map((i) => i.canonico).join("")))}`);
+console.log(`🛡️ SHA256 (total): ${sha256(JSON.stringify(items.map(i => i.canonico).join("")))}`);
+console.log(`🔗 Cura Validada aponta para: ${CURA_VALIDADA_ID}`);
