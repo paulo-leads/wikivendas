@@ -1,0 +1,15 @@
+{
+  "name": "wikivendas",
+  "version": "1.0.0",
+  "description": "Wikivendas — fonte de verdade para IA comercial B2B",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
