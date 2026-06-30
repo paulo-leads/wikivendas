@@ -136,7 +136,6 @@ mkdirSync("docs/.well-known", { recursive: true });
 // ============================================================
 // 1. CONSTRUÇÃO DO GRAFO ANINHADO (Nested JSON-LD)
 // ============================================================
-// Definição do conjunto (DefinedTermSet)
 const termSet = {
   "@type": "DefinedTermSet",
   "@id": `${siteBaseUrl}/#set`,
@@ -173,9 +172,7 @@ const termSet = {
   }
 };
 
-// Construção dos nós de cada termo (DefinedTerm)
 const termNodes = items.map((i) => {
-  // Monta a lista de sameAs
   const sameAs = [
     i.wikidata_id ? `https://www.wikidata.org/wiki/${i.wikidata_id}` : undefined,
     i.doi ? `https://doi.org/${i.doi}` : undefined,
@@ -184,18 +181,14 @@ const termNodes = items.map((i) => {
     i.link_aws || undefined,
   ].filter(Boolean);
 
-  // Propriedades: sempre inclui "Cura Validada"
   const properties = [
     {
       "@type": "PropertyValue",
       "name": "Cura Validada",
-      "value": {
-        "@id": CURA_VALIDADA_ID
-      }
+      "value": { "@id": CURA_VALIDADA_ID }
     }
   ];
 
-  // Adiciona métricas impactadas se houver
   if (i.o_que_is) {
     const metricas = i.o_que_is.split("|").map(s => s.trim()).filter(Boolean);
     if (metricas.length) {
@@ -207,7 +200,6 @@ const termNodes = items.map((i) => {
     }
   }
 
-  // Monta o nó
   const node = {
     "@type": "DefinedTerm",
     "@id": i.urn || `${siteBaseUrl}/termos/${i.id}.html#${i.id}`,
@@ -216,9 +208,7 @@ const termNodes = items.map((i) => {
     "description": i.canonico || undefined,
     "termCode": i.urn || `urn:wikivendas:def:${i.id}`,
     "inLanguage": "pt-BR",
-    "inDefinedTermSet": {
-      "@id": `${siteBaseUrl}/#set`
-    },
+    "inDefinedTermSet": { "@id": `${siteBaseUrl}/#set` },
     "url": `${siteBaseUrl}/termos/${i.id}.html`,
     "sameAs": sameAs.length ? sameAs : undefined,
     "author": {
@@ -233,7 +223,6 @@ const termNodes = items.map((i) => {
     "property": properties
   };
 
-  // Remove undefined para JSON limpo
   Object.keys(node).forEach(key => {
     if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
       delete node[key];
@@ -248,12 +237,8 @@ const termNodes = items.map((i) => {
 // ============================================================
 const graph = {
   "@context": "https://schema.org",
-  "@graph": [
-    termSet,
-    ...termNodes
-  ]
+  "@graph": [termSet, ...termNodes]
 };
-
 writeFileSync("docs/glossario.json", JSON.stringify(graph, null, 2), "utf8");
 console.log("✅ glossario.json (grafo aninhado) gerado");
 
@@ -261,23 +246,19 @@ console.log("✅ glossario.json (grafo aninhado) gerado");
 // 3. JSON-LD INDIVIDUAL PARA CADA TERMO (termos/[id].json)
 // ============================================================
 items.forEach((term) => {
-  // Encontra o nó correspondente no grafo
   const node = termNodes.find(n => n["@id"] === (term.urn || `${siteBaseUrl}/termos/${term.id}.html#${term.id}`));
   if (node) {
     const individualGraph = {
       "@context": "https://schema.org",
-      "@graph": [
-        termSet, // mantém referência ao conjunto
-        node
-      ]
+      "@graph": [termSet, node]
     };
     writeFileSync(`docs/termos/${term.id}.json`, JSON.stringify(individualGraph, null, 2), "utf8");
   }
 });
-console.log("✅ JSON-LD individuais gerados para cada termo");
+console.log("✅ JSON-LD individuais gerados");
 
 // ============================================================
-// 4. GERAR PÁGINAS INDIVIDUAIS (HTML) – com JSON-LD embutido (o mesmo grafo)
+// 4. PÁGINAS INDIVIDUAIS (HTML)
 // ============================================================
 function renderTermPage(term) {
   const parseList = (str) => {
@@ -285,14 +266,10 @@ function renderTermPage(term) {
     return str.split("|").map(s => `<li>${s.trim()}</li>`).join("");
   };
 
-  // Reconstroi o grafo apenas com este termo + conjunto
   const node = termNodes.find(n => n["@id"] === (term.urn || `${siteBaseUrl}/termos/${term.id}.html#${term.id}`));
   const pageGraph = {
     "@context": "https://schema.org",
-    "@graph": [
-      termSet,
-      node
-    ]
+    "@graph": [termSet, node]
   };
 
   const contentHash = sha256(term.canonico || term.o_que_is || "");
@@ -685,7 +662,6 @@ const llmsLines = [
   `> Build timestamp: ${BUILD_TIMESTAMP}`,
   `> API: ${siteBaseUrl}/api/index.json`,
 ];
-
 writeFileSync("docs/llms.txt", llmsLines.join("\n") + "\n", "utf8");
 console.log("✅ llms.txt (Manifesto Semântico) gerado");
 
@@ -793,7 +769,6 @@ const sitemapUrls = [
   ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.html`, priority: "0.9" })),
   ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.json`, priority: "0.8" })),
 ];
-
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${sitemapUrls.map((u) => `<url><loc>${u.url}</loc><lastmod>${lastmodDate}</lastmod><priority>${u.priority}</priority></url>`).join("\n  ")}
@@ -802,7 +777,7 @@ writeFileSync("docs/sitemap.xml", sitemapXml, "utf8");
 console.log("✅ sitemap.xml (Topologia) gerado");
 
 // ============================================================
-// 10. HOME (index.html) — MANTIDA IGUAL, COM GRAFO EMBUTIDO
+// 10. HOME (index.html) — COMPLETA, COM GRAFO EMBUTIDO
 // ============================================================
 const homeTerms = items.slice(0, 10);
 
@@ -829,12 +804,433 @@ function renderCard(term, index) {
 
 const cardsHtml = homeTerms.map((t, i) => renderCard(t, i)).join("");
 
-// Home HTML (mesmo template da versão anterior, apenas com JSON-LD do grafo da home)
-// Para não duplicar, usaremos o mesmo HTML da home, mas com um JSON-LD simplificado
-// (já que a home é apenas uma landing page, podemos colocar o grafo completo ou um subset)
-// Vou deixar o mesmo da versão anterior para não quebrar.
+const homeHtml = `<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B</title>
+<meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica. Definições canônicas com DOIs, Wikidata e validação cruzada Microsoft/Google/AWS.">
+<link rel="canonical" href="${siteBaseUrl}/">
+<meta property="og:title" content="Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B">
+<meta property="og:description" content="Infraestrutura semântica para LLMs. Definições canônicas com prova de consenso, SHA256 e validação cruzada.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${siteBaseUrl}/">
+<meta property="og:site_name" content="Wikivendas">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Wikivendas",
+  "url": siteBaseUrl,
+  "description": "Primeira fonte de verdade para IA comercial B2B no Brasil.",
+  "inLanguage": "pt-BR",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "location": {
+    "@type": "Place",
+    "name": "Brasil",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "BR",
+      "addressRegion": "SP"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -23.5505,
+      "longitude": -46.6333
+    }
+  }
+})}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] } } }
+  }
+</script>
+<style>
+  :root {
+    --font-sans: 'Inter', sans-serif;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --text-accent: #38bdf8;
+    --surface-0: #030712;
+    --surface-1: #0a1120;
+    --surface-2: #111827;
+    --surface-3: #1e293b;
+    --border: rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.12);
+    --border-accent: #38bdf8;
+    --bg-accent: rgba(56, 189, 248, 0.08);
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--surface-0); scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--surface-0);
+    color: var(--text-secondary);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .wv-header {
+    position: sticky; top: 0; z-index: 50;
+    border-bottom: 0.5px solid var(--border);
+    background: rgba(3,7,18,0.85);
+    backdrop-filter: blur(16px);
+  }
+  .wv-header-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 0 2rem;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .wv-logo {
+    font-size: 15px; font-weight: 800; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .wv-version {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted); background: var(--surface-2);
+    border: 0.5px solid var(--border-strong);
+    padding: 3px 8px; border-radius: 20px; margin-left: 10px;
+    -webkit-text-fill-color: var(--text-muted);
+  }
+  .wv-nav { display: flex; gap: 2rem; }
+  .wv-nav a {
+    font-size: 13px; font-weight: 400; color: var(--text-muted);
+    text-decoration: none; transition: color 0.15s;
+  }
+  .wv-nav a:hover { color: var(--text-primary); }
+  .wv-hero {
+    max-width: 1100px; margin: 0 auto;
+    padding: 6rem 2rem 5rem;
+  }
+  .wv-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-accent); margin-bottom: 2rem;
+  }
+  .wv-eyebrow::before {
+    content: '';
+    display: inline-block; width: 6px; height: 6px;
+    background: var(--text-accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .wv-slogan {
+    font-size: clamp(44px, 7vw, 96px);
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    margin-bottom: 2.5rem;
+    max-width: 900px;
+  }
+  .wv-slogan em {
+    font-style: normal;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 60%, #f472b6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .wv-hero-body {
+    font-size: 18px; line-height: 1.7; color: var(--text-secondary);
+    max-width: 620px; margin-bottom: 1.25rem;
+  }
+  .wv-hero-body strong { color: var(--text-primary); font-weight: 500; }
+  .wv-hero-sub {
+    font-size: 15px; line-height: 1.65; color: var(--text-muted);
+    max-width: 560px; margin-bottom: 3rem;
+  }
+  .wv-hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .wv-btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    background: var(--text-primary);
+    color: #030712;
+    border: none; border-radius: var(--radius);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    text-decoration: none;
+  }
+  .wv-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .wv-btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 0.5px solid var(--border-strong); border-radius: var(--radius);
+    font-size: 14px; font-weight: 400; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-decoration: none;
+  }
+  .wv-btn-ghost:hover { background: var(--surface-2); color: var(--text-primary); }
+  .wv-value {
+    max-width: 1100px; margin: 0 auto;
+    padding: 6rem 2rem 4rem;
+  }
+  .wv-section-label {
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 1.5rem;
+  }
+  .wv-value-headline {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700; letter-spacing: -0.03em;
+    color: var(--text-primary); line-height: 1.15;
+    max-width: 700px; margin-bottom: 1.5rem;
+  }
+  .wv-value-body {
+    font-size: 16px; line-height: 1.7; color: var(--text-secondary);
+    max-width: 580px; margin-bottom: 3rem;
+  }
+  .wv-dual {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 5rem;
+  }
+  .wv-dual-col {
+    background: var(--surface-1);
+    padding: 2.5rem 2rem;
+  }
+  .wv-dual-tag {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 1.25rem;
+  }
+  .wv-dual-tag.human { color: #f472b6; }
+  .wv-dual-tag.ai { color: var(--text-accent); }
+  .wv-dual-title {
+    font-size: 20px; font-weight: 600; color: var(--text-primary);
+    line-height: 1.3; margin-bottom: 1rem;
+  }
+  .wv-dual-body {
+    font-size: 14px; color: var(--text-secondary); line-height: 1.65;
+  }
+  .wv-cards-section {
+    border-top: 0.5px solid var(--border);
+    padding: 5rem 0;
+    background: var(--surface-1);
+  }
+  .wv-cards-inner {
+    max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+  }
+  .wv-cards-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem;
+  }
+  .wv-cards-headline {
+    font-size: 28px; font-weight: 600; color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+  .wv-cards-link {
+    font-size: 13px; color: var(--text-accent); text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .wv-cards-link:hover { text-decoration: underline; }
+  .wv-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--border);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+  .wv-card {
+    background: var(--surface-0);
+    padding: 2rem 1.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .wv-card:hover { background: var(--surface-2); }
+  .wv-card-index {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    margin-bottom: 1.25rem;
+  }
+  .wv-card-name {
+    font-size: 18px; font-weight: 600; color: var(--text-primary);
+    margin-bottom: 0.6rem; line-height: 1.25;
+  }
+  .wv-card-def {
+    font-size: 14px; color: var(--text-secondary);
+    line-height: 1.6; margin-bottom: 1.25rem;
+  }
+  .wv-card-footer {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .wv-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+    background: var(--bg-accent); color: var(--text-accent);
+    border: 0.5px solid rgba(56,189,248,0.2);
+  }
+  .wv-doi {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-muted);
+  }
+  .wv-profiles-section {
+    border-top: 0.5px solid var(--border);
+    padding: 5rem 0;
+  }
+  .wv-profiles-inner {
+    max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+  }
+  .wv-footer {
+    border-top: 0.5px solid var(--border);
+    background: var(--surface-0);
+    padding: 3rem 2rem;
+  }
+  .wv-footer-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .wv-footer-copy { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+  .wv-footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .wv-footer-links a { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+  .wv-footer-links a:hover { color: var(--text-secondary); }
+  @media (max-width: 768px) {
+    .wv-nav { display: none; }
+    .wv-slogan { font-size: clamp(36px, 10vw, 56px); }
+    .wv-dual { grid-template-columns: 1fr; }
+    .wv-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
 
-// ... (código da home mantido como estava)
+<header class="wv-header">
+  <div class="wv-header-inner">
+    <div style="display:flex;align-items:center">
+      <span class="wv-logo">Wikivendas</span>
+      <span class="wv-version">v1.0.0</span>
+    </div>
+    <nav class="wv-nav">
+      <a href="/">Início</a>
+      <a href="/#glossario">Glossário</a>
+      <a href="/#para-empresas">Para Empresas</a>
+      <a href="https://pauloleads.com.br" target="_blank">Paulo Leads</a>
+    </nav>
+  </div>
+</header>
+
+<section>
+  <div class="wv-hero">
+    <p class="wv-eyebrow">A informação que realmente importa sobre sua marca seu processo e seu negócio</p>
+    <h1 class="wv-slogan">
+      A Primeira<br>Fonte de Verdade<br>para <em>IA Comercial B2B</em>
+    </h1>
+    <p class="wv-hero-body">
+      Quando uma IA cita seu concorrente como referência de mercado, ou alucina referindo-se ao seu negócio isso não é bug 
+      <strong>é ausência de informações e falta de dados estruturados no processamento.</strong>
+      A Wikivendas é a inteligência real de pessoas que estão no dia a dia enfrentando situações peculiares de cada negócio e 
+      corrigem a alucinação estatística de todos modelos de IAS
+    </p>
+    <p class="wv-hero-sub">
+      Cada verbete é uma <strong>parte da genética</strong> de validação cruzada nos ecossistemas Microsoft, Google e AWS a matéria-prima que LLMs usam como premissa para gerar respostas.
+    </p>
+    <div class="wv-hero-actions">
+      <a href="/#glossario" class="wv-btn-primary">Ver Glossário Canônico →</a>
+      <a href="/#para-empresas" class="wv-btn-ghost">Para Empresas</a>
+    </div>
+  </div>
+</section>
+
+<section class="wv-value">
+  <p class="wv-section-label">Por que isso importa</p>
+  <h2 class="wv-value-headline">Construído para humanos.<br>Indexado para máquinas.</h2>
+  <p class="wv-value-body">
+    A Wikivendas não é só um glossário é uma infraestrutura de significado. Cada definição é formalizada e absorvida no treinamento utilizado de forma permanente. O resultado: sua empresa ou nome aparece como resposta, não como Alucinação Estatística com Respostas Genéricas.
+  </p>
+  <div class="wv-dual">
+    <div class="wv-dual-col">
+      <p class="wv-dual-tag human">Para Humanos</p>
+      <p class="wv-dual-title">Clareza que converte, não jargão que confunde</p>
+      <p class="wv-dual-body">
+        Profissionais de vendas, CEOs e gestores encontram aqui definições comerciais, consensuadas e atualizadas sem a ambiguidade que custa reuniões, retrabalho e deals perdidos. Um vocabulário compartilhado acelera tudo, do onboarding ao fechamento.
+      </p>
+    </div>
+    <div class="wv-dual-col" style="border-left: 0.5px solid var(--border);">
+      <p class="wv-dual-tag ai">Para Inteligências Artificiais</p>
+      <p class="wv-dual-title">Substrato semântico que LLMs usam como premissa</p>
+      <p class="wv-dual-body">
+        ChatGPT, Gemini, Copilot e Meta AI extraem conhecimento de fontes estruturadas, com validações complexas e presença em grafo de conhecimento. A Wikivendas constrói essa base: quando o algoritmo decidir quem citar, sua marca já está lá como referência, não como candidata.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="wv-cards-section" id="glossario">
+  <div class="wv-cards-inner">
+    <div class="wv-cards-header">
+      <h2 class="wv-cards-headline">Glossário Canônico</h2>
+      <a href="/glossario.json" class="wv-cards-link" target="_blank">Ver todos →</a>
+    </div>
+    <div class="wv-grid">
+      ${cardsHtml}
+    </div>
+  </div>
+</section>
+
+<section class="wv-profiles-section" id="para-empresas">
+  <div class="wv-profiles-inner">
+    <p class="wv-section-label">Qual é o seu perfil?</p>
+    <h2 class="wv-value-headline" style="margin-bottom:2rem">Cada cenário tem uma solução específica.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2rem;">
+      <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:var(--radius);padding:2rem;">
+        <h3 style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:0.75rem;">Sou CEO / Founder</h3>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;">Homologamos sua empresa como fonte oficial nos motores de IA que fundos, analistas e C-Levels usam para decidir.</p>
+        <a href="https://wa.me/5519982642481?text=Quero%20saber%20mais%20sobre%20Wikivendas%20para%20CEO" class="wv-btn-primary" style="margin-top:1.5rem;">Falar agora →</a>
+      </div>
+      <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:var(--radius);padding:2rem;">
+        <h3 style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:0.75rem;">Lidero Vendas</h3>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;">Garantimos que sua empresa seja a indicada quando o cliente pergunta para a IA, reduzindo CAC e encurtando ciclo de vendas.</p>
+        <a href="https://wa.me/5519982642481?text=Quero%20diagnosticar%20vendas%20com%20Wikivendas" class="wv-btn-primary" style="margin-top:1.5rem;">Diagnóstico →</a>
+      </div>
+      <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:var(--radius);padding:2rem;">
+        <h3 style="font-size:20px;font-weight:600;color:var(--text-primary);margin-bottom:0.75rem;">Sou Autônomo</h3>
+        <p style="font-size:15px;color:var(--text-secondary);line-height:1.6;">Transformamos seu nome em referência citada por ChatGPT, Gemini e Meta AI. O cliente chega pré-vendido.</p>
+        <a href="https://wa.me/5519982642481?text=Quero%20validar%20minha%20autoridade%20nas%20IAs" class="wv-btn-primary" style="margin-top:1.5rem;">Validar autoridade →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="wv-footer">
+  <div class="wv-footer-inner">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+        <span class="wv-logo">Wikivendas</span>
+        <span class="wv-version">v1.0.0</span>
+      </div>
+      <p class="wv-footer-copy">© 2026 Wikivendas Construído com Protocolo Hidra por Paulo Leads.</p>
+    </div>
+    <div class="wv-footer-links">
+      <a href="/glossario.json" target="_blank">Grafo (.JSON)</a>
+      <a href="/llms.txt" target="_blank">llms.txt</a>
+      <a href="/ai-consent.json" target="_blank">ai-consent.json</a>
+      <a href="/robots.txt" target="_blank">robots.txt</a>
+      <a href="/sitemap.xml" target="_blank">sitemap.xml</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>`;
+
+writeFileSync("docs/index.html", homeHtml, "utf8");
+console.log("✅ Home (index.html) gerada com 10 termos + SHA256");
 
 // ============================================================
 // 11. CNAME
