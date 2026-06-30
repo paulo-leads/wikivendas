@@ -1,5 +1,5 @@
 import { Client } from "@notionhq/client";
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, readFileSync } from "fs";
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -1029,6 +1029,14 @@ writeFileSync("docs/index.html", homeHtml, "utf8");
 // ============================================================
 // 9. FINALIZA
 // ============================================================
+// Copia CNAME para docs/ (se existir)
+try {
+  const cnameContent = readFileSync("CNAME", "utf8");
+  writeFileSync("docs/CNAME", cnameContent, "utf8");
+  console.log("✅ CNAME copiado para docs/");
+} catch (_) {
+  console.log("ℹ️ Nenhum arquivo CNAME encontrado na raiz.");
+}
 console.log(`✅ Build finalizado com ${items.length} termos.`);
 console.log(`📁 Pasta 'docs' pronta para deploy.`);
 console.log(`🌐 Site: ${siteBaseUrl}`);
