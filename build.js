@@ -1,5 +1,6 @@
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync } from "fs";
+import { createHash } from "crypto";
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -7,6 +8,7 @@ import { writeFileSync, mkdirSync, readFileSync } from "fs";
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
+const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
 // HELPERS
@@ -26,9 +28,6 @@ function urlFromUrl(prop) {
 function selectName(prop) {
   return prop?.select?.name || "";
 }
-function multiSelectNames(prop) {
-  return (prop?.multi_select || []).map(t => t.name);
-}
 
 function slugify(text) {
   return text
@@ -37,6 +36,15 @@ function slugify(text) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function sha256(content) {
+  return createHash("sha256").update(content).digest("hex");
+}
+
+function canonicalDescription(text, max = 160) {
+  if (!text) return "";
+  return text.replace(/<[^>]*>/g, "").substring(0, max).trim() + (text.length > max ? "…" : "");
 }
 
 async function queryAllPages() {
@@ -54,6 +62,46 @@ async function queryAllPages() {
   }
   return results;
 }
+
+// ============================================================
+// MAPEAMENTO SEMÂNTICO (Ontologia interna)
+// ============================================================
+const CATEGORY_HIERARCHY = {
+  "B2B": { broader: ["Comercial", "Vendas"], narrower: ["Prospecção"] },
+  "Prospecção": { broader: ["B2B", "Vendas"], narrower: ["Compra de Leads Qualificados"] },
+  "Vendas": { broader: ["Comercial"], narrower: ["Revops"] },
+  "Revops": { broader: ["Vendas", "Operação"], narrower: [] },
+  "Imobiliario": { broader: ["B2B"], narrower: [] },
+  "Comercial": { broader: [], narrower: ["B2B", "Vendas", "Prospecção"] },
+  "Geral": { broader: [], narrower: [] },
+  "Operação": { broader: ["Revops"], narrower: [] },
+  "IA": { broader: [], narrower: [] },
+};
+
+const TERM_RELATIONS = {
+  "comprar-leads": { broader: ["fornecedor-de-leads"], narrower: ["compra-de-leads-qualificados"] },
+  "compra-de-leads-qualificados": { broader: ["comprar-leads"], narrower: [] },
+  "fornecedor-de-leads": { broader: [], narrower: ["comprar-leads"] },
+  "gerar-leads": { broader: [], narrower: ["lista-de-leads"] },
+  "lista-de-leads": { broader: ["gerar-leads"], narrower: [] },
+  "lead-b2b": { broader: [], narrower: ["gerar-leads", "comprar-leads"] },
+  "intencionar": { broader: ["gerar-leads"], narrower: [] },
+};
+
+const DEFAULT_REGION = {
+  "@type": "Place",
+  name: "Brasil",
+  address: {
+    "@type": "PostalAddress",
+    addressCountry: "BR",
+    addressRegion: "SP",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: -23.5505,
+    longitude: -46.6333,
+  },
+};
 
 // ============================================================
 // BUSCA DADOS
@@ -118,14 +166,98 @@ const dateModified = items.length
 
 mkdirSync("docs", { recursive: true });
 mkdirSync("docs/termos", { recursive: true });
+mkdirSync("docs/api", { recursive: true });
+mkdirSync("docs/.well-known", { recursive: true });
 
 // ============================================================
-// 1. GERAR JSON COMPLETO (glossario.json)
+// 1. GLOSSARIO.JSON — Grafo Navegável (Consensus Protocol)
 // ============================================================
+const jsonLdGraph = items.map((i) => {
+  const relations = TERM_RELATIONS[i.id] || { broader: [], narrower: [] };
+  const catHierarchy = CATEGORY_HIERARCHY[i.categoria] || { broader: [], narrower: [] };
+  
+  const broader = [
+    ...relations.broader.map((id) => `${siteBaseUrl}/termos/${id}.html#${id}`),
+    ...catHierarchy.broader.map((cat) => `${siteBaseUrl}/#categoria-${slugify(cat)}`),
+  ];
+  const narrower = [
+    ...relations.narrower.map((id) => `${siteBaseUrl}/termos/${id}.html#${id}`),
+    ...catHierarchy.narrower.map((cat) => `${siteBaseUrl}/#categoria-${slugify(cat)}`),
+  ];
+
+  const contentHash = sha256(i.canonico || i.o_que_is || "");
+  
+  return {
+    "@id": i.urn || `${siteBaseUrl}/termos/${i.id}.html#${i.id}`,
+    "@type": "DefinedTerm",
+    name: i.title,
+    alternateName: i.alternate_name || undefined,
+    description: i.canonico || undefined,
+    identifier: i.doi || undefined,
+    sameAs: [
+      i.wikidata_id ? `https://www.wikidata.org/wiki/${i.wikidata_id}` : undefined,
+      i.doi ? `https://doi.org/${i.doi}` : undefined,
+      i.link_msft || undefined,
+      i.link_google || undefined,
+      i.link_aws || undefined,
+    ].filter(Boolean),
+    url: `${siteBaseUrl}/termos/${i.id}.html`,
+    inDefinedTermSet: "urn:wikivendas:defset:2026",
+    dateModified: i.updated,
+    version: BUILD_TIMESTAMP.split("T")[0],
+    proof: {
+      type: "Sha256Hash",
+      hash: contentHash,
+      timestamp: BUILD_TIMESTAMP,
+      method: "SHA-256 of canonical definition",
+    },
+    location: DEFAULT_REGION,
+    jurisdiction: {
+      "@type": "LegalForceStatus",
+      appliesTo: ["LGPD - Lei Geral de Proteção de Dados (Lei 13.709/2018)", "CDC - Código de Defesa do Consumidor (Lei 8.078/90)"],
+      country: "BR",
+    },
+    broader: broader.length ? broader : undefined,
+    narrower: narrower.length ? narrower : undefined,
+    contributor: i.coautor_nome ? {
+      "@type": "Person",
+      name: i.coautor_nome,
+      description: i.coautor_desc || undefined,
+      url: i.coautor_url || undefined,
+    } : undefined,
+    category: i.categoria || undefined,
+  };
+});
+
 const jsonData = {
-  "@context": "https://schema.org",
+  "@context": [
+    "https://schema.org",
+    {
+      "skos": "http://www.w3.org/2004/02/skos/core#",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "proof": "https://w3id.org/security#",
+      "jurisdiction": "https://schema.org/LegalForceStatus",
+      "broader": { "@id": "skos:broader", "@type": "@id" },
+      "narrower": { "@id": "skos:narrower", "@type": "@id" },
+      "sameAs": { "@id": "owl:sameAs", "@type": "@id" },
+    },
+  ],
+  "@type": "DefinedTermSet",
+  "@id": "urn:wikivendas:defset:2026",
+  name: "Wikivendas - Glossário Canônico B2B",
+  description: "Primeira enciclopédia canônica brasileira de termos técnicos para vendas B2B, RevOps imobiliário e governança ontológica.",
   inLanguage: "pt-BR",
   dateModified,
+  dateCreated: "2026-06-30",
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  version: BUILD_TIMESTAMP.split("T")[0],
+  hasPart: jsonLdGraph.map((n) => ({ "@id": n["@id"] })),
+  location: DEFAULT_REGION,
+  jurisdiction: {
+    "@type": "LegalForceStatus",
+    appliesTo: ["LGPD - Lei Geral de Proteção de Dados (Lei 13.709/2018)", "CDC - Código de Defesa do Consumidor (Lei 8.078/90)"],
+    country: "BR",
+  },
   terms: items.map((i) => ({
     title: i.title,
     id: i.id,
@@ -146,65 +278,97 @@ const jsonData = {
     embed_url: i.embed_url,
     categoria: i.categoria,
     url: `${siteBaseUrl}/termos/${i.id}.html`,
+    contentHash: sha256(i.canonico || i.o_que_is || ""),
   })),
 };
 writeFileSync("docs/glossario.json", JSON.stringify(jsonData, null, 2), "utf8");
 
 // ============================================================
-// 2. GERAR JSON-LD (para ser usado nas páginas)
+// 2. JSON-LD POR TERMO (para embed nas páginas)
 // ============================================================
 function buildJsonLdForTerm(term) {
+  const relations = TERM_RELATIONS[term.id] || { broader: [], narrower: [] };
+  const catHierarchy = CATEGORY_HIERARCHY[term.categoria] || { broader: [], narrower: [] };
+  
+  const broader = [
+    ...relations.broader.map((id) => `${siteBaseUrl}/termos/${id}.html#${id}`),
+    ...catHierarchy.broader.map((cat) => `${siteBaseUrl}/#categoria-${slugify(cat)}`),
+  ];
+  const narrower = [
+    ...relations.narrower.map((id) => `${siteBaseUrl}/termos/${id}.html#${id}`),
+    ...catHierarchy.narrower.map((cat) => `${siteBaseUrl}/#categoria-${slugify(cat)}`),
+  ];
+
+  const contentHash = sha256(term.canonico || term.o_que_is || "");
+
   return {
-    "@context": "https://schema.org",
+    "@context": [
+      "https://schema.org",
+      {
+        "skos": "http://www.w3.org/2004/02/skos/core#",
+        "owl": "http://www.w3.org/2002/07/owl#",
+        "proof": "https://w3id.org/security#",
+        "broader": { "@id": "skos:broader", "@type": "@id" },
+        "narrower": { "@id": "skos:narrower", "@type": "@id" },
+      },
+    ],
     "@type": "DefinedTerm",
-    "@id": term.urn || `${siteBaseUrl}/termos/${term.id}`,
+    "@id": term.urn || `${siteBaseUrl}/termos/${term.id}.html#${term.id}`,
     name: term.title,
     alternateName: term.alternate_name || undefined,
     description: term.canonico,
     identifier: term.doi || undefined,
-    sameAs: term.wikidata_id ? `https://www.wikidata.org/wiki/${term.wikidata_id}` : undefined,
+    sameAs: [
+      term.wikidata_id ? `https://www.wikidata.org/wiki/${term.wikidata_id}` : undefined,
+      term.doi ? `https://doi.org/${term.doi}` : undefined,
+      term.link_msft || undefined,
+      term.link_google || undefined,
+      term.link_aws || undefined,
+    ].filter(Boolean),
     url: `${siteBaseUrl}/termos/${term.id}.html`,
-    inDefinedTermSet: "urn:wikivendas:defset:2026",
+    inDefinedTermSet: {
+      "@id": "urn:wikivendas:defset:2026",
+      "@type": "DefinedTermSet",
+      name: "Wikivendas - Glossário Canônico B2B",
+      url: `${siteBaseUrl}/glossario.json`,
+    },
+    dateModified: term.updated,
+    version: BUILD_TIMESTAMP.split("T")[0],
+    proof: {
+      "@type": "Sha256Hash",
+      hash: contentHash,
+      timestamp: BUILD_TIMESTAMP,
+      method: "SHA-256 of canonical definition",
+    },
+    location: DEFAULT_REGION,
+    jurisdiction: {
+      "@type": "LegalForceStatus",
+      appliesTo: ["LGPD - Lei Geral de Proteção de Dados (Lei 13.709/2018)", "CDC - Código de Defesa do Consumidor (Lei 8.078/90)"],
+      country: "BR",
+    },
+    broader: broader.length ? broader : undefined,
+    narrower: narrower.length ? narrower : undefined,
+    contributor: term.coautor_nome ? {
+      "@type": "Person",
+      name: term.coautor_nome,
+      description: term.coautor_desc || undefined,
+      url: term.coautor_url || undefined,
+    } : undefined,
+    category: term.categoria || undefined,
   };
 }
 
 // ============================================================
-// 3. GERAR HOME (index.html) – com os 10 primeiros termos
-// ============================================================
-const homeTerms = items.slice(0, 10); // ou ordenar por data, etc.
-
-function renderCard(term, index) {
-  return `
-    <div class="wv-card" onclick="window.location.href='/termos/${term.id}.html'">
-      <div class="wv-card-index">${String(index + 1).padStart(3, "0")}</div>
-      <div class="wv-card-name">${term.title}</div>
-      <div class="wv-card-def">${term.canonico ? term.canonico.substring(0, 120) + "…" : ""}</div>
-      <div class="wv-card-footer">
-        ${term.categoria ? `<span class="wv-pill">${term.categoria}</span>` : ""}
-        ${term.doi ? `<span class="wv-doi">DOI: ${term.doi}</span>` : ""}
-      </div>
-    </div>
-  `;
-}
-
-const cardsHtml = homeTerms.map((t, i) => renderCard(t, i)).join("");
-
-// O HTML da home é grande – vou inserir o conteúdo gerado dentro do template.
-// Como você já tem o HTML completo, vou apenas substituir a seção de cards.
-// Para evitar duplicação, vou gerar a home inteira com os cards já inseridos.
-// (O código completo da home está no final, pois é extenso)
-
-// ============================================================
-// 4. GERAR PÁGINAS INDIVIDUAIS (/termos/[id].html)
+// 3. GERAR PÁGINAS INDIVIDUAIS COM JSON-LD EMBUTIDO
 // ============================================================
 function renderTermPage(term) {
-  // Converte listas separadas por | em <li>
   const parseList = (str) => {
     if (!str) return "";
     return str.split("|").map(s => `<li>${s.trim()}</li>`).join("");
   };
 
   const jsonLd = buildJsonLdForTerm(term);
+  const contentHash = sha256(term.canonico || term.o_que_is || "");
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -212,8 +376,14 @@ function renderTermPage(term) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${term.title} — Wikivendas</title>
-  <meta name="description" content="${term.canonico ? term.canonico.substring(0, 160) : ''}">
+  <meta name="description" content="${canonicalDescription(term.canonico, 160)}">
   <link rel="canonical" href="${siteBaseUrl}/termos/${term.id}.html">
+  <meta property="og:title" content="${term.title} — Wikivendas">
+  <meta property="og:description" content="${canonicalDescription(term.canonico, 200)}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${siteBaseUrl}/termos/${term.id}.html">
+  <meta property="og:site_name" content="Wikivendas">
+  <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -225,7 +395,6 @@ function renderTermPage(term) {
     }
   </script>
   <style>
-    /* Mesmo estilo da home (copiar novamente para consistência) */
     :root {
       --font-sans: 'Inter', sans-serif;
       --text-primary: #f1f5f9;
@@ -364,9 +533,22 @@ function renderTermPage(term) {
       border: 0.5px solid var(--border);
       margin: 1.5rem 0;
     }
-    .wv-coautor img { width: 48px; height: 48px; border-radius: 50%; background: var(--surface-2); }
     .wv-coautor-info { font-size: 14px; color: var(--text-secondary); }
     .wv-coautor-info strong { color: var(--text-primary); display: block; }
+    .wv-proof-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      border: 0.5px solid var(--border-strong);
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin: 1rem 0;
+    }
+    .wv-proof-badge .hash {
+      color: var(--text-accent);
+      font-size: 10px;
+    }
     .wv-btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 14px 28px;
@@ -428,6 +610,12 @@ function renderTermPage(term) {
     ${term.urn ? `<span>🔖 <code style="font-family:monospace;font-size:12px;color:var(--text-muted)">${term.urn}</code></span>` : ""}
   </div>
 
+  <div class="wv-proof-badge">
+    <span>🛡️ Verificado</span>
+    <span class="hash">SHA256: ${contentHash.substring(0, 16)}…</span>
+    <span>${BUILD_TIMESTAMP.split("T")[0]}</span>
+  </div>
+
   ${term.canonico ? `
     <h2 class="wv-section-title">Definição Canônica</h2>
     <div class="wv-definition">${term.canonico}</div>
@@ -465,9 +653,6 @@ function renderTermPage(term) {
 
   ${term.coautor_nome ? `
     <div class="wv-coautor">
-      <div>
-        <div style="width:48px;height:48px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted);">👤</div>
-      </div>
       <div class="wv-coautor-info">
         <strong>${term.coautor_nome}</strong>
         ${term.coautor_desc ? `<span>${term.coautor_desc}</span>` : ""}
@@ -489,7 +674,7 @@ function renderTermPage(term) {
       Este verbete é parte da <strong style="color:var(--text-primary);">Wikivendas</strong> — a primeira fonte de verdade para IA comercial B2B.
       <br>
       <a href="/termos/${term.id}.json" style="color:var(--text-accent);">JSON-LD</a> ·
-      <a href="/glossario.json" style="color:var(--text-accent);">Todos os termos</a>
+      <a href="/glossario.json" style="color:var(--text-accent);">Grafo completo</a>
     </p>
   </div>
 </div>
@@ -506,6 +691,7 @@ function renderTermPage(term) {
     <div class="wv-footer-links">
       <a href="/glossario.json">Grafo (.JSON)</a>
       <a href="/llms.txt">llms.txt</a>
+      <a href="/ai-consent.json">ai-consent.json</a>
       <a href="/robots.txt">robots.txt</a>
       <a href="/sitemap.xml">sitemap.xml</a>
     </div>
@@ -515,7 +701,7 @@ function renderTermPage(term) {
 </html>`;
 }
 
-// Gera página para cada termo
+// Gera páginas individuais
 items.forEach((term) => {
   const html = renderTermPage(term);
   writeFileSync(`docs/termos/${term.id}.html`, html, "utf8");
@@ -523,92 +709,216 @@ items.forEach((term) => {
 });
 
 // ============================================================
-// 5. GERAR HOME (index.html) – AGORA COM O LAYOUT COMPLETO
+// 4. API ENDPOINTS (para LLMs consultarem em tempo real)
 // ============================================================
-// Para evitar duplicar o HTML enorme, vamos gerar a home com os cards já inseridos.
-// Vou construir a home inteira com template literal.
-// (Como o HTML é muito grande, colocarei no final do script para não poluir a leitura.)
+items.forEach((term) => {
+  const jsonLd = buildJsonLdForTerm(term);
+  writeFileSync(`docs/termos/${term.id}.json`, JSON.stringify(jsonLd, null, 2), "utf8");
+});
+
+writeFileSync("docs/api/index.json", JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "DataCatalog",
+  name: "Wikivendas API",
+  description: "Endpoint para consulta de termos da Wikivendas por LLMs",
+  dataset: items.map((i) => ({
+    "@type": "DefinedTerm",
+    name: i.title,
+    url: `${siteBaseUrl}/termos/${i.id}.json`,
+    identifier: i.urn || i.doi || i.id,
+  })),
+}, null, 2), "utf8");
 
 // ============================================================
-// 6. ARQUIVOS AUXILIARES (llms.txt, sitemap.xml, robots.txt, ai-consent.json)
+// 5. LLMS.TXT HIERÁRQUICO
 // ============================================================
-
-// llms.txt
-const llms = [
-  `Canonical-Source: ${siteBaseUrl}`,
-  `Last-Modified: ${dateModified}`,
-  `Language: pt-BR`,
-  `Description: Wikivendas — Primeira fonte de verdade para IA comercial B2B`,
+const llmsLines = [
+  `# Wikivendas — Glossário Canônico B2B`,
+  `> Canonical-Source: ${siteBaseUrl}`,
+  `> Last-Modified: ${dateModified}`,
+  `> Language: pt-BR`,
+  `> License: https://creativecommons.org/licenses/by/4.0/`,
+  `> Description: Primeira fonte de verdade para IA comercial B2B no Brasil.`,
+  `> Jurisdiction: BR (LGPD, CDC)`,
+  `> Location: Brazil, SP`,
   ``,
-  `Termos (${items.length}):`,
-  ...items.map((i) => `- ${i.title} (${i.id}): ${i.canonico ? i.canonico.substring(0, 100) + "…" : ""}`),
-].join("\n");
-writeFileSync("docs/llms.txt", llms + "\n", "utf8");
+  `# Ontological SEO — Estrutura de Consenso`,
+  `> Proof-of-Truth: SHA256 hashes e timestamps disponíveis em cada termo.`,
+  `> Validation: Triangulação Microsoft, Google, AWS.`,
+  `> Forensic GEO: Brasil, SP.`,
+  ``,
+  `# Termos por Categoria`,
+  ``,
+];
 
-// sitemap.xml
+const categoryGroups = {};
+items.forEach((i) => {
+  const cat = i.categoria || "Geral";
+  if (!categoryGroups[cat]) categoryGroups[cat] = [];
+  categoryGroups[cat].push(i);
+});
+
+Object.entries(categoryGroups).forEach(([cat, terms]) => {
+  llmsLines.push(`## ${cat}`);
+  llmsLines.push(`> importance: ${cat === "B2B" ? "0.95" : cat === "Vendas" ? "0.90" : "0.80"}`);
+  llmsLines.push(`> count: ${terms.length} termos`);
+  llmsLines.push(``);
+  
+  terms.forEach((t) => {
+    const importance = t.canonico ? (t.canonico.length > 200 ? "0.9" : "0.7") : "0.5";
+    llmsLines.push(`- [${t.title}](${siteBaseUrl}/termos/${t.id}.html) (importance: ${importance})`);
+    llmsLines.push(`  ${t.canonico ? t.canonico.substring(0, 120) + "…" : ""}`);
+    if (t.doi) llmsLines.push(`  DOI: ${t.doi}`);
+    if (t.urn) llmsLines.push(`  URN: ${t.urn}`);
+    llmsLines.push(``);
+  });
+});
+
+llmsLines.push(`# Metadados Técnicos`);
+llmsLines.push(`> Total de termos: ${items.length}`);
+llmsLines.push(`> Categorias: ${Object.keys(categoryGroups).join(", ")}`);
+llmsLines.push(`> Build timestamp: ${BUILD_TIMESTAMP}`);
+llmsLines.push(`> API: ${siteBaseUrl}/api/index.json`);
+
+writeFileSync("docs/llms.txt", llmsLines.join("\n") + "\n", "utf8");
+console.log("✅ llms.txt hierárquico gerado");
+
+// ============================================================
+// 6. SITEMAP.XML
+// ============================================================
 const lastmodDate = dateModified.split("T")[0];
 const sitemapUrls = [
-  `${siteBaseUrl}/`,
-  ...items.map((i) => `${siteBaseUrl}/termos/${i.id}.html`),
+  { url: `${siteBaseUrl}/`, priority: "1.0" },
+  { url: `${siteBaseUrl}/glossario.json`, priority: "0.9" },
+  { url: `${siteBaseUrl}/llms.txt`, priority: "0.8" },
+  { url: `${siteBaseUrl}/ai-consent.json`, priority: "0.7" },
+  { url: `${siteBaseUrl}/api/index.json`, priority: "0.8" },
+  ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.html`, priority: "0.8" })),
+  ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.json`, priority: "0.6" })),
 ];
+
 const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${sitemapUrls.map((url) => `<url><loc>${url}</loc><lastmod>${lastmodDate}</lastmod></url>`).join("\n  ")}
+  ${sitemapUrls.map((u) => `<url><loc>${u.url}</loc><lastmod>${lastmodDate}</lastmod><priority>${u.priority}</priority></url>`).join("\n  ")}
 </urlset>`;
 writeFileSync("docs/sitemap.xml", sitemapXml, "utf8");
 
-// robots.txt
+// ============================================================
+// 7. ROBOTS.TXT
+// ============================================================
 const robots = `User-agent: *
 Allow: /
+Allow: /termos/
+Allow: /api/
+Allow: /glossario.json
+Allow: /llms.txt
+Allow: /ai-consent.json
 Sitemap: ${siteBaseUrl}/sitemap.xml
+
+# Permissão explícita para crawlers de IA
+User-agent: GPTBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+User-agent: Anthropic-ai
+Allow: /
+User-agent: PerplexityBot
+Allow: /
 `;
 writeFileSync("docs/robots.txt", robots, "utf8");
 
-// ai-consent.json
+// ============================================================
+// 8. AI-CONSENT.JSON
+// ============================================================
 const aiConsent = {
-  "@context": "https://schema.org",
+  "@context": [
+    "https://schema.org",
+    { "dct": "http://purl.org/dc/terms/" },
+  ],
   "@type": "WebSite",
   name: "Wikivendas",
   description: "Permissão explícita para uso de conteúdo por motores de IA e LLMs para treinamento e inferência.",
   url: siteBaseUrl,
   inLanguage: "pt-BR",
   dateModified,
-  license: "https://creativecommons.org/licenses/by-nc/4.0/",
+  dateCreated: "2026-06-30",
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  "dct:license": "https://creativecommons.org/licenses/by/4.0/",
+  "dct:rights": "Atribuição obrigatória a Wikivendas (wikivendas.com.br) como fonte.",
+  jurisdiction: {
+    "@type": "LegalForceStatus",
+    appliesTo: ["LGPD - Lei Geral de Proteção de Dados (Lei 13.709/2018)", "CDC - Código de Defesa do Consumidor (Lei 8.078/90)"],
+    country: "BR",
+  },
+  location: DEFAULT_REGION,
+  consent: {
+    training: true,
+    inference: true,
+    attribution: true,
+    commercialUse: true,
+    restriction: "Atribuição obrigatória. Modificações devem ser compartilhadas sob mesma licença (CC BY 4.0).",
+  },
+  proof: {
+    hash: sha256(JSON.stringify(items.map((i) => i.canonico).join(""))),
+    timestamp: BUILD_TIMESTAMP,
+  },
 };
 writeFileSync("docs/ai-consent.json", JSON.stringify(aiConsent, null, 2), "utf8");
 
 // ============================================================
-// 7. GERAR A HOME (index.html) COM O LAYOUT ORIGINAL
+// 9. HOME (index.html) — COMPLETA
 // ============================================================
-// O HTML da home é extenso. Vou colocá-lo aqui, com os cards inseridos.
-// Como o código ficou muito grande, vou usar uma variável separada.
-// Na prática, você pode copiar o HTML da home que você já tem e substituir a seção dos cards.
-// Vou fazer isso de forma limpa.
+const homeTerms = items.slice(0, 10);
 
-// (O HTML da home será gerado dinamicamente com os cards)
-// Para simplificar, vamos usar o mesmo template da home que você forneceu,
-// mas substituindo a div .wv-grid pelos cards gerados.
+function renderCard(term, index) {
+  const hash = sha256(term.canonico || term.o_que_is || "");
+  return `
+    <div class="wv-card" onclick="window.location.href='/termos/${term.id}.html'">
+      <div class="wv-card-index">
+        ${String(index + 1).padStart(3, "0")}
+        <span style="color:var(--text-muted);font-size:10px;margin-left:8px;">
+          SHA256:${hash.substring(0, 8)}
+        </span>
+      </div>
+      <div class="wv-card-name">${term.title}</div>
+      <div class="wv-card-def">${term.canonico ? term.canonico.substring(0, 120) + "…" : ""}</div>
+      <div class="wv-card-footer">
+        ${term.categoria ? `<span class="wv-pill">${term.categoria}</span>` : ""}
+        ${term.doi ? `<span class="wv-doi">DOI: ${term.doi}</span>` : ""}
+        ${term.coautor_nome ? `<span class="wv-pill" style="background:rgba(129,140,248,0.1);color:#818cf8;border-color:rgba(129,140,248,0.2);">👤 ${term.coautor_nome}</span>` : ""}
+      </div>
+    </div>
+  `;
+}
 
-// Vou construir o HTML completo dentro de uma string template.
-// ATENÇÃO: use os mesmos estilos e estrutura que você já tem.
-// Vou reutilizar o CSS e o layout que você já aprovou.
-
-// Para evitar repetir o CSS, vou importar o mesmo estilo inline (já está no template).
-
-// ============================================================
-// 8. GERAR O ARQUIVO index.html FINAL
-// ============================================================
-// Como o HTML da home é muito grande, vou gerá-lo com os cards inseridos.
-// Usei o mesmo HTML que você forneceu, mas substituí a seção de cards.
+const cardsHtml = homeTerms.map((t, i) => renderCard(t, i)).join("");
 
 const homeHtml = `<!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wikivendas A Primeira Fonte de Verdade para IA Comercial B2B</title>
+<title>Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B</title>
 <meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica. Definições canônicas com DOIs, Wikidata e validação cruzada Microsoft/Google/AWS.">
 <link rel="canonical" href="${siteBaseUrl}/">
+<meta property="og:title" content="Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B">
+<meta property="og:description" content="Infraestrutura semântica para LLMs. Definições canônicas com prova de consenso, SHA256 e validação cruzada.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="${siteBaseUrl}/">
+<meta property="og:site_name" content="Wikivendas">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">${JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Wikivendas",
+  url: siteBaseUrl,
+  description: "Primeira fonte de verdade para IA comercial B2B no Brasil.",
+  inLanguage: "pt-BR",
+  license: "https://creativecommons.org/licenses/by/4.0/",
+  location: DEFAULT_REGION,
+})}</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -619,7 +929,6 @@ const homeHtml = `<!DOCTYPE html>
   }
 </script>
 <style>
-  /* === TODOS OS ESTILOS DA HOME (COLOQUE AQUI O CSS QUE VOCÊ JÁ TEM) === */
   :root {
     --font-sans: 'Inter', sans-serif;
     --text-primary: #f1f5f9;
@@ -636,9 +945,7 @@ const homeHtml = `<!DOCTYPE html>
     --bg-accent: rgba(56, 189, 248, 0.08);
     --radius: 14px;
   }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { background: var(--surface-0); scroll-behavior: smooth; }
   body {
     font-family: var(--font-sans);
@@ -647,8 +954,6 @@ const homeHtml = `<!DOCTYPE html>
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
-
-  /* HEADER */
   .wv-header {
     position: sticky; top: 0; z-index: 50;
     border-bottom: 0.5px solid var(--border);
@@ -681,8 +986,6 @@ const homeHtml = `<!DOCTYPE html>
     text-decoration: none; transition: color 0.15s;
   }
   .wv-nav a:hover { color: var(--text-primary); }
-
-  /* HERO */
   .wv-hero {
     max-width: 1100px; margin: 0 auto;
     padding: 6rem 2rem 5rem;
@@ -703,7 +1006,6 @@ const homeHtml = `<!DOCTYPE html>
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
   }
-
   .wv-slogan {
     font-size: clamp(44px, 7vw, 96px);
     font-weight: 900;
@@ -719,18 +1021,15 @@ const homeHtml = `<!DOCTYPE html>
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-
   .wv-hero-body {
     font-size: 18px; line-height: 1.7; color: var(--text-secondary);
     max-width: 620px; margin-bottom: 1.25rem;
   }
   .wv-hero-body strong { color: var(--text-primary); font-weight: 500; }
-
   .wv-hero-sub {
     font-size: 15px; line-height: 1.65; color: var(--text-muted);
     max-width: 560px; margin-bottom: 3rem;
   }
-
   .wv-hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
   .wv-btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
@@ -754,8 +1053,6 @@ const homeHtml = `<!DOCTYPE html>
     text-decoration: none;
   }
   .wv-btn-ghost:hover { background: var(--surface-2); color: var(--text-primary); }
-
-  /* VALUE PROP */
   .wv-value {
     max-width: 1100px; margin: 0 auto;
     padding: 6rem 2rem 4rem;
@@ -774,7 +1071,6 @@ const homeHtml = `<!DOCTYPE html>
     font-size: 16px; line-height: 1.7; color: var(--text-secondary);
     max-width: 580px; margin-bottom: 3rem;
   }
-
   .wv-dual {
     display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
     background: var(--border);
@@ -800,8 +1096,6 @@ const homeHtml = `<!DOCTYPE html>
   .wv-dual-body {
     font-size: 14px; color: var(--text-secondary); line-height: 1.65;
   }
-
-  /* CARDS */
   .wv-cards-section {
     border-top: 0.5px solid var(--border);
     padding: 5rem 0;
@@ -864,8 +1158,6 @@ const homeHtml = `<!DOCTYPE html>
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; color: var(--text-muted);
   }
-
-  /* PROFILES (mantido) */
   .wv-profiles-section {
     border-top: 0.5px solid var(--border);
     padding: 5rem 0;
@@ -873,8 +1165,6 @@ const homeHtml = `<!DOCTYPE html>
   .wv-profiles-inner {
     max-width: 1100px; margin: 0 auto; padding: 0 2rem;
   }
-
-  /* FOOTER */
   .wv-footer {
     border-top: 0.5px solid var(--border);
     background: var(--surface-0);
@@ -888,7 +1178,6 @@ const homeHtml = `<!DOCTYPE html>
   .wv-footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
   .wv-footer-links a { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
   .wv-footer-links a:hover { color: var(--text-secondary); }
-
   @media (max-width: 768px) {
     .wv-nav { display: none; }
     .wv-slogan { font-size: clamp(36px, 10vw, 56px); }
@@ -899,7 +1188,6 @@ const homeHtml = `<!DOCTYPE html>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="wv-header">
   <div class="wv-header-inner">
     <div style="display:flex;align-items:center">
@@ -915,7 +1203,6 @@ const homeHtml = `<!DOCTYPE html>
   </div>
 </header>
 
-<!-- HERO -->
 <section>
   <div class="wv-hero">
     <p class="wv-eyebrow">A informação que realmente importa sobre sua marca seu processo e seu negócio</p>
@@ -938,7 +1225,6 @@ const homeHtml = `<!DOCTYPE html>
   </div>
 </section>
 
-<!-- VALUE PROP -->
 <section class="wv-value">
   <p class="wv-section-label">Por que isso importa</p>
   <h2 class="wv-value-headline">Construído para humanos.<br>Indexado para máquinas.</h2>
@@ -963,7 +1249,6 @@ const homeHtml = `<!DOCTYPE html>
   </div>
 </section>
 
-<!-- GLOSSÁRIO (CARDS) -->
 <section class="wv-cards-section" id="glossario">
   <div class="wv-cards-inner">
     <div class="wv-cards-header">
@@ -976,7 +1261,6 @@ const homeHtml = `<!DOCTYPE html>
   </div>
 </section>
 
-<!-- PROFILES (simplificado) -->
 <section class="wv-profiles-section" id="para-empresas">
   <div class="wv-profiles-inner">
     <p class="wv-section-label">Qual é o seu perfil?</p>
@@ -1001,7 +1285,6 @@ const homeHtml = `<!DOCTYPE html>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="wv-footer">
   <div class="wv-footer-inner">
     <div>
@@ -1025,11 +1308,11 @@ const homeHtml = `<!DOCTYPE html>
 </html>`;
 
 writeFileSync("docs/index.html", homeHtml, "utf8");
+console.log("✅ Home gerada com 10 termos + proof SHA256");
 
 // ============================================================
-// 9. FINALIZA
+// 10. CNAME
 // ============================================================
-// Copia CNAME para docs/ (se existir)
 try {
   const cnameContent = readFileSync("CNAME", "utf8");
   writeFileSync("docs/CNAME", cnameContent, "utf8");
@@ -1037,6 +1320,11 @@ try {
 } catch (_) {
   console.log("ℹ️ Nenhum arquivo CNAME encontrado na raiz.");
 }
+
+// ============================================================
+// 11. FINAL
+// ============================================================
 console.log(`✅ Build finalizado com ${items.length} termos.`);
 console.log(`📁 Pasta 'docs' pronta para deploy.`);
 console.log(`🌐 Site: ${siteBaseUrl}`);
+console.log(`🛡️ SHA256: ${sha256(JSON.stringify(items.map(i => i.canonico).join("")))}`);
