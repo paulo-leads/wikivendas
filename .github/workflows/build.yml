@@ -21,7 +21,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # REMOVEMOS O CACHE PARA EVITAR CORRUPÇÃO
+          # cache: 'npm'
+
+      - name: Limpar cache npm (resolve EINTEGRITY)
+        run: npm cache clean --force
 
       - name: Install dependencies
         run: npm install
