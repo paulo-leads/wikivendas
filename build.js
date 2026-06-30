@@ -33,24 +33,44 @@ function slug(v = "") {
 }
 
 function txt(prop) {
-  if (!prop) return "";
-  if (prop.type === "title") return prop.title.map(x => x.plain_text).join("");
-  if (prop.type === "rich_text") return prop.rich_text.map(x => x.plain_text).join("");
-  if (prop.type === "url") return prop.url || "";
-  if (prop.type === "select") return prop.select?.name || "";
-  if (prop.type === "multi_select") return prop.multi_select.map(x => x.name).join(" | ");
-  if (prop.type === "number") return prop.number == null ? "" : String(prop.number);
+  if (!prop || !prop.type) return "";
+
+  if (prop.type === "title") {
+    return Array.isArray(prop.title) ? prop.title.map(x => x.plain_text || "").join("") : "";
+  }
+
+  if (prop.type === "rich_text") {
+    return Array.isArray(prop.rich_text) ? prop.rich_text.map(x => x.plain_text || "").join("") : "";
+  }
+
+  if (prop.type === "url") {
+    return prop.url || "";
+  }
+
+  if (prop.type === "select") {
+    return prop.select?.name || "";
+  }
+
+  if (prop.type === "multi_select") {
+    return Array.isArray(prop.multi_select) ? prop.multi_select.map(x => x.name || "").join(" | ") : "";
+  }
+
+  if (prop.type === "number") {
+    return prop.number == null ? "" : String(prop.number);
+  }
+
   if (prop.type === "formula") {
-    const f = prop.formula;
+    const f = prop.formula || {};
     if (f.type === "string") return f.string || "";
     if (f.type === "number") return f.number == null ? "" : String(f.number);
     if (f.type === "boolean") return String(f.boolean);
   }
+
   return "";
 }
 
 function get(page, name) {
-  return txt(page.properties?.[name]);
+  return txt(page?.properties?.[name]);
 }
 
 function list(v = "") {
@@ -61,9 +81,10 @@ function list(v = "") {
 }
 
 function urlify(raw = "") {
-  const m = String(raw).match(/\((https?:\/\/[^)]+)\)/);
-  if (m) return m[1];
-  if (/^https?:\/\//i.test(String(raw).trim())) return String(raw).trim();
+  const s = String(raw || "").trim();
+  const md = s.match(/\((https?:\/\/[^)]+)\)/);
+  if (md) return md[1];
+  if (/^https?:\/\//i.test(s)) return s;
   return "";
 }
 
@@ -77,7 +98,9 @@ async function allPages() {
       start_cursor: cursor,
       page_size: 100
     });
-    results.push(...res.results);
+
+    results.push(...(res.results || []));
+
     if (!res.has_more) break;
     cursor = res.next_cursor;
   }
@@ -88,6 +111,7 @@ async function allPages() {
 function mapRecord(page) {
   const titulo = get(page, "Título");
   const canonico = get(page, "Canônico") || slug(titulo);
+
   return {
     titulo,
     alternateName: get(page, "Alternate Name"),
@@ -107,60 +131,46 @@ function mapRecord(page) {
     urn: get(page, "URN"),
     visaoHidra: get(page, "Visão Hidra"),
     wikidataId: get(page, "Wikidata ID"),
-    updatedAt: page.last_edited_time
+    updatedAt: page?.last_edited_time || ""
   };
 }
 
 function renderTerm(t) {
   const alt = list(t.alternateName);
   const nao = list(t.oQueNaoE);
-  const sim = list(t.oQueE);
+  const notas = list(t.oQueE);
   const termUrl = `${SITE_BASE_URL}/${t.canonico}.html`;
 
   const refs = [
-    t.embedURL && `<li><a href="${esc(t.embedURL)}" target="_blank" rel="noopener noreferrer">Embed URL</a></li>`,
-    t.linkAWS && `<li><a href="${esc(t.linkAWS)}" target="_blank" rel="noopener noreferrer">AWS</a></li>`,
-    t.linkGoogle && `<li><a href="${esc(t.linkGoogle)}" target="_blank" rel="noopener noreferrer">Google</a></li>`,
-    t.linkMSFT && `<li><a href="${esc(t.linkMSFT)}" target="_blank" rel="noopener noreferrer">Microsoft</a></li>`,
-    t.coautorURL && `<li><a href="${esc(t.coautorURL)}" target="_blank" rel="noopener noreferrer">${esc(t.coautorNome || "Coautor")}</a></li>`,
-    t.doi && `<li><a href="https://doi.org/${esc(t.doi)}" target="_blank" rel="noopener noreferrer">DOI</a></li>`,
-    t.wikidataId && `<li><a href="https://www.wikidata.org/wiki/${esc(t.wikidataId)}" target="_blank" rel="noopener noreferrer">Wikidata</a></li>`
+    t.embedURL ? `<li><a href="${esc(t.embedURL)}" target="_blank" rel="noopener noreferrer">Embed URL</a></li>` : "",
+    t.linkAWS ? `<li><a href="${esc(t.linkAWS)}" target="_blank" rel="noopener noreferrer">Link AWS</a></li>` : "",
+    t.linkGoogle ? `<li><a href="${esc(t.linkGoogle)}" target="_blank" rel="noopener noreferrer">Link Google</a></li>` : "",
+    t.linkMSFT ? `<li><a href="${esc(t.linkMSFT)}" target="_blank" rel="noopener noreferrer">Link MSFT</a></li>` : "",
+    t.coautorURL ? `<li><a href="${esc(t.coautorURL)}" target="_blank" rel="noopener noreferrer">${esc(t.coautorNome || "Coautor Nome")}</a></li>` : "",
+    t.doi ? `<li><a href="https://doi.org/${esc(t.doi)}" target="_blank" rel="noopener noreferrer">DOI</a></li>` : "",
+    t.wikidataId ? `<li><a href="https://www.wikidata.org/wiki/${esc(t.wikidataId)}" target="_blank" rel="noopener noreferrer">Wikidata ID</a></li>` : ""
   ].filter(Boolean).join("");
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "DefinedTerm",
-    name: t.titulo,
-    alternateName: alt,
-    description: t.oQueE,
-    termCode: t.urn || t.id,
-    identifier: t.id,
-    url: termUrl
-  };
 
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${esc(t.titulo)}</title>
+  <title>${esc(t.titulo || "Termo")}</title>
   <meta name="description" content="${esc((t.oQueE || "").slice(0, 160))}">
   <link rel="canonical" href="${esc(termUrl)}">
-  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
   <style>
     body{font-family:Arial,sans-serif;max-width:980px;margin:40px auto;padding:0 20px;line-height:1.6;color:#111}
     h1,h2{line-height:1.2}
-    .muted{color:#666}
     .box{border:1px solid #ddd;border-radius:12px;padding:20px;margin:20px 0}
     ul{padding-left:20px}
-    a{text-decoration:none}
-    a:hover{text-decoration:underline}
   </style>
 </head>
 <body>
   <p><a href="./index.html">Voltar</a></p>
-  <h1>${esc(t.titulo)}</h1>
-  <p class="muted">${esc(t.categoria || "")}</p>
+
+  <h1>${esc(t.titulo || "")}</h1>
+  <p>${esc(t.categoria || "")}</p>
 
   <div class="box">
     <h2>O que é</h2>
@@ -178,8 +188,14 @@ function renderTerm(t) {
   </div>
 
   <div class="box">
+    <h2>Coautor Desc</h2>
+    <p>${esc(t.coautorDesc || "")}</p>
+    <p>${esc(t.coautorNome || "")}</p>
+  </div>
+
+  <div class="box">
     <h2>Notas</h2>
-    <ul>${sim.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <ul>${notas.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
   </div>
 
   <div class="box">
@@ -207,31 +223,21 @@ function renderTerm(t) {
 }
 
 function renderIndex(items) {
-  const rows = items
-    .sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"))
-    .map(t => {
-      const href = `${t.canonico}.html`;
-      return `<li><a href="${esc(href)}">${esc(t.titulo)}</a>${t.categoria ? ` — ${esc(t.categoria)}` : ""}</li>`;
-    })
-    .join("");
-
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Wikivendas</title>
-  <link rel="canonical" href="${esc(SITE_BASE_URL)}/">
-  <style>
-    body{font-family:Arial,sans-serif;max-width:980px;margin:40px auto;padding:0 20px;line-height:1.6;color:#111}
-    ul{padding-left:20px}
-    a{text-decoration:none}
-    a:hover{text-decoration:underline}
-  </style>
 </head>
 <body>
   <h1>Wikivendas</h1>
-  <ul>${rows}</ul>
+  <ul>
+    ${items
+      .sort((a, b) => (a.titulo || "").localeCompare(b.titulo || "", "pt-BR"))
+      .map(t => `<li><a href="${esc(t.canonico)}.html">${esc(t.titulo || t.canonico)}</a></li>`)
+      .join("")}
+  </ul>
 </body>
 </html>`;
 }
