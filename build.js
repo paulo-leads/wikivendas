@@ -128,6 +128,7 @@ const items = pages
     const link_msft = urlFromUrl(props["Link MSFT"]) || "";
     const link_google = urlFromUrl(props["Link Google"]) || "";
     const link_aws = urlFromUrl(props["Link AWS"]) || "";
+    const wikipedia = urlFromUrl(props["Wikipedia"]) || "";
     const o_que_nao_is = plainTextFromText(props["O que não é"]) || "";
     const o_que_is = plainTextFromText(props["O que é"]) || "";
     const embed_url = urlFromUrl(props["Embed URL"]) || "";
@@ -148,6 +149,7 @@ const items = pages
       link_msft,
       link_google,
       link_aws,
+      wikipedia,
       o_que_nao_is,
       o_que_is,
       embed_url,
@@ -171,7 +173,7 @@ mkdirSync("docs/.well-known", { recursive: true });
 // ============================================================
 const termSet = {
   "@type": "DefinedTermSet",
-  "@id": `${siteBaseUrl}/#set`,
+  "@id": `${siteBaseUrl}/glossario.json#set`,
   name: "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
   description: "Ontologia oficial e definições canônicas do Protocolo Hidra.",
   url: `${siteBaseUrl}/glossario.json`
@@ -180,6 +182,7 @@ const termSet = {
 const termNodes = items.map((i) => {
   const sameAs = [
     i.wikidata_id ? `https://www.wikidata.org/wiki/${i.wikidata_id}` : undefined,
+    i.wikipedia || undefined,
     i.doi ? `https://doi.org/${i.doi}` : undefined,
     i.link_msft || undefined,
     i.link_google || undefined,
@@ -195,7 +198,7 @@ const termNodes = items.map((i) => {
       : undefined,
     description: i.canonico || undefined,
     termCode: i.urn || `urn:wikivendas:def:${i.id}`,
-    inDefinedTermSet: `${siteBaseUrl}/#set`,
+    inDefinedTermSet: { "@id": `${siteBaseUrl}/glossario.json#set` },
     url: `${siteBaseUrl}/termos/${i.id}.html`,
     sameAs: sameAs.length ? sameAs : undefined
   };
@@ -472,7 +475,7 @@ function renderTermPage(term) {
   <div class="wv-header-inner">
     <div style="display:flex;align-items:center">
       <span class="wv-logo">Wikivendas</span>
-      <span class="wv-version">v1.0.0</span>
+      <span class="wv-version">v1.1.0</span>
     </div>
     <nav class="wv-nav">
       <a href="/">Início</a>
@@ -493,6 +496,7 @@ function renderTermPage(term) {
     ${term.categoria ? `<span>📂 ${escapeHtml(term.categoria)}</span>` : ""}
     ${term.doi ? `<span>📄 DOI: <a href="https://doi.org/${escapeHtml(term.doi)}" target="_blank">${escapeHtml(term.doi)}</a></span>` : ""}
     ${term.wikidata_id ? `<span>🔗 <a href="https://www.wikidata.org/wiki/${escapeHtml(term.wikidata_id)}" target="_blank">Wikidata: ${escapeHtml(term.wikidata_id)}</a></span>` : ""}
+    ${term.wikipedia ? `<span>📚 <a href="${term.wikipedia}" target="_blank">Wikipedia</a></span>` : ""}
     ${term.urn ? `<span>🔖 <code style="font-family:monospace;font-size:12px;color:var(--text-muted)">${escapeHtml(term.urn)}</code></span>` : ""}
   </div>
 
@@ -570,7 +574,7 @@ function renderTermPage(term) {
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
         <span class="wv-logo">Wikivendas</span>
-        <span class="wv-version">v1.0.0</span>
+        <span class="wv-version">v1.1.0</span>
       </div>
       <p class="wv-footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p>
     </div>
@@ -638,7 +642,8 @@ const llmsLines = [
     const importance = t.canonico ? (t.canonico.length > 200 ? "0.9" : "0.7") : "0.5";
     const sameAsLinks = [
       t.doi ? `DOI: ${t.doi}` : "",
-      t.wikidata_id ? `Wikidata: https://www.wikidata.org/wiki/${t.wikidata_id}` : ""
+      t.wikidata_id ? `Wikidata: https://www.wikidata.org/wiki/${t.wikidata_id}` : "",
+      t.wikipedia ? `Wikipedia: ${t.wikipedia}` : ""
     ].filter(Boolean).join(" | ");
 
     return `- [${t.title}](${siteBaseUrl}/termos/${t.id}.html) (importance: ${importance})`
@@ -798,6 +803,7 @@ const homeHtml = `<!DOCTYPE html>
   "@graph": [websiteNode(), organizationNode(), termSet, ...homeTerms.map((t) => {
     const sameAs = [
       t.wikidata_id ? `https://www.wikidata.org/wiki/${t.wikidata_id}` : undefined,
+      t.wikipedia || undefined,
       t.doi ? `https://doi.org/${t.doi}` : undefined,
       t.link_msft || undefined,
       t.link_google || undefined,
@@ -811,7 +817,7 @@ const homeHtml = `<!DOCTYPE html>
       alternateName: t.alternate_name ? t.alternate_name.split("|").map((s) => s.trim()).filter(Boolean) : undefined,
       description: t.canonico || undefined,
       termCode: t.urn || `urn:wikivendas:def:${t.id}`,
-      inDefinedTermSet: `${siteBaseUrl}/#set`,
+      inDefinedTermSet: { "@id": `${siteBaseUrl}/glossario.json#set` },
       url: `${siteBaseUrl}/termos/${t.id}.html`,
       sameAs: sameAs.length ? sameAs : undefined
     };
@@ -1089,7 +1095,7 @@ const homeHtml = `<!DOCTYPE html>
   <div class="wv-header-inner">
     <div style="display:flex;align-items:center">
       <span class="wv-logo">Wikivendas</span>
-      <span class="wv-version">v1.0.0</span>
+      <span class="wv-version">v1.1.0</span>
     </div>
     <nav class="wv-nav">
       <a href="/">Início</a>
@@ -1187,7 +1193,7 @@ const homeHtml = `<!DOCTYPE html>
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
         <span class="wv-logo">Wikivendas</span>
-        <span class="wv-version">v1.0.0</span>
+        <span class="wv-version">v1.1.0</span>
       </div>
       <p class="wv-footer-copy">© 2026 Wikivendas Construído com Protocolo Hidra por Paulo Leads.</p>
     </div>
