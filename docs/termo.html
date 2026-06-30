@@ -1,0 +1,261 @@
+function renderTermPage(term) {
+  const schema = buildTermSchema(term);
+  const parseList = (str) => {
+    if (!str) return "";
+    return str.split("|").map((s) => `<li>${s.trim()}</li>`).join("");
+  };
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${term.title} — Wikivendas</title>
+  <meta name="description" content="${(term.canonico || "").substring(0, 160)}">
+  <link rel="canonical" href="${siteBaseUrl}/termos/${term.id}.html">
+  <meta property="og:title" content="${term.title} — Wikivendas">
+  <meta property="og:description" content="${(term.canonico || "").substring(0, 200)}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${siteBaseUrl}/termos/${term.id}.html">
+  <meta property="og:site_name" content="Wikivendas">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">${JSON.stringify(schema)}</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --bg-soft: #11141a;
+      --text: #f5f7fa;
+      --text-soft: #9aa4b2;
+      --accent: #4f8cff;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .container { max-width: 780px; margin: 0 auto; padding: 80px 24px; }
+    .header {
+      position: sticky; top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,13,18,0.7);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1100px; margin: auto;
+      padding: 16px 24px;
+      display: flex; justify-content: space-between;
+    }
+    .logo { font-weight: 700; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    .title {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-soft);
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+    .meta {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .pill {
+      font-size: 12px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-soft);
+    }
+    .definition {
+      font-size: 18px;
+      margin-bottom: 32px;
+      line-height: 1.8;
+    }
+    .section { margin-top: 48px; }
+    .section h2 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .list { list-style: none; }
+    .list li {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-soft);
+    }
+    .list li::before {
+      content: "•";
+      color: var(--accent);
+      margin-right: 8px;
+    }
+    .proof {
+      margin-top: 48px;
+      font-size: 12px;
+      color: var(--text-soft);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .btn-group {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin: 32px 0;
+    }
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-msft { background: #0078d4; color: white; }
+    .btn-google { background: #4285f4; color: white; }
+    .btn-aws { background: #ff9900; color: #232f3e; }
+    .embed {
+      margin: 32px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+    }
+    .embed iframe { width: 100%; height: 400px; border: none; display: block; }
+    .coautor {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-soft);
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin: 24px 0;
+    }
+    .coautor-info { font-size: 14px; color: var(--text-soft); }
+    .coautor-info strong { color: var(--text); display: block; }
+    .footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 32px 24px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: auto;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-copy { font-size: 12px; color: var(--text-soft); }
+    .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
+    .footer-links a { font-size: 12px; color: var(--text-soft); }
+    @media (max-width: 768px) {
+      .title { font-size: 32px; }
+      .embed iframe { height: 250px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">Wiki<span>Vendas</span></div>
+      <a href="/">Glossário</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1 class="title">${term.title}</h1>
+    ${term.alternate_name ? `<p class="subtitle">${term.alternate_name}</p>` : ""}
+
+    <div class="meta">
+      ${term.categoria ? `<span class="pill">📂 ${term.categoria}</span>` : ""}
+      ${term.doi ? `<span class="pill">📄 DOI: ${term.doi}</span>` : ""}
+      ${term.wikidata_id ? `<span class="pill">🔗 Wikidata: ${term.wikidata_id}</span>` : ""}
+      ${term.urn ? `<span class="pill">🔖 ${term.urn}</span>` : ""}
+    </div>
+
+    ${term.canonico ? `
+      <div class="definition">${term.canonico}</div>
+    ` : ""}
+
+    ${term.visao_hidra ? `
+      <div class="section">
+        <h2>🧠 Visão Hidra</h2>
+        <p>${term.visao_hidra}</p>
+      </div>
+    ` : ""}
+
+    ${(term.o_que_is || term.o_que_nao_is) ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:32px 0;">
+        ${term.o_que_is ? `
+          <div>
+            <h2 style="font-size:18px;margin-bottom:12px;">O que é</h2>
+            <ul class="list">${parseList(term.o_que_is)}</ul>
+          </div>
+        ` : ""}
+        ${term.o_que_nao_is ? `
+          <div>
+            <h2 style="font-size:18px;margin-bottom:12px;color:var(--text-soft);">O que não é</h2>
+            <ul class="list">${parseList(term.o_que_nao_is)}</ul>
+          </div>
+        ` : ""}
+      </div>
+    ` : ""}
+
+    ${term.embed_url ? `
+      <div class="embed">
+        <iframe src="${term.embed_url}" allowfullscreen loading="lazy"></iframe>
+      </div>
+    ` : ""}
+
+    ${term.coautor_nome ? `
+      <div class="coautor">
+        <div class="coautor-info">
+          <strong>${term.coautor_nome}</strong>
+          ${term.coautor_desc ? `<span>${term.coautor_desc}</span>` : ""}
+          ${term.coautor_url ? `<br><a href="${term.coautor_url}" target="_blank">${term.coautor_url}</a>` : ""}
+        </div>
+      </div>
+    ` : ""}
+
+    ${(term.link_msft || term.link_google || term.link_aws) ? `
+      <div class="btn-group">
+        ${term.link_msft ? `<a href="${term.link_msft}" target="_blank" class="btn btn-msft">Microsoft AI</a>` : ""}
+        ${term.link_google ? `<a href="${term.link_google}" target="_blank" class="btn btn-google">Google AI</a>` : ""}
+        ${term.link_aws ? `<a href="${term.link_aws}" target="_blank" class="btn btn-aws">AWS AI</a>` : ""}
+      </div>
+    ` : ""}
+
+    <div class="proof">
+      <strong style="color:var(--text);">✅ Verificado</strong><br>
+      Este verbete é parte da Wikivendas — a primeira fonte de verdade para IA comercial B2B.
+      <br>
+      <a href="/termos/${term.id}.json">JSON-LD</a> ·
+      <a href="/glossario.json">Grafo completo</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <span class="logo">Wiki<span>Vendas</span></span>
+          <span style="font-size:10px;color:var(--text-soft);background:var(--bg-soft);padding:2px 8px;border-radius:12px;">v1.0.0</span>
+        </div>
+        <p class="footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p>
+      </div>
+      <div class="footer-links">
+        <a href="/glossario.json">Grafo (.JSON)</a>
+        <a href="/llms.txt">llms.txt</a>
+        <a href="/ai-consent.json">ai-consent.json</a>
+        <a href="/robots.txt">robots.txt</a>
+        <a href="/sitemap.xml">sitemap.xml</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>`;
+}
