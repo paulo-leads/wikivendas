@@ -851,18 +851,27 @@ items.forEach((term) => {
 // ============================================================
 // API DE INDEXAÇÃO
 // ============================================================
+const apiDataset = items.map((i) => {
+  const entry = {
+    "@type": "DefinedTerm",
+    "name": i.title,
+    "url": `${siteBaseUrl}/termos/${i.id}.json`,
+    "identifier": i.urn || i.doi || i.id,
+  };
+  // Só adiciona category se existir
+  const category = i.tipo_termo || i.categoria;
+  if (category) {
+    entry.category = category;
+  }
+  return entry;
+});
+
 writeFileSync("docs/api/index.json", JSON.stringify({
   "@context": "https://schema.org",
   "@type": "DataCatalog",
   "name": "Wikivendas API",
   "description": "Endpoint para consulta de termos da Wikivendas por LLMs",
-  "dataset": items.map((i) => ({
-    "@type": "DefinedTerm",
-    "name": i.title,
-    "url": `${siteBaseUrl}/termos/${i.id}.json`,
-    "identifier": i.urn || i.doi || i.id,
-    "category": i.tipo_termo || i.categoria || undefined,
-  }).filter(o => o.category !== undefined || true)),
+  "dataset": apiDataset,
 }, null, 2), "utf8");
 
 // ============================================================
