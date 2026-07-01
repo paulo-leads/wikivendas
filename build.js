@@ -790,6 +790,7 @@ const homeHtml = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="msvalidate.01" content="7E347EFA12953E4BE1919F6E48CA7189" />
 <title>Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B</title>
 <meta name="description" content="A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica. Definições canônicas com DOIs, Wikidata e validação cruzada Microsoft/Google/AWS.">
 <link rel="canonical" href="${siteBaseUrl}/">
