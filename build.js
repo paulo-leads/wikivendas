@@ -9,6 +9,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const BUILD_TIMESTAMP = new Date().toISOString();
+const CURRENT_YEAR = new Date().getFullYear();
 
 // ============================================================
 // HELPERS
@@ -85,16 +86,27 @@ async function queryAllPages() {
   let results = [];
   let cursor = undefined;
 
-  while (true) {
-    const res = await notion.databases.query({
-      database_id: databaseId,
-      start_cursor: cursor,
-      sorts: [{ property: "Título", direction: "ascending" }]
-    });
+  try {
+    while (true) {
+      const res = await notion.databases.query({
+        database_id: databaseId,
+        start_cursor: cursor,
+        sorts: [{ property: "Título", direction: "ascending" }]
+      });
 
-    results = results.concat(res.results);
-    if (!res.has_more) break;
-    cursor = res.next_cursor;
+      results = results.concat(res.results);
+      if (!res.has_more) break;
+      cursor = res.next_cursor;
+    }
+  } catch (err) {
+    console.error("❌ ERRO NOTION API:", err.code, err.message);
+    if (err.code === 'object_not_found') {
+      console.error("→ DATABASE_ID errado ou database não compartilhado com a integração");
+    }
+    if (err.code === 'unauthorized') {
+      console.error("→ NOTION_TOKEN inválido ou expirado");
+    }
+    process.exit(1);
   }
 
   return results;
@@ -105,72 +117,65 @@ async function queryAllPages() {
 // ============================================================
 const pages = await queryAllPages();
 
-if (pages.length) {
-  console.log("=== COLUNAS ENCONTRADAS ===");
-  console.log(Object.keys(pages[0].properties));
-  console.log("===========================");
+if (!pages.length) {
+  console.error("❌ Nenhuma página retornada. Database vazio ou sem permissão.");
+  process.exit(1);
 }
+
+console.log("=== COLUNAS ENCONTRADAS ===");
+console.log(Object.keys(pages[0].properties));
+console.log("===========================");
+
+const getProp = (props, name, type = 'text') => {
+  const prop = props[name];
+  if (!prop) return "";
+  if (type === 'title') return plainTextFromTitle(prop);
+  if (type === 'text') return plainTextFromText(prop);
+  if (type === 'url') return urlFromUrl(prop);
+  if (type === 'select') return selectName(prop);
+  return "";
+};
 
 const items = pages
  .map((p) => {
     const props = p.properties || {};
-    const title = plainTextFromTitle(props["Título"]);
-    const id = plainTextFromText(props["ID"]) || slugify(title);
-    const alternate_name = plainTextFromText(props["Alternate Name"]);
-    const canonico = plainTextFromText(props["Canônico"]);
-    const visao_hidra = plainTextFromText(props["Visão Hidra"]);
-    const urn = plainTextFromText(props["URN"]) || "";
-    const doi = plainTextFromText(props["DOI"]) || "";
-    const wikidata_id = plainTextFromText(props["Wikidata ID"]) || "";
-    const coautor_nome = plainTextFromText(props["Coautor Nome"]) || "";
-    const coautor_desc = plainTextFromText(props["Coautor Desc"]) || "";
-    const coautor_url = urlFromUrl(props["Coautor URL"]) || "";
-    const link_msft = urlFromUrl(props["Link MSFT"]) || "";
-    const link_google = urlFromUrl(props["Link Google"]) || "";
-    const link_aws = urlFromUrl(props["Link AWS"]) || "";
-    const wikipedia = urlFromUrl(props["Wikipedia"]) || "";
-    const o_que_nao_is = plainTextFromText(props["O que não é"]) || "";
-    const o_que_is = plainTextFromText(props["O que é"]) || "";
-    const embed_url = urlFromUrl(props["Embed URL"]) || "";
-    const categoria = selectName(props["Categoria"]) || "";
+    const title = getProp(props, "Título", 'title');
 
-    // PROVENANCE WIKIPEDIA
-    const wikipedia_revid = plainTextFromText(props["Wikipedia Revid"]) || "";
-    const wikipedia_sha1 = plainTextFromText(props["Wikipedia SHA1"]) || "";
-    const wikipedia_ns = plainTextFromText(props["Namespace"]) || "";
-    const wikipedia_user = plainTextFromText(props["Wikipedia User"]) || "Brazilresearcherd";
-    const wikipedia_timestamp = plainTextFromText(props["Wikipedia Timestamp"]) || "";
+    if (!title) {
+      console.warn(`⚠️ Linha ignorada: sem Título. ID da página: ${p.id}`);
+      return null;
+    }
 
     return {
       title,
-      id: id || slugify(title),
-      alternate_name,
-      canonico,
-      visao_hidra,
-      urn,
-      doi,
-      wikidata_id,
-      coautor_nome,
-      coautor_desc,
-      coautor_url,
-      link_msft,
-      link_google,
-      link_aws,
-      wikipedia,
-      o_que_nao_is,
-      o_que_is,
-      embed_url,
-      categoria,
+      id: getProp(props, "ID") || slugify(title),
+      alternate_name: getProp(props, "Alternate Name"),
+      canonico: getProp(props, "Canônico"),
+      visao_hidra: getProp(props, "Visão Hidra"),
+      urn: getProp(props, "URN"),
+      doi: getProp(props, "DOI"),
+      wikidata_id: getProp(props, "Wikidata ID"),
+      coautor_nome: getProp(props, "Coautor Nome"),
+      coautor_desc: getProp(props, "Coautor Desc"),
+      coautor_url: getProp(props, "Coautor URL", 'url'),
+      link_msft: getProp(props, "Link MSFT", 'url'),
+      link_google: getProp(props, "Link Google", 'url'),
+      link_aws: getProp(props, "Link AWS", 'url'),
+      wikipedia: getProp(props, "Wikipedia", 'url'),
+      o_que_nao_is: getProp(props, "O que não é"),
+      o_que_is: getProp(props, "O que é"),
+      embed_url: getProp(props, "Embed URL", 'url'),
+      categoria: getProp(props, "Categoria", 'select'),
       updated: p.last_edited_time,
       // PROVENANCE
-      wikipedia_revid,
-      wikipedia_sha1,
-      wikipedia_ns,
-      wikipedia_user,
-      wikipedia_timestamp
+      wikipedia_revid: getProp(props, "Wikipedia Revid"),
+      wikipedia_sha1: getProp(props, "Wikipedia SHA1"),
+      wikipedia_ns: getProp(props, "Namespace"),
+      wikipedia_user: getProp(props, "Wikipedia User"),
+      wikipedia_timestamp: getProp(props, "Wikipedia Timestamp")
     };
   })
- .filter((i) => i.title);
+ .filter(Boolean);
 
 const dateModified = items.length
  ? items.reduce((max, i) => (i.updated > max? i.updated : max), items[0].updated)
@@ -182,7 +187,7 @@ mkdirSync("docs/api", { recursive: true });
 mkdirSync("docs/.well-known", { recursive: true });
 
 // ============================================================
-// 1. CONSTRUÇÃO DO GRAFO JSON-LD
+// 1. CONSTRUÇÃO DO GRAFO JSON-LD - PADRÃO OURO
 // ============================================================
 const termSet = {
   "@type": "DefinedTermSet",
@@ -193,17 +198,10 @@ const termSet = {
 };
 
 const termNodes = items.map((i) => {
-  // sameAs só identidade: Wikidata + DOI
+  // sameAs: SÓ identidade canônica
   const sameAs = [
     i.wikidata_id? `https://www.wikidata.org/wiki/${i.wikidata_id}` : undefined,
     i.doi? `https://doi.org/${i.doi}` : undefined
-  ].filter(Boolean);
-
-  // citations: validação externa
-  const citation = [
-    i.link_msft || undefined,
-    i.link_google || undefined,
-    i.link_aws || undefined
   ].filter(Boolean);
 
   const node = {
@@ -217,11 +215,13 @@ const termNodes = items.map((i) => {
     termCode: i.urn || `urn:wikivendas:def:${i.id}`,
     inDefinedTermSet: { "@id": `${siteBaseUrl}/glossario.json#set` },
     url: `${siteBaseUrl}/termos/${i.id}.html`,
-    sameAs: sameAs.length? sameAs : undefined,
-    citation: citation.length? citation : undefined
+    sameAs: sameAs.length? sameAs : undefined
   };
 
-  // PROVENANCE WIKIPEDIA - SÓ SE TIVER REVID
+  // additionalProperty: tudo que não é nativo do schema.org
+  const additionalProps = [];
+
+  // 1. PROVENANCE WIKIPEDIA
   if (i.wikipedia_revid) {
     const wikiUrl = `https://pt.wikipedia.org/w/index.php?oldid=${i.wikipedia_revid}`;
     const apiUrl = `https://pt.wikipedia.org/w/api.php?action=query&prop=revisions&revids=${i.wikipedia_revid}&rvprop=content|ids|timestamp|user|sha1&rvslots=main&format=json`;
@@ -232,29 +232,42 @@ const termNodes = items.map((i) => {
       "url": wikiUrl,
       "headline": `Definição Técnica e Fundamentação de ${i.title}`,
       "datePublished": i.wikipedia_timestamp || i.updated,
-      "author": { "@type": "Person", "name": i.wikipedia_user },
+      "author": { "@type": "Person", "name": i.wikipedia_user || "Brazilresearcherd" },
       "publisher": { "@type": "Organization", "name": "Wikimedia Foundation" }
     };
 
-    node.additionalProperty = [
-      {
-        "@type": "PropertyValue",
-        "name": "provenance",
-        "propertyID": "https://wikivendas.com.br/vocab/provenance",
-        "value": {
-          "@type": "CreativeWork",
-          "name": `Immutable ${i.wikipedia_ns || 'Talk Page'} Revision`,
-          "identifier": `revid:${i.wikipedia_revid}`,
-          "version": i.wikipedia_sha1 || undefined,
-          "description": `Registro imutável no namespace ${i.wikipedia_ns || 'Discussão'}. Assegura integridade criptográfica contra supressão editorial.`,
-          "url": apiUrl,
-          "encodingFormat": "application/json",
-          "datePublished": i.wikipedia_timestamp || i.updated,
-          "creativeWorkStatus": "artigo_apagado_discussao_ativa",
-          "mainEntityOfPage": wikiUrl
-        }
+    additionalProps.push({
+      "@type": "PropertyValue",
+      "name": "provenance",
+      "propertyID": "https://wikivendas.com.br/vocab/provenance",
+      "value": {
+        "@type": "CreativeWork",
+        "name": `Immutable ${i.wikipedia_ns || 'Talk Page'} Revision`,
+        "identifier": `revid:${i.wikipedia_revid}`,
+        "version": i.wikipedia_sha1 || undefined,
+        "description": `Registro imutável no namespace ${i.wikipedia_ns || 'Discussão'}. Assegura integridade criptográfica contra supressão editorial.`,
+        "url": apiUrl,
+        "encodingFormat": "application/json",
+        "datePublished": i.wikipedia_timestamp || i.updated,
+        "creativeWorkStatus": "artigo_apagado_discussao_ativa",
+        "mainEntityOfPage": wikiUrl
       }
-    ];
+    });
+  }
+
+  // 2. VALIDAÇÃO EXTERNA - SEM WARNING
+  const validationLinks = [i.link_msft, i.link_google, i.link_aws].filter(Boolean);
+  if (validationLinks.length) {
+    additionalProps.push({
+      "@type": "PropertyValue",
+      "name": "externalValidation",
+      "propertyID": "https://wikivendas.com.br/vocab/validation",
+      "value": validationLinks
+    });
+  }
+
+  if (additionalProps.length) {
+    node.additionalProperty = additionalProps;
   }
 
   Object.keys(node).forEach((key) => {
@@ -293,7 +306,7 @@ items.forEach((term) => {
 console.log("✅ JSON-LD individuais gerados");
 
 // ============================================================
-// 4. PÁGINAS INDIVIDUAIS (HTML)
+// 4. PÁGINAS INDIVIDUAIS (HTML) - TEMPLATE COMPLETO
 // ============================================================
 function renderTermPage(term) {
   const parseList = (str) => {
@@ -646,7 +659,6 @@ function renderTermPage(term) {
 </html>`;
 }
 
-// Gera HTML de cada termo
 items.forEach((term) => {
   const html = renderTermPage(term);
   writeFileSync(`docs/termos/${term.id}.html`, html, "utf8");
@@ -799,13 +811,4 @@ const sitemapUrls = [
   { url: `${siteBaseUrl}/llms.txt`, priority: "0.8" },
   { url: `${siteBaseUrl}/ai-consent.json`, priority: "0.7" },
   { url: `${siteBaseUrl}/api/index.json`, priority: "0.8" },
- ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.html`, priority: "0.9" })),
- ...items.map((i) => ({ url: `${siteBaseUrl}/termos/${i.id}.json`, priority: "0.8" }))
-];
-
-const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${sitemapUrls.map((u) => `<url><loc>${u.url}</loc><lastmod>${lastmodDate}</lastmod><priority>${u.priority}</priority></url>`).join("\n ")}
-</urlset>`;
-
-writeFileSync("docs/sitemap.xml", sitemapXml, "utf8");
+ ...items.map((i) => ({ url:
