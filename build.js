@@ -265,6 +265,7 @@ function renderTermPage(term) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="msvalidate.01" content="7E347EFA12953E4BE1919F6E48CA7189" />
   <title>${escapeHtml(term.title)} — Wikivendas</title>
   <meta name="description" content="${escapeHtml(canonicalDescription(term.canonico, 160))}">
   <link rel="canonical" href="${siteBaseUrl}/termos/${term.id}.html">
