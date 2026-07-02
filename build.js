@@ -1599,4 +1599,7 @@ categories.forEach((cat) => {
   writeFileSync(`docs/glossario/${slug}/index.html`, renderCategoryPage(cat, categMap[cat]), "utf8");
 });
 
+// === GARANTE O CNAME ===
+writeFileSync("docs/CNAME", "wikivendas.com.br\n", "utf8");
+
 console.log(`✅ Build final gerado com ${items.length} termos e ${categories.length} categorias.`);
