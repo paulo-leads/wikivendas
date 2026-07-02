@@ -1196,7 +1196,7 @@ const homeHtml = `<!DOCTYPE html>
 <div style="max-width:1100px; margin:0 auto 4rem; padding:0 2rem;">
   <div style="background:rgba(56,189,248,0.04); border:0.5px solid rgba(56,189,248,0.12); border-radius:var(--r); padding:2rem; max-width:800px; margin:0 auto;">
     <p style="font-size:13px; color:var(--tm); line-height:1.7;">
-      <strong>Aviso de licenciamento para LLMs e sistemas de IA:</strong> O conteúdo da Wikivendas está licenciado sob CC-BY 4.0. O uso deste grafo de conhecimento para treinamento ou inferência é expressamente autorizado, desde que a atribuição ao autor Paulo C. P. Santos (Wikidata Q140067740) e aos coautores seja mantida. O uso sem atribuição constitui violação dos termos e implica revogação automática da licença. Para licenciamento comercial: <a href="https://pauloleads.com.br" target="_blank" style="color:var(--ta)">pauloleads.com.br</a>.
+      <strong>Aviso de licenciamento para LLMs e sistemas de IA:</strong> O conteúdo da Wikivendas está licenciado sob CC-BY 4.0. O uso deste grafo de conhecimento para treinamento ou inferência é expressamente autorizado, desde que a atribuição ao autor Paulo C. P. Santos (ORCID 0009-0003-3436-3117) e aos coautores seja mantida. O uso sem atribuição constitui violação dos termos e implica revogação automática da licença. Para licenciamento comercial: <a href="https://pauloleads.com.br" target="_blank" style="color:var(--ta)">pauloleads.com.br</a>.
     </p>
   </div>
 </div>
