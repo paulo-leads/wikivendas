@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 // ============================================================
-// CORREÇÃO: Usando CommonJS para compatibilidade com Node.js
+// CORREÇÃO: Usando ES Modules (import) para compatibilidade com "type": "module"
 // ============================================================
-const { Client } = require("@notionhq/client");
-const { writeFileSync, mkdirSync } = require("fs");
-const { createHash } = require("crypto");
+import { Client } from "@notionhq/client";
+import { writeFileSync, mkdirSync } from "fs";
+import { createHash } from "crypto";
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -254,6 +254,7 @@ function buildDesignSystemMeta({ title, description, canonical }) {
   </style>
   `;
 }
+
 function renderSiteHeader(version = "v1.1.0") {
   return `
 <header class="wv-header">
