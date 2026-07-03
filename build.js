@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
 // ============================================================
-// build.js — Gerador estático da Wikivendas
+// WIKIVENDAS BUILD — v1.1.0
+// ES Module (compatível com "type": "module" no package.json)
+// Gera site estático a partir do Notion
 // ============================================================
-// Uso: node build.js (com NOTION_TOKEN e DATABASE_ID no ambiente)
-// Saída: pasta docs/ com HTML, JSON-LD, sitemap, etc.
-// ============================================================
-
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
@@ -18,7 +16,6 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const BUILD_TIMESTAMP = new Date().toISOString();
-const VERSION = "v1.2.0"; // incrementado para incluir o about Service
 
 // ============================================================
 // HELPERS
@@ -130,9 +127,6 @@ function getCatDesc(cat) {
 }
 function categorySlug(cat) {
   return slugify(cat || "geral");
-}
-function categoryPageUrl(cat) {
-  return `${siteBaseUrl}/glossario/${categorySlug(cat)}/`;
 }
 function buildDesignSystemMeta({ title, description, canonical }) {
   return `
@@ -260,7 +254,7 @@ function buildDesignSystemMeta({ title, description, canonical }) {
   `;
 }
 
-function renderSiteHeader(version = VERSION) {
+function renderSiteHeader(version = "v1.1.0") {
   return `
 <header class="wv-header">
   <div class="wv-header-inner">
@@ -277,7 +271,7 @@ function renderSiteHeader(version = VERSION) {
   </div>
 </header>`;
 }
-function renderSiteFooter(version = VERSION) {
+function renderSiteFooter(version = "v1.1.0") {
   return `
 <footer class="wv-footer">
   <div class="wv-footer-inner">
@@ -300,8 +294,10 @@ function renderSiteFooter(version = VERSION) {
 }
 
 // ============================================================
-// FUNÇÕES DE RENDERIZAÇÃO (definidas antes da execução)
+// FUNÇÕES DE RENDERIZAÇÃO DE PÁGINAS
 // ============================================================
+
+// Página individual de um termo
 function renderTermPage(term, termNodes, termSet) {
   const node = termNodes.find((n) => n["@id"] === termNodeId(term));
   const pageGraph = {
@@ -426,7 +422,7 @@ function renderTermPage(term, termNodes, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader(VERSION)}
+${renderSiteHeader("v1.1.0")}
 
 <div class="wv-container">
   <a href="/glossario/" class="wv-back">← Voltar ao glossário</a>
@@ -511,11 +507,12 @@ ${renderSiteHeader(VERSION)}
   </div>
 </div>
 
-${renderSiteFooter(VERSION)}
+${renderSiteFooter("v1.1.0")}
 </body>
 </html>`;
 }
 
+// Página principal do glossário (listagem de categorias e termos)
 function renderGlossaryPage(categories, categMap, termSet) {
   const groups = categories.map((cat) => {
     const slug = categorySlug(cat);
@@ -626,7 +623,7 @@ function renderGlossaryPage(categories, categMap, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader(VERSION)}
+${renderSiteHeader("v1.1.0")}
 
 <section class="wv-glossario">
   <p class="wv-section-label">Índice canônico terminológico</p>
@@ -640,7 +637,7 @@ ${renderSiteHeader(VERSION)}
   ${groups}
 </section>
 
-${renderSiteFooter(VERSION)}
+${renderSiteFooter("v1.1.0")}
 
 <script>
   const q = document.getElementById("wv-glossary-search");
@@ -657,6 +654,7 @@ ${renderSiteFooter(VERSION)}
 </html>`;
 }
 
+// Página de categoria (listagem de termos daquela categoria)
 function renderCategoryPage(cat, terms, categories, termSet) {
   const slug = categorySlug(cat);
 
@@ -754,7 +752,7 @@ function renderCategoryPage(cat, terms, categories, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader(VERSION)}
+${renderSiteHeader("v1.1.0")}
 
 <section class="wv-category-page">
   <p class="wv-section-label">Categoria</p>
@@ -771,11 +769,12 @@ ${renderSiteHeader(VERSION)}
   </div>
 </section>
 
-${renderSiteFooter(VERSION)}
+${renderSiteFooter("v1.1.0")}
 </body>
 </html>`;
 }
 
+// Página inicial
 function renderHomePage(items, categMap, termSet) {
   function renderCard(term, index) {
     const hash = sha256(term.canonico || term.o_que_is || "");
@@ -914,21 +913,6 @@ function renderHomePage(items, categMap, termSet) {
     .wv-dual-tag.ai { color: #818cf8; background: rgba(129,140,248,0.1); border: 0.5px solid rgba(129,140,248,0.2); }
     .wv-dual-title { font-size: 20px; font-weight: 700; color: var(--tp); margin-bottom: 0.75rem; line-height: 1.3; }
     .wv-dual-body { font-size: 14px; color: var(--ts); line-height: 1.6; }
-    .wv-profiles-section { background: var(--c1); border-top: 0.5px solid var(--bd); border-bottom: 0.5px solid var(--bd); }
-    .wv-profiles-inner { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
-    .wv-selector { display: flex; border: 0.5px solid var(--bd); border-radius: var(--r); overflow: hidden; margin-bottom: 2rem; }
-    .wv-tab {
-      flex: 1; padding: 1rem 1.5rem; background: transparent; color: var(--tm); border: none;
-      border-right: 0.5px solid var(--bd); font-size: 14px; font-weight: 500; cursor: pointer;
-      transition: background 0.15s, color 0.15s; font-family: Inter, sans-serif;
-    }
-    .wv-tab:last-child { border-right: none; }
-    .wv-tab.active { background: var(--c2); color: var(--tp); }
-    .wv-tab:hover:not(.active) { background: rgba(255,255,255,0.03); color: var(--ts); }
-    .wv-profile { display: none; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-    .wv-profile.visible { display: grid; }
-    .wv-profile-h { font-size: 24px; font-weight: 700; color: var(--tp); line-height: 1.3; margin-bottom: 1rem; }
-    .wv-profile-body { font-size: 15px; color: var(--ts); line-height: 1.6; margin-bottom: 2rem; }
     .wv-cards-section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
     .wv-cards-header {
       display: flex; align-items: flex-end; justify-content: space-between;
@@ -1003,13 +987,12 @@ function renderHomePage(items, categMap, termSet) {
       .wv-hero { padding: 4rem 1.25rem 3rem; }
       .wv-dual { grid-template-columns: 1fr; }
       .wv-dual-col { padding: 1.5rem; }
-      .wv-profile { grid-template-columns: 1fr; gap: 1.5rem; }
       .wv-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-${renderSiteHeader(VERSION)}
+${renderSiteHeader("v1.1.0")}
 
 <main>
   <section class="wv-hero">
@@ -1072,7 +1055,7 @@ ${renderSiteHeader(VERSION)}
   </section>
 </main>
 
-${renderSiteFooter(VERSION)}
+${renderSiteFooter("v1.1.0")}
 
 <div id="wv-modal" class="wv-modal-bg">
   <div class="wv-modal">
@@ -1104,6 +1087,7 @@ ${renderSiteFooter(VERSION)}
 </html>`;
 }
 
+// Página Sobre
 function renderSobrePage() {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -1128,7 +1112,7 @@ function renderSobrePage() {
   </style>
 </head>
 <body>
-${renderSiteHeader(VERSION)}
+${renderSiteHeader("v1.1.0")}
 <section class="wv-sobre">
   <p class="wv-section-label">Sobre</p>
   <h1>Wikivendas: fonte de verdade para IA comercial</h1>
@@ -1148,11 +1132,14 @@ ${renderSiteHeader(VERSION)}
   <h2>Licenciamento</h2>
   <p>Todo o conteúdo é licenciado sob <strong>CC BY 4.0</strong>. O uso comercial para treinamento de IA corporativa, fine-tuning e sistemas de RAG é permitido mediante licença adicional — consulte a <a href="/licenciamento/" style="color:var(--ta)">página de licenciamento</a>.</p>
 </section>
-${renderSiteFooter(VERSION)}
+${renderSiteFooter("v1.1.0")}
 </body>
 </html>`;
 }
 
+// ============================================================
+// ARQUIVOS DE INFRAESTRUTURA
+// ============================================================
 function renderSitemap(items, categories) {
   const termLines = items.map((t) => `
   <url>
@@ -1269,13 +1256,13 @@ async function queryAllPages() {
 }
 
 // ============================================================
-// FUNÇÃO PRINCIPAL (async IIFE)
+// BUILD PRINCIPAL
 // ============================================================
 (async function build() {
   try {
     console.log("🚀 Iniciando build...");
 
-    // Validações iniciais
+    // Validações
     if (!process.env.NOTION_TOKEN) {
       throw new Error("NOTION_TOKEN não definido no ambiente.");
     }
@@ -1368,7 +1355,7 @@ async function queryAllPages() {
       categMap[cat].push(t);
     });
 
-    // 4. Construir nós do grafo
+    // 4. Construir nós do grafo (com Service/Visão Hidra)
     function termNode(term) {
       const sameAs = [
         term.wikidata_id ? `https://www.wikidata.org/wiki/${term.wikidata_id}` : undefined,
@@ -1389,9 +1376,7 @@ async function queryAllPages() {
         sameAs: sameAs.length ? sameAs : undefined
       };
 
-      // ============================================================
-      // ⭐ FEATURE: ADIÇÃO DO NÓ "about" (SERVIÇO) SE "Visão Hidra" EXISTIR
-      // ============================================================
+      // ⭐ SERVIÇO / SOLUÇÃO (Visão Hidra)
       if (term.visao_hidra) {
         node.about = {
           "@type": "Service",
@@ -1406,7 +1391,7 @@ async function queryAllPages() {
         };
       }
 
-      // AdditionalProperty (links e Wikipedia)
+      // Propriedades adicionais (links e Wikipedia)
       const additionalProps = [];
 
       const baseLinks = [
@@ -1469,7 +1454,7 @@ async function queryAllPages() {
         node.additionalProperty = additionalProps;
       }
 
-      // Remover propriedades vazias
+      // Limpeza
       Object.keys(node).forEach((key) => {
         if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
           delete node[key];
@@ -1479,7 +1464,7 @@ async function queryAllPages() {
       return node;
     }
 
-    // 5. Grafo principal
+    // 5. Grafo principal (glossario.json)
     const termSet = {
       "@type": "DefinedTermSet",
       "@id": `${siteBaseUrl}/glossario.json#set`,
@@ -1544,7 +1529,7 @@ async function queryAllPages() {
     writeFileSync("docs/sobre/index.html", renderSobrePage(), "utf8");
     console.log("✅ Sobre gerada.");
 
-    // 8. Arquivos de infra
+    // 8. Arquivos de infraestrutura
     writeFileSync("docs/sitemap.xml", renderSitemap(items, categories), "utf8");
     writeFileSync("docs/robots.txt", renderRobots(), "utf8");
     writeFileSync("docs/llms.txt", renderLlmsTxt(items), "utf8");
