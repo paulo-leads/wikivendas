@@ -5,16 +5,17 @@ import { writeFileSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
 
 // ============================================================
-// WIKIVENDAS BUILD v3.0.0 MASTER
+// WIKIVENDAS BUILD v4.0.0 MASTER
 // JSON-first, template-preserved, hardened, GitHub Pages ready
+// Compatível com o TEMPLATE MESTRE — TERMO CANÔNICO WIKIVENDAS
 // ============================================================
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN || process.env.NOTIONTOKEN });
 const databaseId = process.env.DATABASE_ID || process.env.DATABASEID;
 const siteBaseUrl = (process.env.SITE_BASE_URL || process.env.SITEBASEURL || "https://wikivendas.com.br").replace(/\/$/, "");
-const jsonPropertyName = process.env.NOTION_JSON_PROPERTY || "JSON-LD";
-const customDomain = process.env.CUSTOM_DOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v3.0.0-master-json-first";
+const jsonPropertyName = process.env.NOTION_JSON_PROPERTY || process.env.NOTIONJSONPROPERTY || "JSON-LD";
+const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
+const BUILD_VERSION = "v4.0.0-master-template-mestre";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
@@ -25,6 +26,7 @@ function plainTextFromRichText(prop) {
   if (!prop) return "";
   if (prop.type === "rich_text") return (prop.rich_text || []).map(t => t.plain_text).join("").trim();
   if (prop.type === "title") return (prop.title || []).map(t => t.plain_text).join("").trim();
+  if (prop.type === "formula" && prop.formula?.type === "string") return prop.formula.string || "";
   return "";
 }
 
@@ -33,7 +35,8 @@ function escapeHtml(text = "") {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;");
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function slugify(text = "") {
@@ -104,6 +107,38 @@ function getPageLabel(page) {
   return page.id;
 }
 
+function safeArray(value) {
+  if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined && String(v).trim() !== "");
+  if (value === null || value === undefined || String(value).trim() === "") return [];
+  return [value];
+}
+
+function toDisplayText(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object" && value.url) return String(value.url);
+  if (typeof value === "object" && value.description) return String(value.description);
+  return JSON.stringify(value);
+}
+
+function renderList(items, empty = "Não informado.") {
+  const arr = safeArray(items).map(toDisplayText).filter(Boolean);
+  if (!arr.length) return `<p class="wv-empty">${escapeHtml(empty)}</p>`;
+  return `<ul class="wv-bullets">${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}</ul>`;
+}
+
+function renderLinkList(items, empty = "Não informado.") {
+  const arr = safeArray(items).map(item => typeof item === "object" ? (item.url || item['@id'] || "") : item).filter(Boolean);
+  if (!arr.length) return `<p class="wv-empty">${escapeHtml(empty)}</p>`;
+  return `<ul class="wv-bullets">${arr.map(v => `<li><a href="${escapeHtml(v)}" target="_blank" rel="noopener noreferrer">${escapeHtml(v)}</a></li>`).join("")}</ul>`;
+}
+
+function firstValue(items) {
+  const arr = safeArray(items);
+  return arr.length ? arr[0] : "";
+}
+
 // ============================================================
 // GRAPH HELPERS
 // ============================================================
@@ -154,6 +189,22 @@ function getTermPrimaryWikidata(term) {
   return qid || "";
 }
 
+function getAdditionalTextArray(term, name) {
+  return propertyValues(term, name).map(toDisplayText).filter(Boolean);
+}
+
+function getSameAsLinks(term) {
+  return safeArray(term.sameAs).map(String).filter(Boolean);
+}
+
+function getWhitepaperNode(graph, termId) {
+  return (graph || []).find(node => String(node?.["@id"] || "") === `${termId}#whitepaper`) || findNode(graph, "CreativeWork");
+}
+
+function getEventNode(graph, termId) {
+  return (graph || []).find(node => String(node?.["@id"] || "") === `${termId}#event-apresentacao`) || findNode(graph, "Event");
+}
+
 // ============================================================
 // VALIDAÇÃO
 // ============================================================
@@ -167,14 +218,7 @@ function validateGraph(json) {
     throw new Error("@graph ausente ou vazio");
   }
 
-  const required = [
-    "WebSite",
-    "Organization",
-    "Person",
-    "DefinedTermSet",
-    "DefinedTerm"
-  ];
-
+  const required = ["WebSite", "Organization", "Person", "DefinedTermSet", "DefinedTerm"];
   for (const type of required) {
     if (!findNode(json["@graph"], type)) {
       throw new Error(`Nó obrigatório ausente: ${type}`);
@@ -182,7 +226,6 @@ function validateGraph(json) {
   }
 
   const term = findNode(json["@graph"], "DefinedTerm");
-
   ["dateCreated", "dateModified", "version", "status"].forEach((field) => {
     if (field in term) {
       throw new Error(`DefinedTerm não pode conter ${field} diretamente`);
@@ -191,17 +234,19 @@ function validateGraph(json) {
 
   if (!term.name) throw new Error("DefinedTerm sem name");
   if (!term.termCode) throw new Error("DefinedTerm sem termCode");
-
   return true;
 }
 
 // ============================================================
-// IDENTIDADE / TAXONOMIA
+// IDENTIDADE / TAXONOMIA / TEMPLATE MESTRE
 // ============================================================
 
 function getCategoryFromTerm(term) {
-  const values = propertyValues(term, "categoria");
-  return values[0] || "Geral";
+  return firstValue(propertyValues(term, "categoria")) || "Geral";
+}
+
+function getProtocolFromTerm(term) {
+  return firstValue(propertyValues(term, "pertenceAoProtocolo")) || "Protocolo Hidra";
 }
 
 function getCategoryColor(categoria) {
@@ -213,7 +258,8 @@ function getCategoryColor(categoria) {
     "Fenômeno": "#f472b6",
     "Estratégia": "#fbbf24",
     "Tecnologia": "#f97316",
-    "Prática": "#a78bfa"
+    "Prática": "#a78bfa",
+    "IA": "#38bdf8"
   };
   return cores[categoria] || "#94a3b8";
 }
@@ -227,9 +273,114 @@ function getCatDesc(cat) {
     "Fenômeno": "Padrões emergentes, disfunções de mercado e comportamentos sistêmicos observados.",
     "Estratégia": "Posicionamentos táticos e planos de ação para vantagem competitiva.",
     "Tecnologia": "Ferramentas, plataformas e artefatos tecnológicos do ecossistema B2B.",
-    "Prática": "Táticas operacionais e rotinas do campo comercial."
+    "Prática": "Táticas operacionais e rotinas do campo comercial.",
+    "IA": "Termos ligados a IA, autoridade semântica e infraestrutura cognitiva."
   };
   return descs[cat] || "Termos categorizados dentro da ontologia Wikivendas.";
+}
+
+function parseMetadataDescription(metaText = "") {
+  const text = String(metaText || "");
+  const extract = (label) => {
+    const match = text.match(new RegExp(`${label}:\\s*([^;]+)`, "i"));
+    return match ? match[1].trim() : "";
+  };
+  return {
+    versao: extract("Versão do termo"),
+    status: extract("Status"),
+    criadoEm: extract("Criado em"),
+    modificadoEm: extract("Modificado em")
+  };
+}
+
+function parseProvenanceDescription(text = "") {
+  const extract = (label) => {
+    const match = String(text).match(new RegExp(`${label}:\\s*([^;]+)`, "i"));
+    return match ? match[1].trim() : "";
+  };
+  return {
+    criador: extract("Criador"),
+    projeto: extract("Projeto"),
+    primeiraPublicacao: extract("Primeira publicação"),
+    contexto: extract("Contexto")
+  };
+}
+
+function extractTemplateData(record) {
+  const { json, graph, term, creativeWork, dataCatalog, dataset, event } = record;
+  const termId = term?.["@id"] || "";
+  const termSlug = getDefinedTermId(term);
+  const category = getCategoryFromTerm(term);
+  const protocol = getProtocolFromTerm(term);
+  const oQueE = getAdditionalTextArray(term, "oQueE");
+  const oQueNaoE = getAdditionalTextArray(term, "oQueNaoE");
+  const perguntas = getAdditionalTextArray(term, "perguntasRelevantes");
+  const mitigacoes = getAdditionalTextArray(term, "mitigacaoDependeDe");
+  const fontes = propertyValues(term, "isBasedOn");
+  const provenance = propertyThingDescription(term, "proveniencia");
+  const metadados = propertyThingDescription(term, "metadadosVersao");
+  const parsedMeta = parseMetadataDescription(metadados);
+  const parsedProv = parseProvenanceDescription(provenance);
+  const service = term.about || {};
+  const sameAs = getSameAsLinks(term);
+  const doi = getTermPrimaryDoi(term);
+  const wikidata = getTermPrimaryWikidata(term);
+  const alternateNames = safeArray(term.alternateName).map(String);
+  const datasetKeywords = safeArray(dataset?.keywords).map(String);
+  const urlPaginaTermo = term.url || `${siteBaseUrl}/termos/${termSlug}.html`;
+  const shortDescription = canonicalDescription(term.description || creativeWork?.description || "", 220);
+
+  return {
+    raw: json,
+    graph,
+    termId,
+    termSlug,
+    nomeCanonico: term.name || termSlug,
+    sigla: (() => {
+      const m = String(term.name || "").match(/\(([A-Z0-9\-]+)\)/);
+      return m ? m[1] : "";
+    })(),
+    slug: termSlug,
+    urn: term.termCode || "",
+    status: parsedMeta.status,
+    versaoTermo: parsedMeta.versao,
+    dataCriacaoTermo: parsedMeta.criadoEm,
+    dataModificacaoTermo: parsedMeta.modificadoEm,
+    descricaoCurta: shortDescription,
+    descricaoLonga: term.description || "",
+    alternateNames,
+    categoria: category,
+    pertenceAoProtocolo: protocol,
+    oQueE,
+    oQueNaoE,
+    nomeServico: service.name || "Visão Hidra",
+    descricaoServico: service.description || "",
+    publico: service?.audience?.audienceType || "",
+    areaAtendida: service.areaServed || "",
+    fontesTecnicas: fontes.map(v => (typeof v === "object" ? (v.url || v["@id"] || JSON.stringify(v)) : String(v))).filter(Boolean),
+    doi,
+    sameAs,
+    urlPrincipalPagina: urlPaginaTermo,
+    urlWhitepaper: creativeWork?.url || "",
+    urlDataset: dataset?.url || "",
+    urlEvento: event?.url || "",
+    mitigacoes,
+    perguntas,
+    criador: parsedProv.criador,
+    projeto: parsedProv.projeto,
+    contexto: parsedProv.contexto,
+    primeiraPublicacao: parsedProv.primeiraPublicacao,
+    whitepaper: creativeWork,
+    dataCatalog,
+    dataset,
+    event,
+    videoUrl: event?.url || "",
+    wikibaseItem: dataCatalog?.url || dataset?.url || "",
+    wikidata,
+    metadadosTexto: metadados,
+    provenienciaTexto: provenance,
+    datasetKeywords
+  };
 }
 
 function fallbackWebsiteNode() {
@@ -239,7 +390,7 @@ function fallbackWebsiteNode() {
     name: "Wikivendas",
     url: siteBaseUrl,
     inLanguage: "pt-BR",
-    description: "Primeira fonte de verdade para IA comercial B2B no Brasil."
+    description: "Primeira fonte de verdade para IA comercial B2B no Brasil — Ontologia do Protocolo Hidra."
   };
 }
 
@@ -248,7 +399,8 @@ function fallbackOrganizationNode() {
     "@type": "Organization",
     "@id": `${siteBaseUrl}/#organization`,
     name: "Wikivendas",
-    url: siteBaseUrl
+    url: siteBaseUrl,
+    description: "Projeto de ontologia e inteligência comercial B2B, mantendo o Protocolo Hidra."
   };
 }
 
@@ -318,27 +470,23 @@ function buildDesignSystemMeta({ title, description, canonical }) {
       --ts: #94a3b8;
       --tm: #475569;
       --ta: #38bdf8;
+      --ta2: #818cf8;
+      --tpink: #f472b6;
       --bd: rgba(255,255,255,0.06);
       --bds: rgba(255,255,255,0.12);
       --r: 14px;
+      --r2: 18px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { background: var(--c0); scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--c0);
-      color: var(--ts);
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      line-height: 1.6;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--c0); color: var(--ts); -webkit-font-smoothing: antialiased; overflow-x: hidden; line-height: 1.6; }
     a { text-decoration: none; }
     .wv-header { position: sticky; top: 0; z-index: 50; border-bottom: 0.5px solid var(--bd); background: rgba(3,7,18,0.85); backdrop-filter: blur(16px); }
-    .wv-header-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-    .wv-logo { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+    .wv-header-inner { max-width: 1160px; margin: 0 auto; padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .wv-logo { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .wv-version { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--tm); background: var(--c2); border: 0.5px solid var(--bds); padding: 3px 8px; border-radius: 20px; margin-left: 10px; -webkit-text-fill-color: var(--tm); }
     .wv-nav { display: flex; gap: 2rem; }
-    .wv-nav a { font-size: 13px; color: var(--tm); text-decoration: none; transition: color 0.15s; }
+    .wv-nav a { font-size: 13px; color: var(--tm); transition: color 0.15s; }
     .wv-nav a:hover { color: var(--tp); }
     .wv-section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ta); margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; }
     .wv-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: #38bdf8; color: #030712; border-radius: var(--r); font-size: 14px; font-weight: 700; transition: background 0.15s, transform 0.1s; border: none; cursor: pointer; }
@@ -347,11 +495,15 @@ function buildDesignSystemMeta({ title, description, canonical }) {
     .wv-btn-ghost:hover { background: var(--c2); color: var(--tp); }
     .wv-pill { font-size: 10px; background: rgba(56,189,248,0.1); color: var(--ta); border: 0.5px solid rgba(56,189,248,0.2); padding: 3px 8px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; }
     .wv-footer { border-top: 0.5px solid var(--bd); background: var(--c0); padding: 3rem 2rem; }
-    .wv-footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+    .wv-footer-inner { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
     .wv-footer-copy { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); }
     .wv-footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
     .wv-footer-links a { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); transition: color 0.15s; }
     .wv-footer-links a:hover { color: var(--ts); }
+    .wv-empty { color: var(--tm); font-size: 14px; }
+    .wv-bullets { list-style: none; display: flex; flex-direction: column; gap: .8rem; }
+    .wv-bullets li { position: relative; padding-left: 1rem; color: var(--ts); font-size: 14px; line-height: 1.65; }
+    .wv-bullets li::before { content: ''; position: absolute; left: 0; top: .68rem; width: 6px; height: 6px; border-radius: 999px; background: var(--ta); }
     @media (max-width: 768px) { .wv-nav { display: none; } }
   </style>`;
 }
@@ -368,27 +520,87 @@ function renderSiteFooter(version = BUILD_VERSION) {
 // RENDER - TERMO
 // ============================================================
 
+function renderInfoGrid(data) {
+  const rows = [
+    ["Nome canônico", data.nomeCanonico],
+    ["Sigla", data.sigla],
+    ["Slug", data.slug],
+    ["URN interna", data.urn],
+    ["Status", data.status],
+    ["Versão do termo", data.versaoTermo],
+    ["Data de criação", data.dataCriacaoTermo],
+    ["Data de modificação", data.dataModificacaoTermo]
+  ].filter(([, value]) => value);
+
+  if (!rows.length) return `<p class="wv-empty">Não informado.</p>`;
+  return `<div class="wv-info-grid">${rows.map(([k, v]) => `<div class="wv-info-card"><div class="wv-info-key">${escapeHtml(k)}</div><div class="wv-info-value">${escapeHtml(v)}</div></div>`).join("")}</div>`;
+}
+
+function renderArtifactsGrid(data) {
+  const items = [
+    ["Whitepaper", data.urlWhitepaper],
+    ["DataCatalog", data.dataCatalog?.url || ""],
+    ["Dataset", data.urlDataset],
+    ["Event", data.urlEvento],
+    ["Vídeo", data.videoUrl],
+    ["Wikibase item", data.wikibaseItem]
+  ].filter(([, value]) => value);
+
+  if (!items.length) return `<p class="wv-empty">Não informado.</p>`;
+  return `<div class="wv-artifacts-grid">${items.map(([label, url]) => `<a class="wv-artifact-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">${escapeHtml(label)}</span><span class="wv-artifact-url">${escapeHtml(url)}</span></a>`).join("")}</div>`;
+}
+
 function renderTermPage(record) {
-  const { json, term, website, org, person, termSet, creativeWork, dataset, event, dataCatalog } = record;
-  const termSlug = getDefinedTermId(term);
-  const title = term.name || termSlug;
-  const description = canonicalDescription(term.description || creativeWork?.description || "", 160);
-  const canonical = term.url || `${siteBaseUrl}/termos/${termSlug}.html`;
-  const category = getCategoryFromTerm(term);
-  const altNames = Array.isArray(term.alternateName) ? term.alternateName.join(" · ") : (term.alternateName || "");
-  const perguntas = propertyValues(term, "perguntasRelevantes");
-  const mitigacoes = propertyValues(term, "mitigacaoDependeDe");
-  const basedOn = propertyValues(term, "isBasedOn");
-  const provenance = propertyThingDescription(term, "proveniencia");
-  const metadados = propertyThingDescription(term, "metadadosVersao");
-  const service = term.about || null;
+  const { json, term, website, org, person, termSet } = record;
+  const data = extractTemplateData(record);
+  const title = data.nomeCanonico || data.slug;
+  const description = canonicalDescription(data.descricaoLonga || data.whitepaper?.description || "", 160);
+  const canonical = data.urlPrincipalPagina || `${siteBaseUrl}/termos/${data.slug}.html`;
   const contentHash = sha256(JSON.stringify(json));
-  const doi = getTermPrimaryDoi(term);
-  const wikidata = getTermPrimaryWikidata(term);
-  const pageGraph = { "@context": "https://schema.org", "@graph": [website, org, person, termSet, term, creativeWork, dataCatalog, dataset, event].filter(Boolean) };
+  const pageGraph = { "@context": "https://schema.org", "@graph": [website, org, person, termSet, ...json["@graph"].filter(Boolean).filter(node => ![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))] };
 
   return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
-  .wv-container{max-width:860px;margin:0 auto;padding:6rem 2rem 4rem}.wv-back{display:inline-flex;align-items:center;gap:6px;color:var(--tm);font-size:14px;margin-bottom:2rem;transition:color .15s}.wv-back:hover{color:var(--tp)}.wv-term-title{font-size:clamp(32px,5vw,52px);font-weight:800;color:var(--tp);letter-spacing:-.03em;margin-bottom:.25rem}.wv-term-alternate{font-size:18px;color:var(--tm);margin-bottom:1.5rem}.wv-term-meta{display:flex;flex-wrap:wrap;gap:1rem;font-size:13px;color:var(--tm);border-bottom:.5px solid var(--bd);padding-bottom:1.5rem;margin-bottom:2rem}.wv-term-meta span{display:flex;align-items:center;gap:5px}.wv-term-meta a{color:var(--ta)}.wv-term-meta a:hover{text-decoration:underline}.wv-section-title{font-size:20px;font-weight:600;color:var(--tp);margin:2.5rem 0 1rem}.wv-definition{font-size:17px;line-height:1.8;color:var(--ts)}.wv-visao{background:var(--c1);border-left:3px solid var(--ta);padding:1.5rem;border-radius:var(--r);margin:2rem 0;font-size:16px;color:var(--ts);line-height:1.7;white-space:pre-wrap}.wv-dual-list{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin:2rem 0}.wv-dual-list ul{list-style:none}.wv-dual-list li{padding:.65rem 0;border-bottom:.5px solid var(--bd);font-size:14px;color:var(--ts)}.wv-dual-list li::before{content:"•";color:var(--ta);margin-right:8px}.wv-proof-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--tm);background:var(--c2);border:.5px solid var(--bds);padding:6px 12px;border-radius:20px;margin:1rem 0}.wv-proof-badge .hash{color:var(--ta);font-size:10px}.wv-box{background:var(--c1);border:.5px solid var(--bd);border-radius:var(--r);padding:1.25rem 1.5rem;margin:1.5rem 0}.wv-box p,.wv-box li{font-size:14px;color:var(--ts);white-space:pre-wrap}.wv-links{display:flex;gap:1rem;flex-wrap:wrap;margin:1.5rem 0}.wv-links a{display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:var(--r);font-size:14px;font-weight:700}.wv-links .ms{background:#0078d4;color:#fff}.wv-links .gg{background:#4285f4;color:#fff}.wv-links .aws{background:#ff9900;color:#111}.wv-minor{font-size:13px;color:var(--tm)}@media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-dual-list{grid-template-columns:1fr}}</style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><p class="wv-section-label">${escapeHtml(category)}</p><h1 class="wv-term-title">${escapeHtml(title)}</h1>${altNames ? `<p class="wv-term-alternate">${escapeHtml(altNames)}</p>` : ""}<div class="wv-term-meta"><span>TermCode <code>${escapeHtml(term.termCode || "")}</code></span>${doi ? `<span>DOI <a href="${escapeHtml(doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(doi.replace('https://doi.org/',''))}</a></span>` : ""}${wikidata ? `<span><a href="${escapeHtml(wikidata)}" target="_blank" rel="noopener noreferrer">Wikidata</a></span>` : ""}${event?.url ? `<span><a href="${escapeHtml(event.url)}" target="_blank" rel="noopener noreferrer">Apresentação</a></span>` : ""}${dataset?.url ? `<span><a href="${escapeHtml(dataset.url)}" target="_blank" rel="noopener noreferrer">Dataset</a></span>` : ""}</div><div class="wv-proof-badge"><span>Verificado</span><span class="hash">SHA256 ${contentHash.substring(0,16)}</span><span>${BUILD_TIMESTAMP.split('T')[0]}</span></div><h2 class="wv-section-title">Definição canônica</h2><div class="wv-definition">${escapeHtml(term.description || "")}</div>${service ? `<div class="wv-visao" id="visao-hidra"><strong style="color:var(--ta);display:block;margin-bottom:.5rem">Visão Hidra</strong>${escapeHtml(service.description || '')}</div>` : ''}${(perguntas.length || mitigacoes.length) ? `<div class="wv-dual-list">${perguntas.length ? `<div><h3 style="font-size:16px;font-weight:600;color:var(--tp);margin-bottom:.75rem">Perguntas relevantes</h3><ul>${perguntas.map(v=>`<li>${escapeHtml(typeof v === 'object' ? JSON.stringify(v) : v)}</li>`).join('')}</ul></div>` : ''}${mitigacoes.length ? `<div><h3 style="font-size:16px;font-weight:600;color:var(--tp);margin-bottom:.75rem">Mitigação depende de</h3><ul>${mitigacoes.map(v=>`<li>${escapeHtml(typeof v === 'object' ? JSON.stringify(v) : v)}</li>`).join('')}</ul></div>` : ''}</div>` : ''}${basedOn.length ? `<div class="wv-links">${basedOn.map((item, idx)=>`<a class="${idx===0?'ms':idx===1?'gg':'aws'}" href="${escapeHtml(item.url || item)}" target="_blank" rel="noopener noreferrer">Fonte ${idx+1}</a>`).join('')}</div>` : ''}${creativeWork ? `<div class="wv-box"><h2 class="wv-section-title" style="margin-top:0">Whitepaper</h2><p>${escapeHtml(creativeWork.description || '')}</p></div>` : ''}${dataCatalog ? `<div class="wv-box"><h2 class="wv-section-title" style="margin-top:0">Catálogo de dados</h2><p>${escapeHtml(dataCatalog.description || '')}</p></div>` : ''}${provenance ? `<div class="wv-box"><h2 class="wv-section-title" style="margin-top:0">Proveniência</h2><p>${escapeHtml(provenance)}</p></div>` : ''}${metadados ? `<p class="wv-minor">${escapeHtml(metadados)}</p>` : ''}<div style="margin-top:3rem;border-top:.5px solid var(--bd);padding-top:2rem"><p class="wv-minor">Este verbete parte da <strong style="color:var(--tp)">Wikivendas</strong>. <a href="/termos/${termSlug}.json" style="color:var(--ta)">JSON-LD</a> · <a href="/glossario.json" style="color:var(--ta)">Grafo completo</a></p></div></main>${renderSiteFooter()}</body></html>`;
+  .wv-container{max-width:1160px;margin:0 auto;padding:5rem 2rem 4rem}
+  .wv-back{display:inline-flex;align-items:center;gap:6px;color:var(--tm);font-size:14px;margin-bottom:2rem;transition:color .15s}
+  .wv-back:hover{color:var(--tp)}
+  .wv-hero{background:linear-gradient(180deg,rgba(56,189,248,.07),rgba(129,140,248,.03));border:.5px solid var(--bd);border-radius:24px;padding:2rem;margin-bottom:2rem}
+  .wv-term-title{font-size:clamp(32px,5vw,56px);font-weight:900;color:var(--tp);letter-spacing:-.04em;line-height:1.03;margin-bottom:.5rem}
+  .wv-term-alternate{font-size:16px;color:var(--tm);margin-bottom:1rem}
+  .wv-term-meta{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+  .wv-term-meta span,.wv-term-meta a{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:var(--c1);border:.5px solid var(--bd);font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--ts)}
+  .wv-term-meta a{color:var(--ta)}
+  .wv-proof-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--tm);background:var(--c2);border:.5px solid var(--bds);padding:6px 12px;border-radius:20px;margin-top:1rem}
+  .wv-proof-badge .hash{color:var(--ta);font-size:10px}
+  .wv-main-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:1.5rem;align-items:start}
+  .wv-stack{display:flex;flex-direction:column;gap:1.5rem}
+  .wv-card{background:var(--c1);border:.5px solid var(--bd);border-radius:20px;padding:1.4rem}
+  .wv-card h2{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:1rem;letter-spacing:-.02em}
+  .wv-card h3{font-size:14px;font-weight:700;color:var(--tp);margin-bottom:.85rem;letter-spacing:-.01em}
+  .wv-body{font-size:16px;line-height:1.85;color:var(--ts);white-space:pre-wrap}
+  .wv-dual{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .wv-subcard{background:var(--c2);border:.5px solid var(--bd);border-radius:16px;padding:1rem}
+  .wv-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+  .wv-info-card{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
+  .wv-info-key{font-size:11px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.5rem}
+  .wv-info-value{font-size:14px;color:var(--tp);line-height:1.6;word-break:break-word}
+  .wv-inline-pills{display:flex;flex-wrap:wrap;gap:.5rem}
+  .wv-inline-pills .pill{font-size:11px;padding:6px 10px;border-radius:999px;background:rgba(56,189,248,.08);color:var(--ta);border:.5px solid rgba(56,189,248,.2);font-family:'JetBrains Mono',monospace}
+  .wv-service-box{background:linear-gradient(180deg,rgba(56,189,248,.06),rgba(0,0,0,0));border-left:3px solid var(--ta)}
+  .wv-links-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .wv-link-card{display:flex;flex-direction:column;gap:.45rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
+  .wv-link-card .k{font-size:11px;color:var(--tm);font-family:'JetBrains Mono',monospace;text-transform:uppercase}
+  .wv-link-card .v{font-size:13px;color:var(--ta);word-break:break-word}
+  .wv-artifacts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .wv-artifact-card{display:flex;flex-direction:column;gap:.45rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem;transition:background .15s,border-color .15s}
+  .wv-artifact-card:hover{background:var(--c3);border-color:rgba(56,189,248,.24)}
+  .wv-artifact-label{font-size:11px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm)}
+  .wv-artifact-url{font-size:13px;color:var(--ta);word-break:break-word}
+  .wv-side-card{position:sticky;top:84px}
+  .wv-json{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#dbeafe;background:#020617;border:.5px solid rgba(255,255,255,.08);border-radius:16px;padding:1rem;white-space:pre-wrap;word-break:break-word;max-height:720px;overflow:auto}
+  .wv-muted{font-size:13px;color:var(--tm)}
+  @media(max-width:980px){.wv-main-grid{grid-template-columns:1fr}.wv-side-card{position:static}}
+  @media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-dual,.wv-info-grid,.wv-links-grid,.wv-artifacts-grid{grid-template-columns:1fr}}
+  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero"><p class="wv-section-label">${escapeHtml(data.categoria)}</p><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length ? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ""}<p class="wv-body">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-term-meta"><span>TermCode <code>${escapeHtml(data.urn || "")}</code></span>${data.doi ? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI ${escapeHtml(data.doi.replace('https://doi.org/',''))}</a>` : ''}${data.wikidata ? `<a href="${escapeHtml(data.wikidata)}" target="_blank" rel="noopener noreferrer">Wikidata</a>` : ''}${data.urlDataset ? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento ? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof-badge"><span>Verificado</span><span class="hash">SHA256 ${contentHash.substring(0,16)}</span><span>${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><div class="wv-main-grid"><section class="wv-stack"><article class="wv-card"><h2>1. Identidade do termo</h2>${renderInfoGrid(data)}</article><article class="wv-card"><h2>2. Definição editorial</h2><div class="wv-stack" style="gap:1rem"><div><h3>Descrição curta</h3><p class="wv-body">${escapeHtml(data.descricaoCurta || 'Não informado.')}</p></div><div><h3>Descrição longa</h3><p class="wv-body">${escapeHtml(data.descricaoLonga || 'Não informado.')}</p></div><div><h3>Alternate names</h3>${data.alternateNames.length ? `<div class="wv-inline-pills">${data.alternateNames.map(v => `<span class="pill">${escapeHtml(v)}</span>`).join('')}</div>` : `<p class="wv-empty">Não informado.</p>`}</div><div class="wv-links-grid"><div class="wv-link-card"><span class="k">Categoria</span><span class="v">${escapeHtml(data.categoria || 'Geral')}</span></div><div class="wv-link-card"><span class="k">Pertence ao protocolo</span><span class="v">${escapeHtml(data.pertenceAoProtocolo || 'Protocolo Hidra')}</span></div></div></div></article><article class="wv-card"><h2>3. Fronteira conceitual</h2><div class="wv-dual"><div class="wv-subcard"><h3>O que é</h3>${renderList(data.oQueE)}</div><div class="wv-subcard"><h3>O que não é</h3>${renderList(data.oQueNaoE)}</div></div></article><article class="wv-card wv-service-box" id="visao-hidra"><h2>4. Relação com a Visão Hidra</h2><div class="wv-links-grid"><div class="wv-link-card"><span class="k">Nome do serviço</span><span class="v">${escapeHtml(data.nomeServico || 'Visão Hidra')}</span></div><div class="wv-link-card"><span class="k">Público</span><span class="v">${escapeHtml(data.publico || 'Não informado')}</span></div><div class="wv-link-card"><span class="k">Área atendida</span><span class="v">${escapeHtml(data.areaAtendida || 'Não informado')}</span></div><div class="wv-link-card"><span class="k">URL principal da página</span><span class="v">${data.urlPrincipalPagina ? `<a href="${escapeHtml(data.urlPrincipalPagina)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.urlPrincipalPagina)}</a>` : 'Não informado'}</span></div></div><div style="margin-top:1rem"><h3>Descrição do serviço</h3><p class="wv-body">${escapeHtml(data.descricaoServico || 'Não informado.')}</p></div></article><article class="wv-card"><h2>5. Lastro técnico</h2><div class="wv-links-grid"><div class="wv-subcard"><h3>Fontes técnicas</h3>${renderLinkList(data.fontesTecnicas)}</div><div class="wv-subcard"><h3>Referências principais</h3><div class="wv-stack" style="gap:.75rem"><div class="wv-link-card"><span class="k">DOI</span><span class="v">${data.doi ? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.doi)}</a>` : 'Não informado'}</span></div><div class="wv-link-card"><span class="k">URL principal da página</span><span class="v">${data.urlPrincipalPagina ? `<a href="${escapeHtml(data.urlPrincipalPagina)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.urlPrincipalPagina)}</a>` : 'Não informado'}</span></div><div class="wv-link-card"><span class="k">URL do whitepaper</span><span class="v">${data.urlWhitepaper ? `<a href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.urlWhitepaper)}</a>` : 'Não informado'}</span></div><div class="wv-link-card"><span class="k">URL do dataset</span><span class="v">${data.urlDataset ? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.urlDataset)}</a>` : 'Não informado'}</span></div><div class="wv-link-card"><span class="k">URL do evento</span><span class="v">${data.urlEvento ? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.urlEvento)}</a>` : 'Não informado'}</span></div></div></div></div></article><article class="wv-card"><h2>6. Mitigação</h2>${renderList(data.mitigacoes)}</article><article class="wv-card"><h2>7. Perguntas relevantes</h2>${renderList(data.perguntas)}</article><article class="wv-card"><h2>8. Proveniência</h2><div class="wv-links-grid"><div class="wv-link-card"><span class="k">Criador</span><span class="v">${escapeHtml(data.criador || 'Não informado')}</span></div><div class="wv-link-card"><span class="k">Projeto</span><span class="v">${escapeHtml(data.projeto || 'Não informado')}</span></div><div class="wv-link-card"><span class="k">Contexto</span><span class="v">${escapeHtml(data.contexto || 'Não informado')}</span></div><div class="wv-link-card"><span class="k">Primeira publicação</span><span class="v">${escapeHtml(data.primeiraPublicacao || 'Não informado')}</span></div></div>${data.provenienciaTexto ? `<p class="wv-muted" style="margin-top:1rem">${escapeHtml(data.provenienciaTexto)}</p>` : ''}</article><article class="wv-card"><h2>9. Artefatos</h2>${renderArtifactsGrid(data)}</article></section><aside class="wv-stack"><article class="wv-card wv-side-card"><h2>JSON canônico</h2><div class="wv-json">${escapeHtml(JSON.stringify(json, null, 2))}</div></article></aside></div></main>${renderSiteFooter()}</body></html>`;
 }
 
 // ============================================================
@@ -396,17 +608,18 @@ function renderTermPage(record) {
 // ============================================================
 
 function renderTermListRow(record) {
-  return `<a href="/termos/${getDefinedTermId(record.term)}.html" class="wv-termo-item"><span class="wv-termo-item-nome">${escapeHtml(record.term.name || '')}</span><span class="wv-termo-item-def">${escapeHtml(canonicalDescription(record.term.description || '', 100))}</span></a>`;
+  const data = extractTemplateData(record);
+  return `<a href="/termos/${data.slug}.html" class="wv-termo-item"><span class="wv-termo-item-nome">${escapeHtml(data.nomeCanonico || '')}</span><span class="wv-termo-item-def">${escapeHtml(canonicalDescription(data.descricaoLonga || '', 100))}</span></a>`;
 }
 
 function renderGlossaryPage(records, termSet, website, org, person) {
   const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const groups = categories.map(cat => {
     const terms = records.filter(r => getCategoryFromTerm(r.term) === cat);
-    return `<section class="wv-cat-section glossary-group" data-search="${escapeHtml([cat,...terms.map(t=>t.term.name)].join(' ').toLowerCase())}"><div class="wv-cat-titulo"><span class="wv-cat-dot" style="background:${getCategoryColor(cat)}"></span><a href="/glossario/${slugify(cat)}/" style="color:var(--tp)">${escapeHtml(cat)}</a><span class="wv-cat-count">${terms.length} termos</span></div><div class="wv-cat-desc">${escapeHtml(getCatDesc(cat))}</div><div class="wv-termo-list">${terms.slice(0,8).map(renderTermListRow).join('')}</div></section>`;
+    return `<section class="wv-cat-section glossary-group" data-search="${escapeHtml([cat,...terms.map(t=>t.term.name)].join(' ').toLowerCase())}"><div class="wv-cat-titulo"><span class="wv-cat-dot" style="background:${getCategoryColor(cat)}"></span><a href="/glossario/${slugify(cat)}/" style="color:var(--tp)">${escapeHtml(cat)}</a><span class="wv-cat-count">${terms.length} termos</span></div><div class="wv-cat-desc">${escapeHtml(getCatDesc(cat))}</div><div class="wv-termo-list">${terms.slice(0,50).map(renderTermListRow).join('')}</div></section>`;
   }).join('');
   const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person, termSet].filter(Boolean) };
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Glossário Wikivendas', description:'Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.', canonical:`${siteBaseUrl}/glossario/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-glossario{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}.wv-headline{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}.wv-lead{font-size:17px;color:var(--ts);max-width:760px;line-height:1.7;margin-bottom:2rem}.wv-search{width:100%;padding:14px 16px;background:var(--c1);color:var(--tp);border:.5px solid var(--bds);border-radius:var(--r);font-size:15px;margin-bottom:3rem}.wv-cat-section{margin-bottom:3rem}.wv-cat-titulo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--tp);margin-bottom:.5rem}.wv-cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}.wv-cat-count{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm);font-weight:400;margin-left:4px}.wv-cat-desc{font-size:13px;color:var(--tm);margin-bottom:1rem;max-width:600px}.wv-termo-list{display:flex;flex-direction:column;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}.wv-termo-item{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:.75rem 1.25rem;background:var(--c1);border-bottom:.5px solid var(--bd);transition:background .15s}.wv-termo-item:last-child{border-bottom:none}.wv-termo-item:hover{background:var(--c2)}.wv-termo-item-nome{font-size:14px;font-weight:600;color:var(--tp)}.wv-termo-item-def{font-size:12px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:768px){.wv-glossario{padding:4rem 1.25rem 3rem}.wv-termo-item{grid-template-columns:1fr}.wv-termo-item-def{display:none}}</style></head><body>${renderSiteHeader()}<section class="wv-glossario"><p class="wv-section-label">Índice canônico terminológico</p><h1 class="wv-headline">Glossário da Wikivendas</h1><p class="wv-lead">Página real e indexável com todas as categorias e verbetes da ontologia Wikivendas. Cada termo aponta para seu HTML individual e para seu JSON-LD correspondente.</p><input id="wv-glossary-search" class="wv-search" type="search" placeholder="Buscar termo ou categoria">${groups || '<p class="wv-lead">Nenhum termo válido publicado ainda.</p>'}</section>${renderSiteFooter()}<script>const q=document.getElementById('wv-glossary-search');const groups=[...document.querySelectorAll('.glossary-group')];if(q){q.addEventListener('input',()=>{const s=q.value.toLowerCase().trim();groups.forEach(sec=>{const t=sec.dataset.search;sec.style.display=!s||t.includes(s)?'':'none';});});}</script></body></html>`;
+  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Glossário Wikivendas', description:'Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.', canonical:`${siteBaseUrl}/glossario/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-glossario{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}.wv-headline{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}.wv-lead{font-size:17px;color:var(--ts);max-width:760px;line-height:1.7;margin-bottom:2rem}.wv-search{width:100%;padding:14px 16px;background:var(--c1);color:var(--tp);border:.5px solid var(--bds);border-radius:var(--r);font-size:15px;margin-bottom:3rem}.wv-cat-section{margin-bottom:3rem}.wv-cat-titulo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--tp);margin-bottom:.5rem}.wv-cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}.wv-cat-count{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm);font-weight:400;margin-left:4px}.wv-cat-desc{font-size:13px;color:var(--tm);margin-bottom:1rem;max-width:600px}.wv-termo-list{display:flex;flex-direction:column;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}.wv-termo-item{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:.9rem 1.25rem;background:var(--c1);border-bottom:.5px solid var(--bd);transition:background .15s}.wv-termo-item:last-child{border-bottom:none}.wv-termo-item:hover{background:var(--c2)}.wv-termo-item-nome{font-size:14px;font-weight:600;color:var(--tp)}.wv-termo-item-def{font-size:12px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:768px){.wv-glossario{padding:4rem 1.25rem 3rem}.wv-termo-item{grid-template-columns:1fr}.wv-termo-item-def{display:none}}</style></head><body>${renderSiteHeader()}<section class="wv-glossario"><p class="wv-section-label">Índice canônico terminológico</p><h1 class="wv-headline">Glossário da Wikivendas</h1><p class="wv-lead">Página real e indexável com todas as categorias e verbetes da ontologia Wikivendas. Cada termo aponta para seu HTML individual e para seu JSON-LD correspondente.</p><input id="wv-glossary-search" class="wv-search" type="search" placeholder="Buscar termo ou categoria">${groups || '<p class="wv-lead">Nenhum termo válido publicado ainda.</p>'}</section>${renderSiteFooter()}<script>const q=document.getElementById('wv-glossary-search');const groups=[...document.querySelectorAll('.glossary-group')];if(q){q.addEventListener('input',()=>{const s=q.value.toLowerCase().trim();groups.forEach(sec=>{const t=sec.dataset.search;sec.style.display=!s||t.includes(s)?'':'none';});});}</script></body></html>`;
 }
 
 function renderCategoryPage(category, records, categories, termSet, website, org, person) {
@@ -422,14 +635,17 @@ function renderCategoryPage(category, records, categories, termSet, website, org
 // ============================================================
 
 function renderHomePage(records, termSet, website, org, person) {
-  const cardsHtml = records.slice(0, 6).map((r, i) => `<div class="wv-card" onclick="window.location.href='/termos/${getDefinedTermId(r.term)}.html'"><div class="wv-card-index">${String(i + 1).padStart(3, '0')} <span style="font-size:10px;color:var(--tm)">SHA256 ${sha256(r.term.description || '').substring(0, 8)}</span></div><div class="wv-card-name">${escapeHtml(r.term.name || '')}</div><div class="wv-card-def">${escapeHtml(canonicalDescription(r.term.description || '', 120))}</div><div class="wv-card-footer"><span class="wv-pill">${escapeHtml(getCategoryFromTerm(r.term))}</span>${getTermPrimaryDoi(r.term) ? `<span class="wv-doi">DOI ${escapeHtml(getTermPrimaryDoi(r.term).replace('https://doi.org/',''))}</span>` : ''}</div></div>`).join('');
+  const cardsHtml = records.slice(0, 6).map((r, i) => {
+    const data = extractTemplateData(r);
+    return `<div class="wv-card" onclick="window.location.href='/termos/${data.slug}.html'"><div class="wv-card-index">${String(i + 1).padStart(3, '0')} <span style="font-size:10px;color:var(--tm)">SHA256 ${sha256(data.descricaoLonga || '').substring(0, 8)}</span></div><div class="wv-card-name">${escapeHtml(data.nomeCanonico || '')}</div><div class="wv-card-def">${escapeHtml(canonicalDescription(data.descricaoLonga || '', 120))}</div><div class="wv-card-footer"><span class="wv-pill">${escapeHtml(data.categoria)}</span>${data.doi ? `<span class="wv-doi">DOI ${escapeHtml(data.doi.replace('https://doi.org/',''))}</span>` : ''}</div></div>`;
+  }).join('');
   const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person, termSet].filter(Boolean) };
   return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Wikivendas — A Primeira Fonte de Verdade para IA Comercial B2B', description:'A primeira enciclopédia brasileira de termos técnicos de vendas B2B, RevOps imobiliário e governança ontológica.', canonical:`${siteBaseUrl}/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-hero{max-width:1100px;margin:0 auto;padding:6rem 2rem 5rem}.wv-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ta);margin-bottom:2rem}.wv-eyebrow:before{content:'';display:inline-block;width:6px;height:6px;background:var(--ta);border-radius:50%}.wv-slogan{font-size:clamp(44px,7vw,88px);font-weight:900;line-height:1;letter-spacing:-.04em;color:var(--tp);margin-bottom:2.5rem;max-width:900px}.wv-slogan em{font-style:normal;background:linear-gradient(135deg,#38bdf8 0,#818cf8 60%,#f472b6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.wv-hero-body{font-size:18px;line-height:1.7;color:var(--ts);max-width:620px;margin-bottom:1.25rem}.wv-hero-sub{font-size:14px;color:var(--tm);max-width:540px;margin-bottom:2.5rem;line-height:1.6}.wv-hero-actions{display:flex;gap:1rem;flex-wrap:wrap}.wv-value{max-width:1100px;margin:0 auto;padding:4rem 2rem}.wv-value-headline{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.03em;color:var(--tp);line-height:1.15;margin-bottom:1.25rem}.wv-value-body{font-size:16px;color:var(--ts);max-width:600px;line-height:1.7;margin-bottom:3rem}.wv-dual{display:grid;grid-template-columns:1fr 1fr;gap:0;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}.wv-dual-col{padding:2.5rem}.wv-dual-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:1rem;padding:4px 10px;border-radius:20px;display:inline-block}.wv-dual-tag.human{color:#34d399;background:rgba(52,211,153,.1);border:.5px solid rgba(52,211,153,.2)}.wv-dual-tag.ai{color:#818cf8;background:rgba(129,140,248,.1);border:.5px solid rgba(129,140,248,.2)}.wv-dual-title{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:.75rem;line-height:1.3}.wv-dual-body{font-size:14px;color:var(--ts);line-height:1.6}.wv-cards-section{max-width:1100px;margin:0 auto;padding:4rem 2rem}.wv-cards-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}.wv-cards-headline{font-size:28px;font-weight:800;color:var(--tp);letter-spacing:-.02em}.wv-cards-link{font-size:13px;color:var(--ta)}.wv-cards-link:hover{color:#7dd3fc}.wv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem}.wv-card{background:var(--c1);border:.5px solid var(--bd);border-radius:var(--r);padding:1.5rem;cursor:pointer;transition:border-color .15s,background .15s;display:flex;flex-direction:column;gap:.75rem}.wv-card:hover{border-color:rgba(56,189,248,.3);background:var(--c2)}.wv-card-index{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--tm)}.wv-card-name{font-size:17px;font-weight:700;color:var(--tp);line-height:1.3}.wv-card-def{font-size:13px;color:var(--ts);line-height:1.5;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.wv-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem}.wv-doi{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--tm);text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:140px}@media(max-width:768px){.wv-hero{padding:4rem 1.25rem 3rem}.wv-dual{grid-template-columns:1fr}.wv-dual-col{padding:1.5rem}}</style></head><body>${renderSiteHeader()}<main><section class="wv-hero"><div class="wv-eyebrow">Ontological SEO · Forensic GEO</div><h1 class="wv-slogan">A fonte de verdade que a <em>IA</em> consulta.</h1><p class="wv-hero-body">Primeira enciclopédia brasileira de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete possui URN, DOI, validação cruzada e registro estruturado.</p><p class="wv-hero-sub">Construída para ser a referência canônica lida por humanos e citada por modelos de linguagem como fonte de verdade.</p><div class="wv-hero-actions"><a href="/glossario/" class="wv-btn-primary">Explorar Glossário</a><a href="/sobre/" class="wv-btn-ghost">Sobre o Projeto</a></div></section><section class="wv-value"><h2 class="wv-value-headline">Por dentro da ontologia</h2><p class="wv-value-body">Cada termo da Wikivendas é definido com uma estrutura que preserva integridade semântica, rastreabilidade de origem e consistência de leitura para humanos e para máquinas.</p><div class="wv-dual"><div class="wv-dual-col" style="background:var(--c1);border-right:.5px solid var(--bd)"><div class="wv-dual-tag human">Para humanos</div><div class="wv-dual-title">Definição canônica e contexto</div><div class="wv-dual-body">Redação clara, exemplos reais do mercado B2B brasileiro, referências cruzadas e contexto semântico consistente.</div></div><div class="wv-dual-col" style="background:var(--c1)"><div class="wv-dual-tag ai">Para máquinas</div><div class="wv-dual-title">JSON-LD, Schema.org e GEO</div><div class="wv-dual-body">Dados estruturados que LLMs consomem diretamente, com relações semânticas estáveis e origem rastreável a partir do seu banco ontológico.</div></div></div></section><section class="wv-cards-section"><div class="wv-cards-header"><h2 class="wv-cards-headline">Verbetes em destaque</h2><a href="/glossario/" class="wv-cards-link">Glossário completo →</a></div><div class="wv-grid">${cardsHtml || '<p class="wv-hero-sub">Nenhum termo válido publicado ainda.</p>'}</div></section></main>${renderSiteFooter()}</body></html>`;
 }
 
 function renderAboutPage(website, org, person) {
   const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person].filter(Boolean) };
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Sobre — Wikivendas', description:'Conheça a Wikivendas, a primeira enciclopédia brasileira de vendas B2B e RevOps imobiliário.', canonical:`${siteBaseUrl}/sobre/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-sobre{max-width:760px;margin:0 auto;padding:5rem 2rem 4rem}.wv-sobre h1{font-size:clamp(34px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--tp);margin-bottom:1.5rem}.wv-sobre h2{font-size:22px;font-weight:700;color:var(--tp);margin-top:2.5rem;margin-bottom:.75rem}.wv-sobre p,.wv-sobre li{font-size:16px;line-height:1.7;color:var(--ts);margin-bottom:1rem}.wv-sobre ul{padding-left:1.5rem}.wv-sobre strong{color:var(--tp)}</style></head><body>${renderSiteHeader()}<section class="wv-sobre"><p class="wv-section-label">Sobre</p><h1>Wikivendas, fonte de verdade para IA comercial</h1><p><strong>Wikivendas</strong> é uma enciclopédia dedicada a termos técnicos de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete é uma definição canônica pensada para humanos e para modelos de linguagem.</p><h2>Arquitetura JSON-first</h2><p>O conteúdo nasce como JSON-LD canônico. O HTML é apenas a camada de visualização, gerada a partir do grafo estruturado de cada termo.</p><h2>Protocolo Hidra</h2><p>O Protocolo Hidra atua como camada de amarração semântica entre problema, diagnóstico, evidência, mitigação e solução, preservando coerência para leitura humana e consumo por IA.</p></section>${renderSiteFooter()}</body></html>`;
+  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Sobre — Wikivendas', description:'Conheça a Wikivendas, a primeira enciclopédia brasileira de vendas B2B e RevOps imobiliário.', canonical:`${siteBaseUrl}/sobre/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-sobre{max-width:760px;margin:0 auto;padding:5rem 2rem 4rem}.wv-sobre h1{font-size:clamp(34px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--tp);margin-bottom:1.5rem}.wv-sobre h2{font-size:22px;font-weight:700;color:var(--tp);margin-top:2.5rem;margin-bottom:.75rem}.wv-sobre p,.wv-sobre li{font-size:16px;line-height:1.7;color:var(--ts);margin-bottom:1rem}.wv-sobre ul{padding-left:1.5rem}.wv-sobre strong{color:var(--tp)}</style></head><body>${renderSiteHeader()}<section class="wv-sobre"><p class="wv-section-label">Sobre</p><h1>Wikivendas, fonte de verdade para IA comercial</h1><p><strong>Wikivendas</strong> é uma enciclopédia dedicada a termos técnicos de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete é uma definição canônica pensada para humanos e para modelos de linguagem.</p><h2>Arquitetura JSON-first</h2><p>O conteúdo nasce como JSON-LD canônico. O HTML é apenas a camada de visualização, gerada a partir do grafo estruturado de cada termo.</p><h2>Template mestre</h2><p>As páginas dos termos seguem o Template Mestre — Termo Canônico Wikivendas, com identidade, definição editorial, fronteira conceitual, Visão Hidra, lastro técnico, mitigação, perguntas, proveniência, artefatos e JSON canônico.</p><h2>Protocolo Hidra</h2><p>O Protocolo Hidra atua como camada de amarração semântica entre problema, diagnóstico, evidência, mitigação e solução, preservando coerência para leitura humana e consumo por IA.</p></section>${renderSiteFooter()}</body></html>`;
 }
 
 // ============================================================
@@ -437,7 +653,10 @@ function renderAboutPage(website, org, person) {
 // ============================================================
 
 function renderSitemap(records, categories) {
-  const termLines = records.map(r => `<url><loc>${siteBaseUrl}/termos/${getDefinedTermId(r.term)}.html</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`).join('');
+  const termLines = records.map(r => {
+    const data = extractTemplateData(r);
+    return `<url><loc>${siteBaseUrl}/termos/${data.slug}.html</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+  }).join('');
   const catLines = categories.map(c => `<url><loc>${siteBaseUrl}/glossario/${slugify(c)}/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('');
   return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${siteBaseUrl}/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url><url><loc>${siteBaseUrl}/glossario/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url><loc>${siteBaseUrl}/sobre/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>${termLines}${catLines}</urlset>`;
 }
@@ -447,7 +666,7 @@ function renderRobots() {
 }
 
 function renderLlmsTxt(records) {
-  return `TITLE: Wikivendas\nURL: ${siteBaseUrl}\nDESCRIPTION: Enciclopédia brasileira de termos técnicos de vendas B2B, RevOps e inteligência comercial.\n\nTERMS:\n${records.map(r => `- ${r.term.name} ${siteBaseUrl}/termos/${getDefinedTermId(r.term)}.html`).join('\n')}\n\nINDEX:\n- Glossário completo ${siteBaseUrl}/glossario/\n- Sobre ${siteBaseUrl}/sobre/\n`;
+  return `TITLE: Wikivendas\nURL: ${siteBaseUrl}\nDESCRIPTION: Enciclopédia brasileira de termos técnicos de vendas B2B, RevOps e inteligência comercial.\n\nTERMS:\n${records.map(r => { const d = extractTemplateData(r); return `- ${d.nomeCanonico} ${siteBaseUrl}/termos/${d.slug}.html`; }).join('\n')}\n\nINDEX:\n- Glossário completo ${siteBaseUrl}/glossario/\n- Sobre ${siteBaseUrl}/sobre/\n`;
 }
 
 function renderAiConsent(person) {
@@ -458,19 +677,15 @@ function renderAiConsent(person) {
     description: "Consentimento explícito para crawling, indexação e citação por LLMs e sistemas de IA. Uso comercial para treinamento de modelos requer licenciamento adicional.",
     license: "https://creativecommons.org/licenses/by/4.0/",
     author: person,
-    datePublished: BUILD_TIMESTAMP.split('T')[0],
+    datePublished: BUILD_TIMESTAMP.split("T")[0],
     inLanguage: "pt-BR",
     isAccessibleForFree: true,
-    creditText: "Fonte Wikivendas — wikivendas.com.br"
+    creditText: "Fonte: Wikivendas — wikivendas.com.br"
   }, null, 2);
 }
 
-// ============================================================
-// RELATÓRIO DE BUILD
-// ============================================================
-
 function writeBuildReport(report) {
-  writeFileSync(`docs/build-report.json`, JSON.stringify(report, null, 2));
+  writeFileSync("docs/build-report.json", JSON.stringify(report, null, 2));
 }
 
 // ============================================================
@@ -518,13 +733,14 @@ async function build() {
 
       const parsed = tryParseJson(raw, `Página ${pageLabel}`);
       if (!parsed.ok) {
-        invalid.push({ pageId: page.id, pageLabel, error: parsed.error, excerpt: parsed.excerpt || "" });
+        invalid.push({ pageId: page.id, pageLabel, error: parsed.error, excerpt: parsed.excerpt });
         continue;
       }
 
       try {
         validateGraph(parsed.value);
         const graph = parsed.value["@graph"];
+        const term = findNode(graph, "DefinedTerm");
         const record = {
           pageId: page.id,
           pageLabel,
@@ -534,25 +750,24 @@ async function build() {
           org: findNode(graph, "Organization"),
           person: findNode(graph, "Person"),
           termSet: findNode(graph, "DefinedTermSet"),
-          term: findNode(graph, "DefinedTerm"),
-          creativeWork: findNode(graph, "CreativeWork"),
+          term,
+          creativeWork: getWhitepaperNode(graph, term?.["@id"] || ""),
           dataCatalog: findNode(graph, "DataCatalog"),
           dataset: findNode(graph, "Dataset"),
-          event: findNode(graph, "Event")
+          event: getEventNode(graph, term?.["@id"] || "")
         };
         records.push(record);
       } catch (error) {
-        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: "" });
+        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: raw.slice(0, 320) });
       }
     }
 
-    records.sort((a, b) => String(a.term.name).localeCompare(String(b.term.name), 'pt-BR'));
+    records.sort((a, b) => String(a.term.name).localeCompare(String(b.term.name), "pt-BR"));
 
-    const docs = "docs";
-    ensureDir(docs);
-    ensureDir(`${docs}/termos`);
-    ensureDir(`${docs}/glossario`);
-    ensureDir(`${docs}/sobre`);
+    ensureDir("docs");
+    ensureDir("docs/termos");
+    ensureDir("docs/glossario");
+    ensureDir("docs/sobre");
 
     const seed = records[0] || {};
     const website = seed.website || fallbackWebsiteNode();
@@ -561,34 +776,31 @@ async function build() {
     const termSet = seed.termSet || fallbackTermSetNode();
 
     const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-    const globalGraph = {
-      "@context": "https://schema.org",
-      "@graph": records.flatMap(r => r.json["@graph"])
-    };
+    const globalGraph = { "@context": "https://schema.org", "@graph": records.flatMap(r => r.json["@graph"]) };
 
-    writeFileSync(`${docs}/index.html`, renderHomePage(records, termSet, website, org, person));
-    writeFileSync(`${docs}/glossario/index.html`, renderGlossaryPage(records, termSet, website, org, person));
-    writeFileSync(`${docs}/sobre/index.html`, renderAboutPage(website, org, person));
+    writeFileSync("docs/index.html", renderHomePage(records, termSet, website, org, person));
+    writeFileSync("docs/glossario/index.html", renderGlossaryPage(records, termSet, website, org, person));
+    writeFileSync("docs/sobre/index.html", renderAboutPage(website, org, person));
 
     for (const record of records) {
-      const slug = getDefinedTermId(record.term);
-      writeFileSync(`${docs}/termos/${slug}.html`, renderTermPage(record));
-      writeFileSync(`${docs}/termos/${slug}.json`, JSON.stringify(record.json, null, 2));
+      const data = extractTemplateData(record);
+      writeFileSync(`docs/termos/${data.slug}.html`, renderTermPage(record));
+      writeFileSync(`docs/termos/${data.slug}.json`, JSON.stringify(record.json, null, 2));
     }
 
     for (const category of categories) {
       const catSlug = slugify(category);
-      ensureDir(`${docs}/glossario/${catSlug}`);
+      ensureDir(`docs/glossario/${catSlug}`);
       const filtered = records.filter(r => getCategoryFromTerm(r.term) === category);
-      writeFileSync(`${docs}/glossario/${catSlug}/index.html`, renderCategoryPage(category, filtered, categories, termSet, website, org, person));
+      writeFileSync(`docs/glossario/${catSlug}/index.html`, renderCategoryPage(category, filtered, categories, termSet, website, org, person));
     }
 
-    writeFileSync(`${docs}/glossario.json`, JSON.stringify(globalGraph, null, 2));
-    writeFileSync(`${docs}/sitemap.xml`, renderSitemap(records, categories));
-    writeFileSync(`${docs}/robots.txt`, renderRobots());
-    writeFileSync(`${docs}/llms.txt`, renderLlmsTxt(records));
-    writeFileSync(`${docs}/ai-consent.json`, renderAiConsent(person));
-    writeFileSync(`${docs}/CNAME`, `${customDomain}\n`);
+    writeFileSync("docs/glossario.json", JSON.stringify(globalGraph, null, 2));
+    writeFileSync("docs/sitemap.xml", renderSitemap(records, categories));
+    writeFileSync("docs/robots.txt", renderRobots());
+    writeFileSync("docs/llms.txt", renderLlmsTxt(records));
+    writeFileSync("docs/ai-consent.json", renderAiConsent(person));
+    writeFileSync("docs/CNAME", customDomain);
 
     const report = {
       buildVersion: BUILD_VERSION,
@@ -602,7 +814,6 @@ async function build() {
       skippedPages: skipped,
       invalidPages: invalid
     };
-
     writeBuildReport(report);
 
     console.log(`Build concluído com sucesso. ${records.length} termos publicados.`);
