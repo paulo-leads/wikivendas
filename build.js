@@ -1,6 +1,11 @@
-import { Client } from "@notionhq/client";
-import { writeFileSync, mkdirSync } from "fs";
-import { createHash } from "crypto";
+#!/usr/bin/env node
+
+// ============================================================
+// CORREÇÃO: Usando CommonJS para compatibilidade com Node.js
+// ============================================================
+const { Client } = require("@notionhq/client");
+const { writeFileSync, mkdirSync } = require("fs");
+const { createHash } = require("crypto");
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -73,10 +78,6 @@ function organizationNode() {
     url: siteBaseUrl
   };
 }
-
-// ============================================================
-// NODES DO GRAFO (AUTHOR + TERM)
-// ============================================================
 function authorNode() {
   return {
     "@type": "Person",
@@ -87,39 +88,6 @@ function authorNode() {
     sameAs: "https://www.wikidata.org/wiki/Q140067740"
   };
 }
-
-function termNode(term) {
-  const node = {
-    "@type": "DefinedTerm",
-    "@id": termNodeId(term),
-    name: term.title,
-    description: term.canonico?.substring(0, 300) || "",
-    url: `${siteBaseUrl}/termos/${term.id}.html`,
-    inLanguage: "pt-BR",
-    termCode: term.id,
-    sameAs: term.wikidata_id
-      ? `https://www.wikidata.org/wiki/${term.wikidata_id}`
-      : undefined,
-    license: "https://creativecommons.org/licenses/by/4.0/",
-    isPartOf: `${siteBaseUrl}/#termSet`
-  };
-  if (term.visao_hidra) {
-    node.about = {
-      "@type": "Service",
-      "@id": `${siteBaseUrl}/#visao-hidra`,
-      name: "Visão Hidra",
-      url: `${siteBaseUrl}/termos/${term.id}.html#visao-hidra`,
-      provider: {
-        "@id": "https://www.wikidata.org/wiki/Q140067740",
-        "@type": "Person",
-        name: "Paulo C. P. Santos"
-      }
-    };
-  }
-  Object.keys(node).forEach((k) => { if (node[k] === undefined) delete node[k]; });
-  return node;
-}
-
 function getCategoryColor(categoria) {
   const cores = {
     "Geral": "#94a3b8",
@@ -133,7 +101,6 @@ function getCategoryColor(categoria) {
   };
   return cores[categoria] || "#94a3b8";
 }
-
 function parseList(str) {
   if (!str) return "";
   return str
@@ -326,240 +293,10 @@ function renderSiteFooter(version = "v1.1.0") {
 </footer>`;
 }
 
-async function queryAllPages() {
-  let results = [];
-  let cursor = undefined;
-
-  while (true) {
-    const res = await notion.databases.query({
-      database_id: databaseId,
-      start_cursor: cursor,
-      sorts: [{ property: "Título", direction: "ascending" }]
-    });
-
-    results = results.concat(res.results);
-    if (!res.has_more) break;
-    cursor = res.next_cursor;
-  }
-
-  return results;
-}
-
 // ============================================================
-// BUSCA DADOS
+// FUNÇÕES DE RENDERIZAÇÃO (definidas antes da execução)
 // ============================================================
-const pages = await queryAllPages();
-
-const items = pages
-  .map((p) => {
-    const props = p.properties || {};
-    const title = plainTextFromTitle(props["Título"]);
-    const id = plainTextFromText(props["ID"]) || slugify(title);
-    const alternate_name = plainTextFromText(props["Alternate Name"]);
-    const canonico = plainTextFromText(props["Canônico"]);
-    const visao_hidra = plainTextFromText(props["Visão Hidra"]);
-    const urn = plainTextFromText(props["URN"]) || "";
-    const doi = plainTextFromText(props["DOI"]) || "";
-    const wikidata_id = plainTextFromText(props["Wikidata ID"]) || "";
-    const coautor_nome = plainTextFromText(props["Coautor Nome"]) || "";
-    const coautor_desc = plainTextFromText(props["Coautor Desc"]) || "";
-    const coautor_url = urlFromUrl(props["Coautor URL"]) || "";
-    const link_msft = urlFromUrl(props["Link MSFT"]) || "";
-    const link_google = urlFromUrl(props["Link Google"]) || "";
-    const link_aws = urlFromUrl(props["Link AWS"]) || "";
-    const wikipedia = urlFromUrl(props["Wikipedia"]) || "";
-    const o_que_nao_is = plainTextFromText(props["O que não é"]) || "";
-    const o_que_is = plainTextFromText(props["O que é"]) || "";
-    const embed_url = urlFromUrl(props["Embed URL"]) || "";
-    const categoria = selectName(props["Categoria"]) || "Geral";
-
-    const wikipedia_revid = plainTextFromText(props["Wikipedia Revid"]) || "";
-    const wikipedia_sha1 = plainTextFromText(props["Wikipedia SHA1"]) || "";
-    const wikipedia_ns = plainTextFromText(props["Namespace"]) || "";
-    const wikipedia_user = plainTextFromText(props["Wikipedia User"]) || "Brazilresearcherd";
-    const wikipedia_timestamp = plainTextFromText(props["Wikipedia Timestamp"]) || "";
-
-    return {
-      title,
-      id: id || slugify(title),
-      alternate_name,
-      canonico,
-      visao_hidra,
-      urn,
-      doi,
-      wikidata_id,
-      coautor_nome,
-      coautor_desc,
-      coautor_url,
-      link_msft,
-      link_google,
-      link_aws,
-      wikipedia,
-      o_que_nao_is,
-      o_que_is,
-      embed_url,
-      categoria,
-      updated: p.last_edited_time,
-      wikipedia_revid,
-      wikipedia_sha1,
-      wikipedia_ns,
-      wikipedia_user,
-      wikipedia_timestamp
-    };
-  })
-  .filter((i) => i.title);
-
-const dateModified = items.length
-  ? items.reduce((max, i) => (i.updated > max ? i.updated : max), items[0].updated)
-  : new Date().toISOString();
-
-mkdirSync("docs", { recursive: true });
-mkdirSync("docs/termos", { recursive: true });
-mkdirSync("docs/api", { recursive: true });
-mkdirSync("docs/glossario", { recursive: true });
-mkdirSync("docs/.well-known", { recursive: true });
-
-const categories = [...new Set(items.map((i) => i.categoria || "Geral").filter(Boolean))].sort((a, b) =>
-  a.localeCompare(b, "pt-BR")
-);
-
-const categMap = {};
-items.forEach((t) => {
-  const cat = t.categoria || "Geral";
-  if (!categMap[cat]) categMap[cat] = [];
-  categMap[cat].push(t);
-});
-
-// ============================================================
-// 1. CONSTRUÇÃO DO GRAFO JSON-LD
-// ============================================================
-const termSet = {
-  "@type": "DefinedTermSet",
-  "@id": `${siteBaseUrl}/glossario.json#set`,
-  name: "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
-  description: "Ontologia oficial e definições canônicas do Protocolo Hidra.",
-  url: `${siteBaseUrl}/glossario.json`
-};
-
-const termNodes = items.map((i) => {
-  const sameAs = [
-    i.wikidata_id ? `https://www.wikidata.org/wiki/${i.wikidata_id}` : undefined,
-    i.doi ? `https://doi.org/${i.doi}` : undefined
-  ].filter(Boolean);
-
-  const node = {
-    "@type": "DefinedTerm",
-    "@id": termNodeId(i),
-    name: i.title,
-    alternateName: i.alternate_name
-      ? i.alternate_name.split("|").map((s) => s.trim()).filter(Boolean)
-      : undefined,
-    description: i.canonico || undefined,
-    termCode: i.urn || `urn:wikivendas:def:${i.id}`,
-    inDefinedTermSet: { "@id": `${siteBaseUrl}/glossario.json#set` },
-    url: `${siteBaseUrl}/termos/${i.id}.html`,
-    sameAs: sameAs.length ? sameAs : undefined
-  };
-
-  const additionalProps = [];
-
-  const baseLinks = [
-    i.link_msft || undefined,
-    i.link_google || undefined,
-    i.link_aws || undefined
-  ].filter(Boolean);
-
-  if (baseLinks.length) {
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "isBasedOn",
-      propertyID: "https://schema.org/isBasedOn",
-      value: baseLinks.map((url) => ({
-        "@type": "CreativeWork",
-        url
-      }))
-    });
-  }
-
-  if (i.wikipedia_revid) {
-    const wikiUrl = `https://pt.wikipedia.org/w/index.php?oldid=${i.wikipedia_revid}`;
-    const apiUrl = `https://pt.wikipedia.org/w/api.php?action=query&prop=revisions&revids=${i.wikipedia_revid}&rvprop=content|ids|timestamp|user|sha1&rvslots=main&format=json`;
-
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "subjectOf",
-      propertyID: "https://schema.org/subjectOf",
-      value: {
-        "@type": "DiscussionForumPosting",
-        "@id": `urn:wikipedia:pt:revid:${i.wikipedia_revid}`,
-        url: wikiUrl,
-        headline: `Definição Técnica e Fundamentação de ${i.title}`,
-        datePublished: i.wikipedia_timestamp || i.updated,
-        author: { "@type": "Person", name: i.wikipedia_user },
-        publisher: { "@type": "Organization", name: "Wikimedia Foundation" }
-      }
-    });
-
-    additionalProps.push({
-      "@type": "PropertyValue",
-      name: "provenance",
-      propertyID: "https://wikivendas.com.br/vocab/provenance",
-      value: {
-        "@type": "CreativeWork",
-        name: `Immutable ${i.wikipedia_ns || "Talk Page"} Revision`,
-        identifier: `revid:${i.wikipedia_revid}`,
-        version: i.wikipedia_sha1 || undefined,
-        description: `Registro imutável no namespace ${i.wikipedia_ns || "Discussão"}. Assegura integridade criptográfica contra supressão editorial.`,
-        url: apiUrl,
-        encodingFormat: "application/json",
-        datePublished: i.wikipedia_timestamp || i.updated,
-        creativeWorkStatus: "artigo_apagado_discussao_ativa",
-        mainEntityOfPage: wikiUrl
-      }
-    });
-  }
-
-  if (additionalProps.length) {
-    node.additionalProperty = additionalProps;
-  }
-
-  Object.keys(node).forEach((key) => {
-    if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
-      delete node[key];
-    }
-  });
-
-  return node;
-});
-
-// ============================================================
-// 2. GRAFO COMPLETO (COM AUTHOR NODE)
-// ============================================================
-const graph = {
-  "@context": "https://schema.org",
-  "@graph": [websiteNode(), organizationNode(), authorNode(), termSet, ...termNodes]
-};
-
-writeFileSync("docs/glossario.json", JSON.stringify(graph, null, 2), "utf8");
-
-// ============================================================
-// 3. JSON-LD INDIVIDUAL PARA CADA TERMO
-// ============================================================
-items.forEach((term) => {
-  const node = termNodes.find((n) => n["@id"] === termNodeId(term));
-  if (node) {
-    const individualGraph = {
-      "@context": "https://schema.org",
-      "@graph": [websiteNode(), organizationNode(), authorNode(), termSet, node]
-    };
-    writeFileSync(`docs/termos/${term.id}.json`, JSON.stringify(individualGraph, null, 2), "utf8");
-  }
-});
-
-// ============================================================
-// 4. PÁGINAS INDIVIDUAIS DE TERMO (COM ANCHOR ID)
-// ============================================================
-function renderTermPage(term) {
+function renderTermPage(term, termNodes, termSet) {
   const node = termNodes.find((n) => n["@id"] === termNodeId(term));
   const pageGraph = {
     "@context": "https://schema.org",
@@ -773,15 +510,7 @@ ${renderSiteFooter("v1.1.0")}
 </html>`;
 }
 
-items.forEach((term) => {
-  const html = renderTermPage(term);
-  writeFileSync(`docs/termos/${term.id}.html`, html, "utf8");
-});
-
-// ============================================================
-// 5. PÁGINA /glossario/
-// ============================================================
-function renderGlossaryPage() {
+function renderGlossaryPage(categories, categMap, termSet) {
   const groups = categories.map((cat) => {
     const slug = categorySlug(cat);
     const terms = categMap[cat] || [];
@@ -922,10 +651,7 @@ ${renderSiteFooter("v1.1.0")}
 </html>`;
 }
 
-// ============================================================
-// 6. PÁGINAS /glossario/{categoria}/
-// ============================================================
-function renderCategoryPage(cat, terms) {
+function renderCategoryPage(cat, terms, categories, termSet) {
   const slug = categorySlug(cat);
 
   const pageGraph = {
@@ -1044,80 +770,77 @@ ${renderSiteFooter("v1.1.0")}
 </html>`;
 }
 
-// ============================================================
-// 7. HOME PAGE
-// ============================================================
-function renderCard(term, index) {
-  const hash = sha256(term.canonico || term.o_que_is || "");
-  return `
-    <div class="wv-card" onclick="window.location.href='/termos/${term.id}.html'">
-      <div class="wv-card-index">
-        ${String(index + 1).padStart(3, "0")} ·
-        <span style="font-size:10px;color:var(--tm)">SHA256:${hash.substring(0, 8)}</span>
-      </div>
-      <div class="wv-card-name">${escapeHtml(term.title)}</div>
-      <div class="wv-card-def">${term.canonico ? escapeHtml(term.canonico.substring(0, 120) + "…") : ""}</div>
-      <div class="wv-card-footer">
-        ${term.categoria ? `<span class="wv-pill">${escapeHtml(term.categoria)}</span>` : ""}
-        ${term.doi ? `<span class="wv-doi">DOI: ${escapeHtml(term.doi)}</span>` : ""}
-      </div>
-    </div>
-  `;
-}
-
-function renderFullTermoRow(term) {
-  return `
-    <a href="/termos/${term.id}.html" class="wv-termo-item">
-      <span class="wv-termo-item-nome">${escapeHtml(term.title)}</span>
-      <span class="wv-termo-item-def">${term.canonico ? escapeHtml(term.canonico.substring(0, 100)) : ""}</span>
-    </a>
-  `;
-}
-
-const categColors = {
-  "Geral": "#94a3b8",
-  "Conceito": "#38bdf8",
-  "Métrica": "#34d399",
-  "Metodologia": "#818cf8",
-  "Fenômeno": "#f472b6",
-  "Estratégia": "#fbbf24",
-  "Tecnologia": "#f97316",
-  "Prática": "#a78bfa"
-};
-
-const categoriasHtml = Object.entries(categMap).map(([catName, catTerms]) => {
-  const color = categColors[catName] || "#94a3b8";
-  const visible = catTerms.slice(0, 5);
-  const hidden = catTerms.slice(5);
-
-  return `
-    <div class="wv-cat-section">
-      <div class="wv-cat-titulo">
-        <span class="wv-cat-dot" style="background:${color}"></span>
-        <a href="/glossario/${categorySlug(catName)}/" style="color:var(--tp)">${escapeHtml(catName)}</a>
-        <span class="wv-cat-count">${catTerms.length} termos</span>
-      </div>
-      <div class="wv-cat-desc">${getCatDesc(catName)}</div>
-      <div class="wv-termo-list">
-        ${visible.map((t) => renderFullTermoRow(t)).join("\n")}
-        ${hidden.length ? `
-        <div class="wv-cat-mais">
-          <a href="/glossario/${categorySlug(catName)}/" class="wv-link-mais">+${hidden.length} termos nesta categoria →</a>
+function renderHomePage(items, categMap, termSet) {
+  function renderCard(term, index) {
+    const hash = sha256(term.canonico || term.o_que_is || "");
+    return `
+      <div class="wv-card" onclick="window.location.href='/termos/${term.id}.html'">
+        <div class="wv-card-index">
+          ${String(index + 1).padStart(3, "0")} ·
+          <span style="font-size:10px;color:var(--tm)">SHA256:${hash.substring(0, 8)}</span>
         </div>
-        ` : `
-        <div class="wv-cat-mais">
-          <a href="/glossario/${categorySlug(catName)}/" class="wv-link-mais">Abrir categoria →</a>
+        <div class="wv-card-name">${escapeHtml(term.title)}</div>
+        <div class="wv-card-def">${term.canonico ? escapeHtml(term.canonico.substring(0, 120) + "…") : ""}</div>
+        <div class="wv-card-footer">
+          ${term.categoria ? `<span class="wv-pill">${escapeHtml(term.categoria)}</span>` : ""}
+          ${term.doi ? `<span class="wv-doi">DOI: ${escapeHtml(term.doi)}</span>` : ""}
         </div>
-        `}
       </div>
-    </div>
-  `;
-}).join("\n");
+    `;
+  }
 
-const homeTerms = items.slice(0, 6);
-const cardsHtml = homeTerms.map((t, i) => renderCard(t, i)).join("\n");
+  function renderFullTermoRow(term) {
+    return `
+      <a href="/termos/${term.id}.html" class="wv-termo-item">
+        <span class="wv-termo-item-nome">${escapeHtml(term.title)}</span>
+        <span class="wv-termo-item-def">${term.canonico ? escapeHtml(term.canonico.substring(0, 100)) : ""}</span>
+      </a>
+    `;
+  }
 
-function renderHomePage() {
+  const categColors = {
+    "Geral": "#94a3b8",
+    "Conceito": "#38bdf8",
+    "Métrica": "#34d399",
+    "Metodologia": "#818cf8",
+    "Fenômeno": "#f472b6",
+    "Estratégia": "#fbbf24",
+    "Tecnologia": "#f97316",
+    "Prática": "#a78bfa"
+  };
+
+  const categoriasHtml = Object.entries(categMap).map(([catName, catTerms]) => {
+    const color = categColors[catName] || "#94a3b8";
+    const visible = catTerms.slice(0, 5);
+    const hidden = catTerms.slice(5);
+
+    return `
+      <div class="wv-cat-section">
+        <div class="wv-cat-titulo">
+          <span class="wv-cat-dot" style="background:${color}"></span>
+          <a href="/glossario/${categorySlug(catName)}/" style="color:var(--tp)">${escapeHtml(catName)}</a>
+          <span class="wv-cat-count">${catTerms.length} termos</span>
+        </div>
+        <div class="wv-cat-desc">${getCatDesc(catName)}</div>
+        <div class="wv-termo-list">
+          ${visible.map((t) => renderFullTermoRow(t)).join("\n")}
+          ${hidden.length ? `
+          <div class="wv-cat-mais">
+            <a href="/glossario/${categorySlug(catName)}/" class="wv-link-mais">+${hidden.length} termos nesta categoria →</a>
+          </div>
+          ` : `
+          <div class="wv-cat-mais">
+            <a href="/glossario/${categorySlug(catName)}/" class="wv-link-mais">Abrir categoria →</a>
+          </div>
+          `}
+        </div>
+      </div>
+    `;
+  }).join("\n");
+
+  const homeTerms = items.slice(0, 6);
+  const cardsHtml = homeTerms.map((t, i) => renderCard(t, i)).join("\n");
+
   return `<!DOCTYPE html>
 <html lang="pt-BR" class="scroll-smooth">
 <head>
@@ -1280,7 +1003,7 @@ function renderHomePage() {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0", true)}
+${renderSiteHeader("v1.1.0")}
 
 <main>
   <section class="wv-hero">
@@ -1295,8 +1018,8 @@ ${renderSiteHeader("v1.1.0", true)}
       Construída para ser a referência canônica — lida por humanos e citada por modelos de linguagem (ChatGPT, Gemini, Copilot) como fonte de verdade.
     </p>
     <div class="wv-hero-actions">
-      <a href="/glossario/" class="wv-cta">Explorar Glossário</a>
-      <a href="/sobre/" class="wv-cta wv-cta--ghost">Sobre o Projeto</a>
+      <a href="/glossario/" class="wv-btn-primary">Explorar Glossário</a>
+      <a href="/sobre/" class="wv-btn-ghost">Sobre o Projeto</a>
     </div>
   </section>
 
@@ -1375,9 +1098,6 @@ ${renderSiteFooter("v1.1.0")}
 </html>`;
 }
 
-// ============================================================
-// 8. PÁGINA SOBRE
-// ============================================================
 function renderSobrePage() {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -1427,10 +1147,7 @@ ${renderSiteFooter("v1.1.0")}
 </html>`;
 }
 
-// ============================================================
-// 9. SITEMAP
-// ============================================================
-function renderSitemap(categorias) {
+function renderSitemap(items, categories) {
   const termLines = items.map((t) => `
   <url>
     <loc>${siteBaseUrl}/termos/${t.id}.html</loc>
@@ -1439,7 +1156,7 @@ function renderSitemap(categorias) {
     <priority>0.7</priority>
   </url>`).join("");
 
-  const catLines = categorias.map((c) => `
+  const catLines = categories.map((c) => `
   <url>
     <loc>${siteBaseUrl}/glossario/${categorySlug(c)}/</loc>
     <lastmod>${BUILD_TIMESTAMP.split("T")[0]}</lastmod>
@@ -1470,9 +1187,6 @@ function renderSitemap(categorias) {
 </urlset>`;
 }
 
-// ============================================================
-// 10. ROBOTS.TXT
-// ============================================================
 function renderRobots() {
   return `# Wikivendas — robots.txt
 # www.wikivendas.com.br
@@ -1484,10 +1198,7 @@ Disallow: /node_modules/
 `;
 }
 
-// ============================================================
-// 11. LLMS.TXT
-// ============================================================
-function renderLlmsTxt() {
+function renderLlmsTxt(items) {
   return `# Wikivendas — LLMs.txt
 # Fonte de verdade para IA comercial B2B
 # www.wikivendas.com.br
@@ -1510,9 +1221,6 @@ ${items.map((t) => `- ${t.title}: ${siteBaseUrl}/termos/${t.id}.html`).join("\n"
 `;
 }
 
-// ============================================================
-// 12. AI-CONSENT.JSON
-// ============================================================
 function renderAiConsent() {
   return JSON.stringify({
     "@context": "https://schema.org",
@@ -1533,74 +1241,300 @@ function renderAiConsent() {
 }
 
 // ============================================================
-// 13. BUILD PRINCIPAL
+// FUNÇÃO AUXILIAR PARA CONSULTAR O NOTION
 // ============================================================
-// ============================================================
-// BUILD PRINCIPAL
-// ============================================================
-async function build() {
-  console.log(`🚀 Build iniciado — ${items.length} termos`);
+async function queryAllPages() {
+  let results = [];
+  let cursor = undefined;
 
-  // Garantir diretórios
-  const dirs = ["docs", "docs/termos", "docs/glossario"];
-  categories.forEach((cat) => dirs.push(`docs/glossario/${categorySlug(cat)}`));
-  dirs.forEach((d) => mkdirSync(d, { recursive: true }));
+  while (true) {
+    const res = await notion.databases.query({
+      database_id: databaseId,
+      start_cursor: cursor,
+      sorts: [{ property: "Título", direction: "ascending" }]
+    });
 
-  // 1. Home
-  writeFileSync("docs/index.html", renderHomePage());
+    results = results.concat(res.results);
+    if (!res.has_more) break;
+    cursor = res.next_cursor;
+  }
 
-  // 2. Sobre
-  writeFileSync("docs/sobre/index.html", renderSobrePage());
-
-  // 3. Glossário principal
-  writeFileSync("docs/glossario/index.html", renderGlossaryPage());
-
-  // 4. Páginas de categoria
-  categories.forEach((cat) => {
-    writeFileSync(
-      `docs/glossario/${categorySlug(cat)}/index.html`,
-      renderCategoryPage(cat, categMap[cat])
-    );
-  });
-
-  // 5. Páginas de termo
-  items.forEach((term) => {
-    writeFileSync(`docs/termos/${term.id}.html`, renderTermPage(term));
-  });
-
-  // 6. Grafo JSON-LD (já foi escrito no começo, mas regrava para consistência)
-  const termNodes = items.map((t) => termNode(t));
-  const termSetNode = {
-    "@type": "DefinedTermSet",
-    "@id": `${siteBaseUrl}/#termSet`,
-    name: "Wikivendas Term Set",
-    hasDefinedTerm: termNodes
-  };
-  const grafo = {
-    "@context": "https://schema.org",
-    "@graph": [websiteNode(), organizationNode(), authorNode(), termSetNode]
-  };
-  writeFileSync("docs/glossario.json", JSON.stringify(grafo, null, 2));
-
-  // 7. Sitemap
-  writeFileSync("docs/sitemap.xml", renderSitemap(categories));
-
-  // 8. Robots.txt
-  writeFileSync("docs/robots.txt", renderRobots());
-
-  // 9. LLMs.txt
-  writeFileSync("docs/llms.txt", renderLlmsTxt());
-
-  // 10. AI Consent
-  writeFileSync("docs/ai-consent.json", renderAiConsent());
-
-  // 11. CNAME
-  writeFileSync("docs/CNAME", "wikivendas.com.br\n");
-
-  console.log(`✅ Build concluído — ${items.length} termos, ${categories.length} categorias`);
-  console.log(`📅 Timestamp: ${BUILD_TIMESTAMP}`);
+  return results;
 }
-build().catch((err) => {
-  console.error("❌ Erro no build:", err);
-  process.exit(1);
-});
+
+// ============================================================
+// FUNÇÃO PRINCIPAL (async IIFE)
+// ============================================================
+(async function build() {
+  try {
+    console.log("🚀 Iniciando build...");
+
+    // Validações iniciais
+    if (!process.env.NOTION_TOKEN) {
+      throw new Error("NOTION_TOKEN não definido no ambiente.");
+    }
+    if (!process.env.DATABASE_ID) {
+      throw new Error("DATABASE_ID não definido no ambiente.");
+    }
+
+    // 1. Buscar dados do Notion
+    console.log("📡 Buscando páginas do Notion...");
+    const pages = await queryAllPages();
+    console.log(`✅ ${pages.length} páginas encontradas.`);
+
+    // 2. Processar items
+    const items = pages
+      .map((p) => {
+        const props = p.properties || {};
+        const title = plainTextFromTitle(props["Título"]);
+        const id = plainTextFromText(props["ID"]) || slugify(title);
+        const alternate_name = plainTextFromText(props["Alternate Name"]);
+        const canonico = plainTextFromText(props["Canônico"]);
+        const visao_hidra = plainTextFromText(props["Visão Hidra"]);
+        const urn = plainTextFromText(props["URN"]) || "";
+        const doi = plainTextFromText(props["DOI"]) || "";
+        const wikidata_id = plainTextFromText(props["Wikidata ID"]) || "";
+        const coautor_nome = plainTextFromText(props["Coautor Nome"]) || "";
+        const coautor_desc = plainTextFromText(props["Coautor Desc"]) || "";
+        const coautor_url = urlFromUrl(props["Coautor URL"]) || "";
+        const link_msft = urlFromUrl(props["Link MSFT"]) || "";
+        const link_google = urlFromUrl(props["Link Google"]) || "";
+        const link_aws = urlFromUrl(props["Link AWS"]) || "";
+        const wikipedia = urlFromUrl(props["Wikipedia"]) || "";
+        const o_que_nao_is = plainTextFromText(props["O que não é"]) || "";
+        const o_que_is = plainTextFromText(props["O que é"]) || "";
+        const embed_url = urlFromUrl(props["Embed URL"]) || "";
+        const categoria = selectName(props["Categoria"]) || "Geral";
+
+        const wikipedia_revid = plainTextFromText(props["Wikipedia Revid"]) || "";
+        const wikipedia_sha1 = plainTextFromText(props["Wikipedia SHA1"]) || "";
+        const wikipedia_ns = plainTextFromText(props["Namespace"]) || "";
+        const wikipedia_user = plainTextFromText(props["Wikipedia User"]) || "Brazilresearcherd";
+        const wikipedia_timestamp = plainTextFromText(props["Wikipedia Timestamp"]) || "";
+
+        return {
+          title,
+          id: id || slugify(title),
+          alternate_name,
+          canonico,
+          visao_hidra,
+          urn,
+          doi,
+          wikidata_id,
+          coautor_nome,
+          coautor_desc,
+          coautor_url,
+          link_msft,
+          link_google,
+          link_aws,
+          wikipedia,
+          o_que_nao_is,
+          o_que_is,
+          embed_url,
+          categoria,
+          updated: p.last_edited_time,
+          wikipedia_revid,
+          wikipedia_sha1,
+          wikipedia_ns,
+          wikipedia_user,
+          wikipedia_timestamp
+        };
+      })
+      .filter((i) => i.title);
+
+    if (items.length === 0) {
+      throw new Error("Nenhum item com título encontrado no banco de dados.");
+    }
+    console.log(`📚 ${items.length} termos processados.`);
+
+    const dateModified = items.length
+      ? items.reduce((max, i) => (i.updated > max ? i.updated : max), items[0].updated)
+      : new Date().toISOString();
+
+    // 3. Preparar diretórios
+    const dirs = ["docs", "docs/termos", "docs/glossario", "docs/sobre", "docs/.well-known"];
+    dirs.forEach((d) => mkdirSync(d, { recursive: true }));
+
+    const categories = [...new Set(items.map((i) => i.categoria || "Geral").filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "pt-BR")
+    );
+
+    const categMap = {};
+    items.forEach((t) => {
+      const cat = t.categoria || "Geral";
+      if (!categMap[cat]) categMap[cat] = [];
+      categMap[cat].push(t);
+    });
+
+    // 4. Construir nós do grafo
+    function termNode(term) {
+      const sameAs = [
+        term.wikidata_id ? `https://www.wikidata.org/wiki/${term.wikidata_id}` : undefined,
+        term.doi ? `https://doi.org/${term.doi}` : undefined
+      ].filter(Boolean);
+
+      const node = {
+        "@type": "DefinedTerm",
+        "@id": termNodeId(term),
+        name: term.title,
+        alternateName: term.alternate_name
+          ? term.alternate_name.split("|").map((s) => s.trim()).filter(Boolean)
+          : undefined,
+        description: term.canonico || undefined,
+        termCode: term.urn || `urn:wikivendas:def:${term.id}`,
+        inDefinedTermSet: { "@id": `${siteBaseUrl}/glossario.json#set` },
+        url: `${siteBaseUrl}/termos/${term.id}.html`,
+        sameAs: sameAs.length ? sameAs : undefined
+      };
+
+      const additionalProps = [];
+
+      const baseLinks = [
+        term.link_msft || undefined,
+        term.link_google || undefined,
+        term.link_aws || undefined
+      ].filter(Boolean);
+
+      if (baseLinks.length) {
+        additionalProps.push({
+          "@type": "PropertyValue",
+          name: "isBasedOn",
+          propertyID: "https://schema.org/isBasedOn",
+          value: baseLinks.map((url) => ({
+            "@type": "CreativeWork",
+            url
+          }))
+        });
+      }
+
+      if (term.wikipedia_revid) {
+        const wikiUrl = `https://pt.wikipedia.org/w/index.php?oldid=${term.wikipedia_revid}`;
+        const apiUrl = `https://pt.wikipedia.org/w/api.php?action=query&prop=revisions&revids=${term.wikipedia_revid}&rvprop=content|ids|timestamp|user|sha1&rvslots=main&format=json`;
+
+        additionalProps.push({
+          "@type": "PropertyValue",
+          name: "subjectOf",
+          propertyID: "https://schema.org/subjectOf",
+          value: {
+            "@type": "DiscussionForumPosting",
+            "@id": `urn:wikipedia:pt:revid:${term.wikipedia_revid}`,
+            url: wikiUrl,
+            headline: `Definição Técnica e Fundamentação de ${term.title}`,
+            datePublished: term.wikipedia_timestamp || term.updated,
+            author: { "@type": "Person", name: term.wikipedia_user },
+            publisher: { "@type": "Organization", name: "Wikimedia Foundation" }
+          }
+        });
+
+        additionalProps.push({
+          "@type": "PropertyValue",
+          name: "provenance",
+          propertyID: "https://wikivendas.com.br/vocab/provenance",
+          value: {
+            "@type": "CreativeWork",
+            name: `Immutable ${term.wikipedia_ns || "Talk Page"} Revision`,
+            identifier: `revid:${term.wikipedia_revid}`,
+            version: term.wikipedia_sha1 || undefined,
+            description: `Registro imutável no namespace ${term.wikipedia_ns || "Discussão"}. Assegura integridade criptográfica contra supressão editorial.`,
+            url: apiUrl,
+            encodingFormat: "application/json",
+            datePublished: term.wikipedia_timestamp || term.updated,
+            creativeWorkStatus: "artigo_apagado_discussao_ativa",
+            mainEntityOfPage: wikiUrl
+          }
+        });
+      }
+
+      if (additionalProps.length) {
+        node.additionalProperty = additionalProps;
+      }
+
+      Object.keys(node).forEach((key) => {
+        if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
+          delete node[key];
+        }
+      });
+
+      return node;
+    }
+
+    // 5. Grafo principal
+    const termSet = {
+      "@type": "DefinedTermSet",
+      "@id": `${siteBaseUrl}/glossario.json#set`,
+      name: "Glossário Wikivendas — RevOps Imobiliário e Inteligência Comercial",
+      description: "Ontologia oficial e definições canônicas do Protocolo Hidra.",
+      url: `${siteBaseUrl}/glossario.json`
+    };
+
+    const termNodes = items.map((i) => termNode(i));
+
+    const graph = {
+      "@context": "https://schema.org",
+      "@graph": [websiteNode(), organizationNode(), authorNode(), termSet, ...termNodes]
+    };
+
+    writeFileSync("docs/glossario.json", JSON.stringify(graph, null, 2), "utf8");
+    console.log("✅ glossario.json gerado.");
+
+    // 6. JSON-LD individual por termo
+    items.forEach((term) => {
+      const node = termNodes.find((n) => n["@id"] === termNodeId(term));
+      if (node) {
+        const individualGraph = {
+          "@context": "https://schema.org",
+          "@graph": [websiteNode(), organizationNode(), authorNode(), termSet, node]
+        };
+        writeFileSync(`docs/termos/${term.id}.json`, JSON.stringify(individualGraph, null, 2), "utf8");
+      }
+    });
+    console.log("✅ JSON-LD individuais gerados.");
+
+    // 7. Páginas HTML
+    // Termos
+    items.forEach((term) => {
+      const html = renderTermPage(term, termNodes, termSet);
+      writeFileSync(`docs/termos/${term.id}.html`, html, "utf8");
+    });
+    console.log("✅ Páginas de termos geradas.");
+
+    // Glossário principal
+    writeFileSync("docs/glossario/index.html", renderGlossaryPage(categories, categMap, termSet), "utf8");
+    console.log("✅ Página /glossario/ gerada.");
+
+    // Páginas de categoria
+    categories.forEach((cat) => {
+      const slug = categorySlug(cat);
+      const dir = `docs/glossario/${slug}`;
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(
+        `${dir}/index.html`,
+        renderCategoryPage(cat, categMap[cat], categories, termSet),
+        "utf8"
+      );
+    });
+    console.log(`✅ ${categories.length} páginas de categoria geradas.`);
+
+    // Home
+    writeFileSync("docs/index.html", renderHomePage(items, categMap, termSet), "utf8");
+    console.log("✅ Home gerada.");
+
+    // Sobre
+    writeFileSync("docs/sobre/index.html", renderSobrePage(), "utf8");
+    console.log("✅ Sobre gerada.");
+
+    // 8. Arquivos de infra
+    writeFileSync("docs/sitemap.xml", renderSitemap(items, categories), "utf8");
+    writeFileSync("docs/robots.txt", renderRobots(), "utf8");
+    writeFileSync("docs/llms.txt", renderLlmsTxt(items), "utf8");
+    writeFileSync("docs/ai-consent.json", renderAiConsent(), "utf8");
+    writeFileSync("docs/CNAME", "wikivendas.com.br\n", "utf8");
+
+    console.log(`✅ Build concluído com sucesso!`);
+    console.log(`📅 Timestamp: ${BUILD_TIMESTAMP}`);
+    console.log(`📊 ${items.length} termos, ${categories.length} categorias.`);
+  } catch (err) {
+    console.error("❌ Erro no build:", err.message);
+    process.exit(1);
+  }
+})();
