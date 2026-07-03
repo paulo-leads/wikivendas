@@ -145,19 +145,6 @@ function parseList(str) {
     .map((s) => `<li>${escapeHtml(s)}</li>`)
     .join("");
 }
-function getCatDesc(cat) {
-  const descs = {
-    "Geral": "Termos fundamentais do ecossistema de RevOps e inteligência comercial.",
-    "Conceito": "Definições canônicas de fenômenos, processos e entidades do mercado B2B.",
-    "Métrica": "Indicadores e KPIs usados para mensurar desempenho comercial.",
-    "Metodologia": "Framework, protocolos e abordagens sistematizadas de vendas e prospecção.",
-    "Fenômeno": "Padrões emergentes, disfunções de mercado e comportamentos sistêmicos observados.",
-    "Estratégia": "Posicionamentos táticos e planos de ação para vantagem competitiva.",
-    "Tecnologia": "Ferramentas, plataformas e artefatos tecnológicos do ecossistema B2B.",
-    "Prática": "Táticas operacionais e rotinas do campo comercial."
-  };
-  return descs[cat] || "Termos categorizados dentro da ontologia Wikivendas.";
-}
 function categorySlug(cat) {
   return slugify(cat || "geral");
 }
