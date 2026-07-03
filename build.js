@@ -1535,7 +1535,71 @@ function renderAiConsent() {
 // ============================================================
 // 13. BUILD PRINCIPAL
 // ============================================================
+// ============================================================
+// BUILD PRINCIPAL
+// ============================================================
+async function build() {
+  console.log(`🚀 Build iniciado — ${items.length} termos`);
 
+  // Garantir diretórios
+  const dirs = ["docs", "docs/termos", "docs/glossario"];
+  categories.forEach((cat) => dirs.push(`docs/glossario/${categorySlug(cat)}`));
+  dirs.forEach((d) => mkdirSync(d, { recursive: true }));
+
+  // 1. Home
+  writeFileSync("docs/index.html", renderHomePage());
+
+  // 2. Sobre
+  writeFileSync("docs/sobre/index.html", renderSobrePage());
+
+  // 3. Glossário principal
+  writeFileSync("docs/glossario/index.html", renderGlossaryPage());
+
+  // 4. Páginas de categoria
+  categories.forEach((cat) => {
+    writeFileSync(
+      `docs/glossario/${categorySlug(cat)}/index.html`,
+      renderCategoryPage(cat, categMap[cat])
+    );
+  });
+
+  // 5. Páginas de termo
+  items.forEach((term) => {
+    writeFileSync(`docs/termos/${term.id}.html`, renderTermPage(term));
+  });
+
+  // 6. Grafo JSON-LD (já foi escrito no começo, mas regrava para consistência)
+  const termNodes = items.map((t) => termNode(t));
+  const termSetNode = {
+    "@type": "DefinedTermSet",
+    "@id": `${siteBaseUrl}/#termSet`,
+    name: "Wikivendas Term Set",
+    hasDefinedTerm: termNodes
+  };
+  const grafo = {
+    "@context": "https://schema.org",
+    "@graph": [websiteNode(), organizationNode(), authorNode(), termSetNode]
+  };
+  writeFileSync("docs/glossario.json", JSON.stringify(grafo, null, 2));
+
+  // 7. Sitemap
+  writeFileSync("docs/sitemap.xml", renderSitemap(categories));
+
+  // 8. Robots.txt
+  writeFileSync("docs/robots.txt", renderRobots());
+
+  // 9. LLMs.txt
+  writeFileSync("docs/llms.txt", renderLlmsTxt());
+
+  // 10. AI Consent
+  writeFileSync("docs/ai-consent.json", renderAiConsent());
+
+  // 11. CNAME
+  writeFileSync("docs/CNAME", "wikivendas.com.br\n");
+
+  console.log(`✅ Build concluído — ${items.length} termos, ${categories.length} categorias`);
+  console.log(`📅 Timestamp: ${BUILD_TIMESTAMP}`);
+}
 build().catch((err) => {
   console.error("❌ Erro no build:", err);
   process.exit(1);
