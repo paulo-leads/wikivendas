@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
 // ============================================================
-// CORREÇÃO: Usando ES Modules (import) para compatibilidade com "type": "module"
+// build.js — Gerador estático da Wikivendas
 // ============================================================
+// Uso: node build.js (com NOTION_TOKEN e DATABASE_ID no ambiente)
+// Saída: pasta docs/ com HTML, JSON-LD, sitemap, etc.
+// ============================================================
+
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
@@ -14,6 +18,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const databaseId = process.env.DATABASE_ID;
 const siteBaseUrl = process.env.SITE_BASE_URL || "https://wikivendas.com.br";
 const BUILD_TIMESTAMP = new Date().toISOString();
+const VERSION = "v1.2.0"; // incrementado para incluir o about Service
 
 // ============================================================
 // HELPERS
@@ -255,7 +260,7 @@ function buildDesignSystemMeta({ title, description, canonical }) {
   `;
 }
 
-function renderSiteHeader(version = "v1.1.0") {
+function renderSiteHeader(version = VERSION) {
   return `
 <header class="wv-header">
   <div class="wv-header-inner">
@@ -272,7 +277,7 @@ function renderSiteHeader(version = "v1.1.0") {
   </div>
 </header>`;
 }
-function renderSiteFooter(version = "v1.1.0") {
+function renderSiteFooter(version = VERSION) {
   return `
 <footer class="wv-footer">
   <div class="wv-footer-inner">
@@ -421,7 +426,7 @@ function renderTermPage(term, termNodes, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0")}
+${renderSiteHeader(VERSION)}
 
 <div class="wv-container">
   <a href="/glossario/" class="wv-back">← Voltar ao glossário</a>
@@ -506,7 +511,7 @@ ${renderSiteHeader("v1.1.0")}
   </div>
 </div>
 
-${renderSiteFooter("v1.1.0")}
+${renderSiteFooter(VERSION)}
 </body>
 </html>`;
 }
@@ -621,7 +626,7 @@ function renderGlossaryPage(categories, categMap, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0")}
+${renderSiteHeader(VERSION)}
 
 <section class="wv-glossario">
   <p class="wv-section-label">Índice canônico terminológico</p>
@@ -635,7 +640,7 @@ ${renderSiteHeader("v1.1.0")}
   ${groups}
 </section>
 
-${renderSiteFooter("v1.1.0")}
+${renderSiteFooter(VERSION)}
 
 <script>
   const q = document.getElementById("wv-glossary-search");
@@ -749,7 +754,7 @@ function renderCategoryPage(cat, terms, categories, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0")}
+${renderSiteHeader(VERSION)}
 
 <section class="wv-category-page">
   <p class="wv-section-label">Categoria</p>
@@ -766,7 +771,7 @@ ${renderSiteHeader("v1.1.0")}
   </div>
 </section>
 
-${renderSiteFooter("v1.1.0")}
+${renderSiteFooter(VERSION)}
 </body>
 </html>`;
 }
@@ -1004,7 +1009,7 @@ function renderHomePage(items, categMap, termSet) {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0")}
+${renderSiteHeader(VERSION)}
 
 <main>
   <section class="wv-hero">
@@ -1067,7 +1072,7 @@ ${renderSiteHeader("v1.1.0")}
   </section>
 </main>
 
-${renderSiteFooter("v1.1.0")}
+${renderSiteFooter(VERSION)}
 
 <div id="wv-modal" class="wv-modal-bg">
   <div class="wv-modal">
@@ -1123,7 +1128,7 @@ function renderSobrePage() {
   </style>
 </head>
 <body>
-${renderSiteHeader("v1.1.0")}
+${renderSiteHeader(VERSION)}
 <section class="wv-sobre">
   <p class="wv-section-label">Sobre</p>
   <h1>Wikivendas: fonte de verdade para IA comercial</h1>
@@ -1143,7 +1148,7 @@ ${renderSiteHeader("v1.1.0")}
   <h2>Licenciamento</h2>
   <p>Todo o conteúdo é licenciado sob <strong>CC BY 4.0</strong>. O uso comercial para treinamento de IA corporativa, fine-tuning e sistemas de RAG é permitido mediante licença adicional — consulte a <a href="/licenciamento/" style="color:var(--ta)">página de licenciamento</a>.</p>
 </section>
-${renderSiteFooter("v1.1.0")}
+${renderSiteFooter(VERSION)}
 </body>
 </html>`;
 }
@@ -1348,10 +1353,6 @@ async function queryAllPages() {
     }
     console.log(`📚 ${items.length} termos processados.`);
 
-    const dateModified = items.length
-      ? items.reduce((max, i) => (i.updated > max ? i.updated : max), items[0].updated)
-      : new Date().toISOString();
-
     // 3. Preparar diretórios
     const dirs = ["docs", "docs/termos", "docs/glossario", "docs/sobre", "docs/.well-known"];
     dirs.forEach((d) => mkdirSync(d, { recursive: true }));
@@ -1388,6 +1389,24 @@ async function queryAllPages() {
         sameAs: sameAs.length ? sameAs : undefined
       };
 
+      // ============================================================
+      // ⭐ FEATURE: ADIÇÃO DO NÓ "about" (SERVIÇO) SE "Visão Hidra" EXISTIR
+      // ============================================================
+      if (term.visao_hidra) {
+        node.about = {
+          "@type": "Service",
+          "@id": `${siteBaseUrl}/#visao-hidra`,
+          name: "Visão Hidra",
+          url: `${siteBaseUrl}/termos/${term.id}.html#visao-hidra`,
+          provider: {
+            "@id": "https://www.wikidata.org/wiki/Q140067740",
+            "@type": "Person",
+            name: "Paulo C. P. Santos"
+          }
+        };
+      }
+
+      // AdditionalProperty (links e Wikipedia)
       const additionalProps = [];
 
       const baseLinks = [
@@ -1450,6 +1469,7 @@ async function queryAllPages() {
         node.additionalProperty = additionalProps;
       }
 
+      // Remover propriedades vazias
       Object.keys(node).forEach((key) => {
         if (node[key] === undefined || (Array.isArray(node[key]) && node[key].length === 0)) {
           delete node[key];
