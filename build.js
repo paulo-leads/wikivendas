@@ -188,7 +188,7 @@ function getTermPrimaryDoi(term) {
   return doi || "";
 }
 
-function getTermPrimaryWikidata(term) {
+function getTermPrimaryWikisales(term) {
   if (!Array.isArray(term.sameAs)) return "";
   const qid = term.sameAs.find(v => String(v).includes("wikisales.wikibase.cloud/wiki/Item:Q"));
   return qid || "";
