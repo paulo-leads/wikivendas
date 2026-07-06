@@ -1274,22 +1274,6 @@ function writeBuildReport(report) {
 }
 
 // ============================================================
-// NOTION QUERY
-// ============================================================
-
-async function queryAllPages() {
-  let results = [];
-  let cursor = undefined;
-  while (true) {
-    const res = await notion.databases.query({ database_id: databaseId, start_cursor: cursor });
-    results = results.concat(res.results);
-    if (!res.has_more) break;
-    cursor = res.next_cursor;
-  }
-  return results;
-}
-
-// ============================================================
 // BUILD PRINCIPAL - ATUALIZADO COM 3 COLUNAS
 // ============================================================
 
