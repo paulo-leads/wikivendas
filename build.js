@@ -1407,7 +1407,7 @@ async function build() {
     const globalGraph = { "@context": "https://schema.org", "@graph": records.flatMap(r => r.json["@graph"]) };
     writeFileSync("docs/glossario.json", JSON.stringify(globalGraph, null, 2));
 
-    // 2. ONTOLOGY.JSONLD - NOVO - OWL/RDF agregado
+// 2. ONTOLOGY.JSONLD - NOVO - OWL/RDF agregado
     const globalOwlGraphs = records.map(r => r.owl?.["@graph"] || []).filter(g => g.length);
     if (globalOwlGraphs.length) {
       const globalOwl = {
