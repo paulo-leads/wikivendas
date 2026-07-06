@@ -593,26 +593,6 @@ function renderArtifactsGrid(data) {
   return `<div class="wv-artifacts-grid">${items.map(([label, url]) => `<a class="wv-artifact-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">${escapeHtml(label)}</span><span class="wv-artifact-url">${escapeHtml(url)}</span></a>`).join("")}</div>`;
 }
 
-// NOVA SEÇÃO CONDICIONAL - SÓ RENDERIZA SE EXISTIR OWL
-function renderDetectionSection(owl, runtime, data) {
-  if (!owl?.["@graph"]) return '';
-  const rule = owl["@graph"].find(n => n["@type"] === "wv:DetectionRule" && n["wv:appliesTo"]?.["@id"] === data.termId);
-  if (!rule) return '';
-
-  const threshold = runtime?.detection?.generativeLeadSpoofing?.entropyThreshold || rule["wv:entropyThreshold"] || '';
-  const riskLevel = rule["wv:riskLevel"] || '';
-  const signals = safeArray(rule["wv:detectionSignals"]).map(toDisplayText).filter(Boolean);
-
-  return `<article class="wv-card">
-    <h2>Regra de Detecção Ativa</h2>
-    <div class="wv-links-grid">
-      ${threshold? `<div class="wv-link-card"><span class="k">Threshold de Entropia</span><span class="v">${escapeHtml(threshold)}</span></div>` : ''}
-      ${riskLevel? `<div class="wv-link-card"><span class="k">Nível de Risco</span><span class="v">${escapeHtml(riskLevel)}</span></div>` : ''}
-    </div>
-    ${signals.length? `<h3 style="margin-top:1.25rem">Sinais de Detecção</h3>${renderList(signals)}` : ''}
-  </article>`;
-}
-
 function renderTermPage(record) {
   const { json, term, website, org, person, termSet, owl, runtime } = record;
   const data = extractTemplateData(record);
