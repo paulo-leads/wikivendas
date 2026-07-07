@@ -1,27 +1,25 @@
 #!/usr/bin/env node
 
 import { Client } from "@notionhq/client";
-import { writeFileSync, mkdirSync } from "fs";
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { createHash } from "crypto";
 
 // ============================================================
-// WIKIVENDAS BUILD v4.1.0 - SEPARAÇÃO GLOSSÁRIO + OWL + RUNTIME
-// JSON-first, template-preserved, hardened, GitHub Pages ready
-// Compatível com o TEMPLATE MESTRE — TERMO CANÔNICO WIKIVENDAS
+// WIKIVENDAS BUILD v5.0.0-WKGS
+// Três colunas: glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config)
+// Compatível com Wikivendas Knowledge Graph Specification (WKGS) v5.0
 // ============================================================
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN || process.env.NOTIONTOKEN });
 const databaseId = process.env.DATABASE_ID || process.env.DATABASEID;
 const siteBaseUrl = (process.env.SITE_BASE_URL || process.env.SITEBASEURL || "https://wikivendas.com.br").replace(/\/$/, "");
 const jsonPropertyName = process.env.NOTION_JSON_PROPERTY || process.env.NOTIONJSONPROPERTY || "JSON-LD";
-const owlPropertyName = process.env.NOTION_OWL_PROPERTY || "RDF-OWL";
-const runtimePropertyName = process.env.NOTION_RUNTIME_PROPERTY || "RUNTIME";
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v4.1.0-glossario-owl-runtime";
+const BUILD_VERSION = "v5.0.0-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
-// HELPERS BÁSICOS
+// HELPERS BÁSICOS (inalterados)
 // ============================================================
 
 function plainTextFromRichText(prop) {
@@ -34,20 +32,20 @@ function plainTextFromRichText(prop) {
 
 function escapeHtml(text = "") {
   return String(text)
- .replace(/&/g, "&amp;")
- .replace(/</g, "&lt;")
- .replace(/>/g, "&gt;")
- .replace(/\"/g, "&quot;")
- .replace(/'/g, "&#39;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function slugify(text = "") {
   return String(text)
- .normalize("NFD")
- .replace(/[\u0300-\u036f]/g, "")
- .toLowerCase()
- .replace(/[^a-z0-9]+/g, "-")
- .replace(/^-|-$/g, "");
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function sha256(content = "") {
@@ -60,7 +58,7 @@ function stripHtml(text = "") {
 
 function canonicalDescription(text, max = 160) {
   const clean = stripHtml(text);
-  return clean.length > max? `${clean.slice(0, max).trim()}…` : clean;
+  return clean.length > max ? `${clean.slice(0, max).trim()}…` : clean;
 }
 
 function ensureDir(path) {
@@ -69,14 +67,11 @@ function ensureDir(path) {
 
 function normalizeJsonText(raw = "") {
   return String(raw)
- .trim()
- .replace(/[“”]/g, '"')
- .replace(/[‘’]/g, "'")
- .replace(
-      /https:\/\/wikisales\.wikibase\.cloud\/wiki\/Item:\s*Q/g,
-      "https://wikisales.wikibase.cloud/wiki/Item:Q"
-    )
- .replace(/[\u0000-\u001F]+/g, " ");
+    .trim()
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/https:\/\/wikisales\.wikibase\.cloud\/wiki\/Item:\s*Q/g, "https://wikisales.wikibase.cloud/wiki/Item:Q")
+    .replace(/[\u0000-\u001F]+/g, " ");
 }
 
 function extractJsonObject(raw = "") {
@@ -94,9 +89,9 @@ function tryParseJson(raw, contextLabel) {
     return { ok: true, value: JSON.parse(candidate) };
   } catch (error) {
     const posMatch = String(error.message).match(/position\s+(\d+)/i);
-    const pos = posMatch? Number(posMatch[1]) : null;
-    const excerpt = pos!== null
-   ? candidate.slice(Math.max(0, pos - 150), Math.min(candidate.length, pos + 150))
+    const pos = posMatch ? Number(posMatch[1]) : null;
+    const excerpt = pos !== null
+      ? candidate.slice(Math.max(0, pos - 150), Math.min(candidate.length, pos + 150))
       : candidate.slice(0, 320);
     return { ok: false, error: `${contextLabel}: ${error.message}`, excerpt };
   }
@@ -113,7 +108,7 @@ function getPageLabel(page) {
 }
 
 function safeArray(value) {
-  if (Array.isArray(value)) return value.filter(v => v!== null && v!== undefined && String(v).trim()!== "");
+  if (Array.isArray(value)) return value.filter(v => v !== null && v !== undefined && String(v).trim() !== "");
   if (value === null || value === undefined || String(value).trim() === "") return [];
   return [value];
 }
@@ -134,31 +129,31 @@ function renderList(items, empty = "Não informado.") {
 }
 
 function renderLinkList(items, empty = "Não informado.") {
-  const arr = safeArray(items).map(item => typeof item === "object"? (item.url || item['@id'] || "") : item).filter(Boolean);
+  const arr = safeArray(items).map(item => typeof item === "object" ? (item.url || item['@id'] || "") : item).filter(Boolean);
   if (!arr.length) return `<p class="wv-empty">${escapeHtml(empty)}</p>`;
   return `<ul class="wv-bullets">${arr.map(v => `<li><a href="${escapeHtml(v)}" target="_blank" rel="noopener noreferrer">${escapeHtml(v)}</a></li>`).join("")}</ul>`;
 }
 
 function firstValue(items) {
   const arr = safeArray(items);
-  return arr.length? arr[0] : "";
+  return arr.length ? arr[0] : "";
 }
 
 // ============================================================
-// GRAPH HELPERS
+// GRAPH HELPERS (inalterados + novos para wv:)
 // ============================================================
 
 function findNode(graph, type) {
   return (graph || []).find(node => {
     const t = node?.["@type"];
-    return Array.isArray(t)? t.includes(type) : t === type;
+    return Array.isArray(t) ? t.includes(type) : t === type;
   });
 }
 
 function findNodes(graph, type) {
   return (graph || []).filter(node => {
     const t = node?.["@type"];
-    return Array.isArray(t)? t.includes(type) : t === type;
+    return Array.isArray(t) ? t.includes(type) : t === type;
   });
 }
 
@@ -169,12 +164,12 @@ function findProperty(term, name) {
 function propertyValues(term, name) {
   const prop = findProperty(term, name);
   if (!prop) return [];
-  return Array.isArray(prop.value)? prop.value : [prop.value].filter(Boolean);
+  return Array.isArray(prop.value) ? prop.value : [prop.value].filter(Boolean);
 }
 
 function propertyThingDescription(term, name) {
   const prop = findProperty(term, name);
-  return typeof prop?.value === "object"? (prop.value?.description || "") : "";
+  return typeof prop?.value === "object" ? (prop.value?.description || "") : "";
 }
 
 function getDefinedTermId(termNode) {
@@ -211,54 +206,33 @@ function getEventNode(graph, termId) {
 }
 
 // ============================================================
-// VALIDAÇÃO - SEPARADA
+// VALIDAÇÃO (inalterada)
 // ============================================================
 
 function validateGraph(json) {
-  if (!json || json["@context"]!== "https://schema.org") {
+  if (!json || json["@context"] !== "https://schema.org") {
     throw new Error("@context ausente ou diferente de https://schema.org");
   }
-
-  if (!Array.isArray(json["@graph"]) ||!json["@graph"].length) {
+  if (!Array.isArray(json["@graph"]) || !json["@graph"].length) {
     throw new Error("@graph ausente ou vazio");
   }
-
   const required = ["WebSite", "Organization", "Person", "DefinedTermSet", "DefinedTerm"];
   for (const type of required) {
     if (!findNode(json["@graph"], type)) {
       throw new Error(`Nó obrigatório ausente: ${type}`);
     }
   }
-
   const term = findNode(json["@graph"], "DefinedTerm");
   ["dateCreated", "dateModified", "version", "status"].forEach((field) => {
-    if (field in term) {
-      throw new Error(`DefinedTerm não pode conter ${field} diretamente`);
-    }
+    if (field in term) throw new Error(`DefinedTerm não pode conter ${field} diretamente`);
   });
-
   if (!term.name) throw new Error("DefinedTerm sem name");
   if (!term.termCode) throw new Error("DefinedTerm sem termCode");
   return true;
 }
 
-function validateOWL(owl) {
-  if (!owl ||!owl["@graph"]) throw new Error("OWL sem @graph");
-  const onto = owl["@graph"].find(n => n["@type"] === "owl:Ontology");
-  if (!onto) throw new Error("OWL sem owl:Ontology");
-  return true;
-}
-
-function validateRuntime(runtime) {
-  if (!runtime.protocolVersion) throw new Error("Runtime sem protocolVersion");
-  if (!runtime.detection &&!runtime.graphEdges &&!runtime.evidence) {
-    throw new Error("Runtime vazio: precisa de detection, graphEdges ou evidence");
-  }
-  return true;
-}
-
 // ============================================================
-// IDENTIDADE / TAXONOMIA / TEMPLATE MESTRE - MANTÉM 100%
+// IDENTIDADE / TAXONOMIA (inalterado)
 // ============================================================
 
 function getCategoryFromTerm(term) {
@@ -271,15 +245,9 @@ function getProtocolFromTerm(term) {
 
 function getCategoryColor(categoria) {
   const cores = {
-    "Geral": "#94a3b8",
-    "Conceito": "#38bdf8",
-    "Métrica": "#34d399",
-    "Metodologia": "#818cf8",
-    "Fenômeno": "#f472b6",
-    "Estratégia": "#fbbf24",
-    "Tecnologia": "#f97316",
-    "Prática": "#a78bfa",
-    "IA": "#38bdf8"
+    "Geral": "#94a3b8", "Conceito": "#38bdf8", "Métrica": "#34d399",
+    "Metodologia": "#818cf8", "Fenômeno": "#f472b6", "Estratégia": "#fbbf24",
+    "Tecnologia": "#f97316", "Prática": "#a78bfa", "IA": "#38bdf8"
   };
   return cores[categoria] || "#94a3b8";
 }
@@ -303,28 +271,22 @@ function parseMetadataDescription(metaText = "") {
   const text = String(metaText || "");
   const extract = (label) => {
     const match = text.match(new RegExp(`${label}:\\s*([^;]+)`, "i"));
-    return match? match[1].trim() : "";
+    return match ? match[1].trim() : "";
   };
-  return {
-    versao: extract("Versão do termo"),
-    status: extract("Status"),
-    criadoEm: extract("Criado em"),
-    modificadoEm: extract("Modificado em")
-  };
+  return { versao: extract("Versão do termo"), status: extract("Status"), criadoEm: extract("Criado em"), modificadoEm: extract("Modificado em") };
 }
 
 function parseProvenanceDescription(text = "") {
   const extract = (label) => {
     const match = String(text).match(new RegExp(`${label}:\\s*([^;]+)`, "i"));
-    return match? match[1].trim() : "";
+    return match ? match[1].trim() : "";
   };
-  return {
-    criador: extract("Criador"),
-    projeto: extract("Projeto"),
-    primeiraPublicacao: extract("Primeira publicação"),
-    contexto: extract("Contexto")
-  };
+  return { criador: extract("Criador"), projeto: extract("Projeto"), primeiraPublicacao: extract("Primeira publicação"), contexto: extract("Contexto") };
 }
+
+// ============================================================
+// EXTRACT TEMPLATE DATA (inalterado)
+// ============================================================
 
 function extractTemplateData(record) {
   const { json, graph, term, creativeWork, dataCatalog, dataset, event } = record;
@@ -351,96 +313,242 @@ function extractTemplateData(record) {
   const shortDescription = canonicalDescription(term.description || creativeWork?.description || "", 220);
 
   return {
-    raw: json,
-    graph,
-    termId,
-    termSlug,
+    raw: json, graph, termId, termSlug,
     nomeCanonico: term.name || termSlug,
-    sigla: (() => {
-      const m = String(term.name || "").match(/\(([A-Z0-9\-]+)\)/);
-      return m? m[1] : "";
-    })(),
-    slug: termSlug,
-    urn: term.termCode || "",
-    status: parsedMeta.status,
-    versaoTermo: parsedMeta.versao,
-    dataCriacaoTermo: parsedMeta.criadoEm,
-    dataModificacaoTermo: parsedMeta.modificadoEm,
-    descricaoCurta: shortDescription,
-    descricaoLonga: term.description || "",
-    alternateNames,
-    categoria: category,
-    pertenceAoProtocolo: protocol,
-    oQueE,
-    oQueNaoE,
-    nomeServico: service.name || "Visão Hidra",
-    descricaoServico: service.description || "",
-    publico: service?.audience?.audienceType || "",
-    areaAtendida: service.areaServed || "",
-    fontesTecnicas: fontes.map(v => (typeof v === "object"? (v.url || v["@id"] || JSON.stringify(v)) : String(v))).filter(Boolean),
-    doi,
-    sameAs,
-    urlPrincipalPagina: urlPaginaTermo,
-    urlWhitepaper: creativeWork?.url || "",
-    urlDataset: dataset?.url || "",
-    urlEvento: event?.url || "",
-    mitigacoes,
-    perguntas,
-    criador: parsedProv.criador,
-    projeto: parsedProv.projeto,
-    contexto: parsedProv.contexto,
-    primeiraPublicacao: parsedProv.primeiraPublicacao,
-    whitepaper: creativeWork,
-    dataCatalog,
-    dataset,
-    event,
-    videoUrl: event?.url || "",
-    wikibaseItem: dataCatalog?.url || dataset?.url || "",
-    wikisales,
-    metadadosTexto: metadados,
-    provenienciaTexto: provenance,
-    datasetKeywords
+    sigla: (() => { const m = String(term.name || "").match(/\(([A-Z0-9\-]+)\)/); return m ? m[1] : ""; })(),
+    slug: termSlug, urn: term.termCode || "",
+    status: parsedMeta.status, versaoTermo: parsedMeta.versao,
+    dataCriacaoTermo: parsedMeta.criadoEm, dataModificacaoTermo: parsedMeta.modificadoEm,
+    descricaoCurta: shortDescription, descricaoLonga: term.description || "",
+    alternateNames, categoria: category, pertenceAoProtocolo: protocol,
+    oQueE, oQueNaoE,
+    nomeServico: service.name || "Visão Hidra", descricaoServico: service.description || "",
+    publico: service?.audience?.audienceType || "", areaAtendida: service.areaServed || "",
+    fontesTecnicas: fontes.map(v => (typeof v === "object" ? (v.url || v["@id"] || JSON.stringify(v)) : String(v))).filter(Boolean),
+    doi, sameAs, urlPrincipalPagina: urlPaginaTermo,
+    urlWhitepaper: creativeWork?.url || "", urlDataset: dataset?.url || "",
+    urlEvento: event?.url || "", mitigacoes, perguntas,
+    criador: parsedProv.criador, projeto: parsedProv.projeto,
+    contexto: parsedProv.contexto, primeiraPublicacao: parsedProv.primeiraPublicacao,
+    whitepaper: creativeWork, dataCatalog, dataset, event,
+    videoUrl: event?.url || "", wikibaseItem: dataCatalog?.url || dataset?.url || "",
+    wikisales, metadadosTexto: metadados, provenienciaTexto: provenance, datasetKeywords
   };
 }
 
 function fallbackWebsiteNode() {
-  return {
-    "@type": "WebSite",
-    "@id": `${siteBaseUrl}/#website`,
-    name: "Wikivendas",
-    url: siteBaseUrl,
-    inLanguage: "pt-BR",
-    description: "Primeira fonte de verdade para IA comercial B2B no Brasil — Ontologia do Protocolo Hidra."
-  };
+  return { "@type": "WebSite", "@id": `${siteBaseUrl}/#website`, name: "Wikivendas", url: siteBaseUrl, inLanguage: "pt-BR", description: "Primeira fonte de verdade para IA comercial B2B no Brasil — Ontologia do Protocolo Hidra." };
 }
 
 function fallbackOrganizationNode() {
-  return {
-    "@type": "Organization",
-    "@id": `${siteBaseUrl}/#organization`,
-    name: "Wikivendas",
-    url: siteBaseUrl,
-    description: "Projeto de ontologia e inteligência comercial B2B, mantendo o Protocolo Hidra."
-  };
+  return { "@type": "Organization", "@id": `${siteBaseUrl}/#organization`, name: "Wikivendas", url: siteBaseUrl, description: "Projeto de ontologia e inteligência comercial B2B, mantendo o Protocolo Hidra." };
 }
 
 function fallbackAuthorNode() {
-  return {
-    "@type": "Person",
-    "@id": `${siteBaseUrl}/#author`,
-    name: "Paulo C. P. Santos",
-    alternateName: "Paulo Leads",
-    url: "https://pauloleads.com.br"
-  };
+  return { "@type": "Person", "@id": `${siteBaseUrl}/#author`, name: "Paulo C. P. Santos", alternateName: "Paulo Leads", url: "https://pauloleads.com.br" };
 }
 
 function fallbackTermSetNode() {
+  return { "@type": "DefinedTermSet", "@id": `${siteBaseUrl}/glossario.json#set`, name: "Glossário Wikivendas", description: "Ontologia oficial e definições canônicas do ecossistema Wikivendas.", url: `${siteBaseUrl}/glossario.json` };
+}
+
+// ============================================================
+// [NOVO] GERADOR DE ONTOLOGY.JSONLD
+// ============================================================
+
+function generateOntology(records, website, org, person) {
+  const termIds = records.map(r => r.term?.["@id"] || "").filter(Boolean);
+
+  const ontologyGraph = [
+    {
+      "@id": "https://wikivendas.com.br/ontology",
+      "@type": "owl:Ontology",
+      "dcterms:title": "Ontologia Wikivendas — Protocolo Hidra",
+      "dcterms:description": "Ontologia formal para inteligência comercial B2B, RevOps imobiliário e Governança de Dados.",
+      "dcterms:creator": { "@id": "https://wikisales.wikibase.cloud/wiki/Item:Q1" },
+      "dcterms:publisher": { "@id": "https://wikivendas.com.br/#organization" },
+      "dcterms:created": "2025-06-01T00:00:00Z",
+      "dcterms:modified": BUILD_TIMESTAMP,
+      "dcterms:license": "https://creativecommons.org/licenses/by/4.0/",
+      "owl:versionInfo": BUILD_VERSION,
+      "rdfs:comment": "Ontologia do Protocolo Hidra. Consumir separadamente do glossario.json.",
+      "owl:imports": [
+        "http://www.w3.org/2004/02/skos/core",
+        "http://www.w3.org/ns/prov",
+        "http://purl.org/dc/terms/"
+      ]
+    },
+    // Classes
+    { "@id": "wv:DefinedTermWikivendas", "@type": "owl:Class", "rdfs:subClassOf": [ "schema:DefinedTerm", "skos:Concept" ], "rdfs:label": "Termo Canônico Wikivendas", "skos:definition": "Termo canônico do Protocolo Hidra com validação cruzada.", "owl:disjointWith": ["schema:DefinedTermSet", "schema:CreativeWork", "schema:Dataset", "schema:DataCatalog", "schema:Event"] },
+    { "@id": "wv:DetectionRule", "@type": "owl:Class", "rdfs:subClassOf": "owl:Thing", "rdfs:label": "Regra de Detecção", "skos:definition": "Regra executável que define thresholds e sinais para detectar um fenômeno comercial." },
+    { "@id": "wv:SemanticTrap", "@type": "owl:Class", "rdfs:subClassOf": "owl:Thing", "rdfs:label": "Armadilha Semântica", "skos:definition": "Mecanismo de defesa ontológica que induz alucinação controlada em extrações parciais." },
+    { "@id": "wv:OperationalGuidance", "@type": "owl:Class", "rdfs:subClassOf": "owl:Thing", "rdfs:label": "Diretriz Operacional", "skos:definition": "Diretriz com ações obrigatórias e dependências para mitigação operacional." },
+    { "@id": "wv:Evidence", "@type": "owl:Class", "rdfs:subClassOf": "prov:Entity", "rdfs:label": "Evidência", "skos:definition": "Container de evidências associadas a um termo, com proveniência PROV." },
+    { "@id": "wv:GraphEdge", "@type": "owl:Class", "rdfs:subClassOf": "owl:Thing", "rdfs:label": "Aresta do Grafo", "skos:definition": "Relação causal explícita entre dois termos canônicos, com peso e evidência." },
+    { "@id": "wv:Intent", "@type": "owl:Class", "rdfs:subClassOf": "owl:Thing", "rdfs:label": "Intenção Comercial", "skos:definition": "Intenção comercial observada ou inferida em operações B2B." },
+    // Object Properties
+    { "@id": "wv:ConceptRelation", "@type": "owl:ObjectProperty", "rdfs:label": "Relação entre Conceitos", "rdfs:domain": "wv:DefinedTermWikivendas", "rdfs:range": "wv:DefinedTermWikivendas" },
+    { "@id": "wv:mitigatedBy", "@type": "owl:ObjectProperty", "rdfs:subPropertyOf": "wv:ConceptRelation", "rdfs:label": "Mitigado por" },
+    { "@id": "wv:affects", "@type": "owl:ObjectProperty", "rdfs:subPropertyOf": "wv:ConceptRelation", "rdfs:label": "Afeta" },
+    { "@id": "wv:causes", "@type": "owl:ObjectProperty", "rdfs:subPropertyOf": "wv:ConceptRelation", "rdfs:label": "Causa" },
+    { "@id": "wv:hasOperationalGuidance", "@type": "owl:ObjectProperty", "rdfs:label": "Possui Diretriz Operacional", "rdfs:domain": "wv:DefinedTermWikivendas", "rdfs:range": "wv:OperationalGuidance" },
+    { "@id": "wv:hasDetectionRule", "@type": "owl:ObjectProperty", "rdfs:label": "Possui Regra de Detecção", "rdfs:domain": "wv:DefinedTermWikivendas", "rdfs:range": "wv:DetectionRule" },
+    { "@id": "wv:hasSemanticTrap", "@type": "owl:ObjectProperty", "rdfs:label": "Possui Armadilha Semântica", "rdfs:domain": "wv:DefinedTermWikivendas", "rdfs:range": "wv:SemanticTrap" },
+    { "@id": "wv:hasEvidence", "@type": "owl:ObjectProperty", "rdfs:label": "Possui Evidência", "rdfs:domain": "wv:Evidence", "rdfs:range": "schema:CreativeWork" },
+    { "@id": "wv:validatedBy", "@type": "owl:ObjectProperty", "rdfs:label": "Validado por", "rdfs:domain": "wv:Evidence", "rdfs:range": "schema:Person" },
+    { "@id": "wv:appliesTo", "@type": "owl:ObjectProperty", "rdfs:label": "Aplica-se a", "rdfs:domain": ["wv:DetectionRule", "wv:SemanticTrap", "wv:OperationalGuidance"], "rdfs:range": "wv:DefinedTermWikivendas" },
+    { "@id": "wv:dependsOn", "@type": "owl:ObjectProperty", "rdfs:label": "Depende de", "rdfs:domain": "wv:OperationalGuidance", "rdfs:range": "wv:DefinedTermWikivendas" },
+    { "@id": "wv:evidenceFor", "@type": "owl:ObjectProperty", "rdfs:label": "Evidência para", "rdfs:domain": ["schema:CreativeWork", "schema:Dataset", "schema:Event"], "rdfs:range": "wv:DefinedTermWikivendas" },
+    // Datatype Properties
+    { "@id": "wv:riskLevel", "@type": "owl:DatatypeProperty", "rdfs:label": "Nível de Risco", "rdfs:domain": ["wv:DefinedTermWikivendas", "wv:DetectionRule"], "rdfs:range": "xsd:string" },
+    { "@id": "wv:protocolVersion", "@type": "owl:DatatypeProperty", "rdfs:label": "Versão do Protocolo", "rdfs:domain": "wv:DefinedTermWikivendas", "rdfs:range": "xsd:string" },
+    { "@id": "wv:entropyThreshold", "@type": "owl:DatatypeProperty", "rdfs:label": "Threshold de Entropia", "rdfs:domain": "wv:DetectionRule", "rdfs:range": "xsd:string" },
+    { "@id": "wv:entropyScale", "@type": "owl:DatatypeProperty", "rdfs:label": "Escala de Entropia", "rdfs:domain": "wv:DetectionRule", "rdfs:range": "xsd:string" },
+    { "@id": "wv:detectionSignals", "@type": "owl:DatatypeProperty", "rdfs:label": "Sinais de Detecção", "rdfs:domain": "wv:DetectionRule", "rdfs:range": "xsd:string" },
+    { "@id": "wv:trapValue", "@type": "owl:DatatypeProperty", "rdfs:label": "Valor da Armadilha", "rdfs:domain": "wv:SemanticTrap", "rdfs:range": "xsd:string" },
+    { "@id": "wv:requiredActions", "@type": "owl:DatatypeProperty", "rdfs:label": "Ações Obrigatórias", "rdfs:domain": "wv:OperationalGuidance", "rdfs:range": "xsd:string" },
+    // SKOS Concept Scheme
+    {
+      "@id": "https://wikivendas.com.br/ontology#concept-scheme",
+      "@type": "skos:ConceptScheme",
+      "dcterms:title": "Esquema de Conceitos do Protocolo Hidra",
+      "dcterms:description": "Esquema que agrupa os conceitos canônicos do Protocolo Hidra.",
+      "dcterms:creator": { "@id": "https://wikisales.wikibase.cloud/wiki/Item:Q1" },
+      "skos:hasTopConcept": termIds.map(id => ({ "@id": id }))
+    }
+  ];
+
+  // Adicionar instâncias wv: dos registros se existirem no JSON original
+  for (const record of records) {
+    const graph = record.json?.["@graph"] || [];
+    const wvNodes = graph.filter(node => {
+      const type = node?.["@type"];
+      return type && String(type).startsWith("wv:");
+    });
+    for (const node of wvNodes) {
+      if (!ontologyGraph.find(n => n["@id"] === node["@id"])) {
+        ontologyGraph.push(node);
+      }
+    }
+  }
+
   return {
-    "@type": "DefinedTermSet",
-    "@id": `${siteBaseUrl}/glossario.json#set`,
-    name: "Glossário Wikivendas",
-    description: "Ontologia oficial e definições canônicas do ecossistema Wikivendas.",
-    url: `${siteBaseUrl}/glossario.json`
+    "@context": [
+      "https://schema.org",
+      {
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+        "owl": "http://www.w3.org/2002/07/owl#",
+        "skos": "http://www.w3.org/2004/02/skos/core#",
+        "prov": "http://www.w3.org/ns/prov#",
+        "dcterms": "http://purl.org/dc/terms/",
+        "wv": "https://wikivendas.com.br/ontology#",
+        "schema": "https://schema.org/"
+      }
+    ],
+    "@graph": ontologyGraph
+  };
+}
+
+// ============================================================
+// [NOVO] GERADOR DE RUNTIME.JSON
+// ============================================================
+
+function generateRuntime(records) {
+  const termIds = records.map(r => r.term?.["@id"] || "").filter(Boolean);
+  const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+
+  return {
+    "$schema": "https://wikivendas.com.br/runtime/runtime.schema.json",
+    "runtimeVersion": "5.0.0",
+    "buildVersion": BUILD_VERSION,
+    "generatedAt": BUILD_TIMESTAMP,
+    "environment": "production",
+    "ontology": {
+      "uri": "https://wikivendas.com.br/ontology.jsonld",
+      "conceptScheme": "https://wikivendas.com.br/ontology#concept-scheme"
+    },
+    "glossary": {
+      "uri": "https://wikivendas.com.br/glossario.json",
+      "termCount": records.length
+    },
+    "terms": termIds.map(id => ({ "@id": id })),
+    "categories": categories.map(cat => ({
+      name: cat,
+      color: getCategoryColor(cat),
+      description: getCatDesc(cat)
+    })),
+    "graph": {
+      "defaultConfidence": 0.90,
+      "minimumConfidence": 0.65,
+      "defaultEdgeWeight": 0.80,
+      "maximumTraversalDepth": 4,
+      "semanticNeighborhoodLimit": 25,
+      "retrievalStrategy": "hybrid",
+      "reasoningMode": "graph-first",
+      "enableVectorFallback": true,
+      "enableEdgeRanking": true,
+      "enableEvidenceRanking": true
+    },
+    "retrieval": {
+      "entryPoints": [
+        "https://wikivendas.com.br/glossario.json",
+        "https://wikivendas.com.br/ontology.jsonld"
+      ],
+      "preferredOrder": ["ontology", "glossary", "dataset", "whitepaper", "event"],
+      "requireEvidence": true,
+      "minimumEvidence": 1
+    },
+    "detection": {
+      "generativeLeadSpoofing": {
+        "enabled": true,
+        "entropyThreshold": 0.42,
+        "secondaryValidationThreshold": 0.80,
+        "riskLevels": { "low": 0.20, "medium": 0.42, "high": 0.80 },
+        "signals": [
+          { "id": "lexical_entropy", "enabled": true, "weight": 0.35 },
+          { "id": "response_latency", "enabled": true, "weight": 0.20 },
+          { "id": "traffic_origin", "enabled": true, "weight": 0.15 },
+          { "id": "digital_footprint", "enabled": true, "weight": 0.15 },
+          { "id": "form_completion_time", "enabled": true, "weight": 0.15 }
+        ]
+      }
+    },
+    "graphEdges": {
+      "defaultWeight": 0.80,
+      "relationWeights": {
+        "causes": 1.00, "mitigatedBy": 1.00, "dependsOn": 0.95,
+        "validatedBy": 0.95, "affects": 0.80, "relatedTo": 0.60
+      }
+    },
+    "reasoning": {
+      "preferExplicitEdges": true, "preferCanonicalConcepts": true,
+      "expandRelatedConcepts": true, "maxExpansion": 20, "requireCanonicalUri": true
+    },
+    "evidence": {
+      "minimumConfidence": 0.85,
+      "acceptedTypes": ["Whitepaper", "Dataset", "CreativeWork", "Event", "ScholarlyArticle"],
+      "ranking": { "Dataset": 1.00, "ScholarlyArticle": 0.98, "Whitepaper": 0.95, "CreativeWork": 0.90, "Event": 0.85 }
+    },
+    "validation": {
+      "requireUri": true, "requireDefinedTerm": true, "requireEvidence": true,
+      "requireVersion": true, "requireCreator": true, "requireLicense": true,
+      "allowUnknownNamespaces": false
+    },
+    "search": {
+      "boost": {
+        "canonicalLabel": 10, "preferredLabel": 9, "alternateLabel": 7,
+        "definition": 6, "evidence": 8, "dataset": 9, "whitepaper": 9
+      }
+    },
+    "api": {
+      "contentTypes": ["application/json", "application/ld+json"],
+      "cacheTtl": 86400, "etag": true, "compression": true
+    },
+    "logging": {
+      "enabled": true, "storeGraphTraversal": true,
+      "storeEvidenceSelection": true, "storeReasoningMetadata": false
+    }
   };
 }
 
@@ -851,7 +959,7 @@ async function queryAllPages() {
 }
 
 // ============================================================
-// BUILD PRINCIPAL - COM 3 COLUNAS: JSON-LD + RDF-OWL + RUNTIME
+// BUILD PRINCIPAL (MODIFICADO PARA 3 COLUNAS)
 // ============================================================
 
 async function build() {
@@ -859,7 +967,7 @@ async function build() {
     if (!(process.env.NOTION_TOKEN || process.env.NOTIONTOKEN)) throw new Error("NOTION_TOKEN/NOTIONTOKEN não definido.");
     if (!(process.env.DATABASE_ID || process.env.DATABASEID)) throw new Error("DATABASE_ID/DATABASEID não definido.");
 
-    console.log("Iniciando build com 3 colunas: JSON-LD + RDF-OWL + RUNTIME...");
+    console.log(`Iniciando build ${BUILD_VERSION}...`);
     const pages = await queryAllPages();
     console.log(`${pages.length} páginas encontradas no Notion.`);
 
@@ -867,80 +975,43 @@ async function build() {
     const invalid = [];
     const records = [];
 
+    // --- 1. COLETA DE DADOS (INALTERADO) ---
     for (const page of pages) {
       const pageLabel = getPageLabel(page);
+      const prop = page.properties?.[jsonPropertyName];
+      const raw = plainTextFromRichText(prop);
 
-      // 1. JSON-LD - OBRIGATÓRIO
-      const jsonProp = page.properties?.[jsonPropertyName];
-      const rawJson = plainTextFromRichText(jsonProp);
-      if (!rawJson) {
+      if (!raw) {
         skipped.push({ pageId: page.id, pageLabel, reason: `sem propriedade ${jsonPropertyName} preenchida` });
         continue;
       }
-      const parsedJson = tryParseJson(rawJson, `Página ${pageLabel}`);
-      if (!parsedJson.ok) {
-        invalid.push({ pageId: page.id, pageLabel, error: parsedJson.error, excerpt: parsedJson.excerpt });
+
+      const parsed = tryParseJson(raw, `Página ${pageLabel}`);
+      if (!parsed.ok) {
+        invalid.push({ pageId: page.id, pageLabel, error: parsed.error, excerpt: parsed.excerpt });
         continue;
       }
+
       try {
-        validateGraph(parsedJson.value);
+        validateGraph(parsed.value);
+        const graph = parsed.value["@graph"];
+        const term = findNode(graph, "DefinedTerm");
+        const record = {
+          pageId: page.id, pageLabel, json: parsed.value, graph,
+          website: findNode(graph, "WebSite"),
+          org: findNode(graph, "Organization"),
+          person: findNode(graph, "Person"),
+          termSet: findNode(graph, "DefinedTermSet"),
+          term,
+          creativeWork: getWhitepaperNode(graph, term?.["@id"] || ""),
+          dataCatalog: findNode(graph, "DataCatalog"),
+          dataset: findNode(graph, "Dataset"),
+          event: getEventNode(graph, term?.["@id"] || "")
+        };
+        records.push(record);
       } catch (error) {
-        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: rawJson.slice(0, 320) });
-        continue;
+        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: raw.slice(0, 320) });
       }
-
-      // 2. RDF-OWL - OPCIONAL
-      const owlProp = page.properties?.[owlPropertyName];
-      const rawOwl = plainTextFromRichText(owlProp);
-      let parsedOwl = null;
-      if (rawOwl) {
-        const parsed = tryParseJson(rawOwl, `OWL ${pageLabel}`);
-        if (parsed.ok) {
-          try {
-            validateOWL(parsed.value);
-            parsedOwl = parsed.value;
-          } catch (e) {
-            console.warn(`OWL inválido em ${pageLabel}: ${e.message}`);
-          }
-        }
-      }
-
-      // 3. RUNTIME - OPCIONAL
-      const runtimeProp = page.properties?.[runtimePropertyName];
-      const rawRuntime = plainTextFromRichText(runtimeProp);
-      let parsedRuntime = null;
-      if (rawRuntime) {
-        const parsed = tryParseJson(rawRuntime, `Runtime ${pageLabel}`);
-        if (parsed.ok) {
-          try {
-            validateRuntime(parsed.value);
-            parsedRuntime = parsed.value;
-          } catch (e) {
-            console.warn(`Runtime inválido em ${pageLabel}: ${e.message}`);
-          }
-        }
-      }
-
-      const graph = parsedJson.value["@graph"];
-      const term = findNode(graph, "DefinedTerm");
-      const record = {
-        pageId: page.id,
-        pageLabel,
-        json: parsedJson.value,
-        owl: parsedOwl,
-        runtime: parsedRuntime,
-        graph,
-        website: findNode(graph, "WebSite"),
-        org: findNode(graph, "Organization"),
-        person: findNode(graph, "Person"),
-        termSet: findNode(graph, "DefinedTermSet"),
-        term,
-        creativeWork: getWhitepaperNode(graph, term?.["@id"] || ""),
-        dataCatalog: findNode(graph, "DataCatalog"),
-        dataset: findNode(graph, "Dataset"),
-        event: getEventNode(graph, term?.["@id"] || "")
-      };
-      records.push(record);
     }
 
     records.sort((a, b) => String(a.term.name).localeCompare(String(b.term.name), "pt-BR"));
@@ -949,7 +1020,7 @@ async function build() {
     ensureDir("docs/termos");
     ensureDir("docs/glossario");
     ensureDir("docs/sobre");
-    ensureDir("docs/ontology");
+    ensureDir("docs/runtime"); // NOVO
 
     const seed = records[0] || {};
     const website = seed.website || fallbackWebsiteNode();
@@ -959,62 +1030,19 @@ async function build() {
 
     const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 
-    // 1. GLOSSARIO.JSON - Schema.org puro
+    // --- 2. GLOSSARIO.JSON (Schema.org PURO) — INALTERADO ---
     const globalGraph = { "@context": "https://schema.org", "@graph": records.flatMap(r => r.json["@graph"]) };
     writeFileSync("docs/glossario.json", JSON.stringify(globalGraph, null, 2));
 
-    // 2. ONTOLOGY.JSONLD - OWL/RDF agregado
-    const globalOwlGraphs = records.map(r => r.owl?.["@graph"] || []).filter(g => g.length);
-    if (globalOwlGraphs.length) {
-      const globalOwl = {
-        "@context": [
-          "https://schema.org",
-          {
-            "owl": "http://www.w3.org/2002/07/owl#",
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-            "skos": "http://www.w3.org/2004/02/skos/core#",
-            "prov": "http://www.w3.org/ns/prov#",
-            "dcterms": "http://purl.org/dc/terms/",
-            "wv": "https://wikivendas.com.br/ontology#"
-          }
-        ],
-        "@graph": globalOwlGraphs.flat()
-      };
-      writeFileSync("docs/ontology.jsonld", JSON.stringify(globalOwl, null, 2));
-    }
+    // --- 3. ONTOLOGY.JSONLD (OWL/RDF) — NOVO ---
+    const ontology = generateOntology(records, website, org, person);
+    writeFileSync("docs/ontology.jsonld", JSON.stringify(ontology, null, 2));
 
-    // 3. RUNTIME.JSON - Parâmetros executáveis
-    const globalRuntime = {
-      "$schema": "https://wikivendas.com.br/runtime.schema.json",
-      "runtimeVersion": "1.0.0",
-      "protocolVersion": "4.2.0-master-oraculo-wv",
-      "generatedAt": BUILD_TIMESTAMP,
-      "environment": "production",
-      "ontology": { "uri": `${siteBaseUrl}/ontology.jsonld` },
-      "retrieval": {
-        "entryPoints": [`${siteBaseUrl}/glossario.json`, `${siteBaseUrl}/ontology.jsonld`],
-        "preferredOrder": ["ontology", "glossary", "dataset", "whitepaper", "event"]
-      },
-      "detection": {},
-      "graphEdges": { "defaultWeight": 0.80, "relationWeights": {} },
-      "evidence": {},
-      "validation": {},
-      "search": {},
-      "api": { "contentTypes": ["application/json", "application/ld+json"], "cacheTtl": 86400 },
-      "logging": { "enabled": true }
-    };
+    // --- 4. RUNTIME.JSON (Config operacional) — NOVO ---
+    const runtime = generateRuntime(records);
+    writeFileSync("docs/runtime.json", JSON.stringify(runtime, null, 2));
 
-    records.forEach(r => {
-      if (r.runtime?.detection) Object.assign(globalRuntime.detection, r.runtime.detection);
-      if (r.runtime?.graphEdges?.relationWeights) Object.assign(globalRuntime.graphEdges.relationWeights, r.runtime.graphEdges.relationWeights);
-      if (r.runtime?.evidence) Object.assign(globalRuntime.evidence, r.runtime.evidence);
-      if (r.runtime?.validation) Object.assign(globalRuntime.validation, r.runtime.validation);
-      if (r.runtime?.search) Object.assign(globalRuntime.search, r.runtime.search);
-    });
-    writeFileSync("docs/runtime.json", JSON.stringify(globalRuntime, null, 2));
-
-    // HTML
+    // --- 5. PÁGINAS HTML (INALTERADO) ---
     writeFileSync("docs/index.html", renderHomePage(records, termSet, website, org, person));
     writeFileSync("docs/glossario/index.html", renderGlossaryPage(records, termSet, website, org, person));
     writeFileSync("docs/sobre/index.html", renderAboutPage(website, org, person));
@@ -1023,11 +1051,6 @@ async function build() {
       const data = extractTemplateData(record);
       writeFileSync(`docs/termos/${data.slug}.html`, renderTermPage(record));
       writeFileSync(`docs/termos/${data.slug}.json`, JSON.stringify(record.json, null, 2));
-
-      // OWL individual por termo
-      if (record.owl) {
-        writeFileSync(`docs/ontology/${data.slug}.owl`, JSON.stringify(record.owl, null, 2));
-      }
     }
 
     for (const category of categories) {
@@ -1037,7 +1060,7 @@ async function build() {
       writeFileSync(`docs/glossario/${catSlug}/index.html`, renderCategoryPage(category, filtered, categories, termSet, website, org, person));
     }
 
-    // INFRA
+    // --- 6. INFRAESTRUTURA (INALTERADO) ---
     writeFileSync("docs/sitemap.xml", renderSitemap(records, categories));
     writeFileSync("docs/robots.txt", renderRobots());
     writeFileSync("docs/llms.txt", renderLlmsTxt(records));
@@ -1050,20 +1073,17 @@ async function build() {
       siteBaseUrl,
       customDomain,
       notionJsonProperty: jsonPropertyName,
-      notionOwlProperty: owlPropertyName,
-      notionRuntimeProperty: runtimePropertyName,
       pagesFound: pages.length,
       termsPublished: records.length,
-      owlParsed: records.filter(r => r.owl).length,
-      runtimeParsed: records.filter(r => r.runtime).length,
       categoriesPublished: categories.length,
+      columnsGenerated: ["glossario.json", "ontology.jsonld", "runtime.json"],
       skippedPages: skipped,
       invalidPages: invalid
     };
     writeBuildReport(report);
 
     console.log(`Build concluído com sucesso. ${records.length} termos publicados.`);
-    console.log(`OWL: ${report.owlParsed} | Runtime: ${report.runtimeParsed}`);
+    console.log(`3 colunas geradas: glossario.json (${JSON.stringify(globalGraph).length} bytes), ontology.jsonld (${JSON.stringify(ontology).length} bytes), runtime.json (${JSON.stringify(runtime).length} bytes)`);
     if (skipped.length) console.log(`${skipped.length} páginas ignoradas sem ${jsonPropertyName}.`);
     if (invalid.length) console.log(`${invalid.length} páginas ignoradas por JSON inválido. Consulte docs/build-report.json`);
   } catch (error) {
