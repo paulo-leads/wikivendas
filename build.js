@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 
 // ============================================================
-// WIKIVENDAS BUILD v6.0.0-WKGS (QUATRO COLUNAS)
+// WIKIVENDAS BUILD v6.0.0-WKGS (QUATRO COLUNAS - SEM DEPENDÊNCIAS)
 // glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config) + Markdown (editorial)
 // ============================================================
 
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { createHash } from "crypto";
-import { marked } from "marked";
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -548,40 +547,81 @@ function generateRuntime(records) {
 }
 
 // ============================================================
-// [NOVO] PARSER DE MARKDOWN (estilo README do GitHub)
+// [NOVO] PARSER DE MARKDOWN NATIVO (sem dependências)
 // ============================================================
 
 function markdownToHtml(mdText = "") {
   if (!mdText || mdText.trim() === "") return "";
   
-  // Configurar marked para estilo GitHub
-  marked.setOptions({
-    gfm: true,
-    breaks: true,
-    tables: true,
-    sanitize: false,
-    smartLists: true,
-    smartypants: true
-  });
+  let html = mdText;
 
-  // Converter para HTML
-  let html = marked.parse(mdText);
+  // Headers
+  html = html.replace(/^###### (.*$)/gim, '<h6 class="gh-heading gh-h6">$1</h6>');
+  html = html.replace(/^##### (.*$)/gim, '<h5 class="gh-heading gh-h5">$1</h5>');
+  html = html.replace(/^#### (.*$)/gim, '<h4 class="gh-heading gh-h4">$1</h4>');
+  html = html.replace(/^### (.*$)/gim, '<h3 class="gh-heading gh-h3">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 class="gh-heading gh-h2">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 class="gh-heading gh-h1">$1</h1>');
+
+  // Blockquotes
+  html = html.replace(/^\> (.*$)/gim, '<blockquote class="gh-blockquote">$1</blockquote>');
+
+  // Ordered lists
+  html = html.replace(/^\s*([0-9]+)\.\s+(.*$)/gim, '<ol class="gh-ol"><li>$2</li></ol>');
+  html = html.replace(/<\/ol>\s*<ol class="gh-ol">/gim, '');
+
+  // Unordered lists
+  html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<ul class="gh-ul"><li>$1</li></ul>');
+  html = html.replace(/<\/ul>\s*<ul class="gh-ul">/gim, '');
+
+  // Code blocks (triple backticks)
+  html = html.replace(/```([\s\S]*?)```/gim, '<pre class="gh-pre"><code class="gh-code">$1</code></pre>');
   
-  // Adicionar classes para estilização GitHub
-  html = html
-    .replace(/<h1>/g, '<h1 class="gh-heading gh-h1">')
-    .replace(/<h2>/g, '<h2 class="gh-heading gh-h2">')
-    .replace(/<h3>/g, '<h3 class="gh-heading gh-h3">')
-    .replace(/<h4>/g, '<h4 class="gh-heading gh-h4">')
-    .replace(/<h5>/g, '<h5 class="gh-heading gh-h5">')
-    .replace(/<h6>/g, '<h6 class="gh-heading gh-h6">')
-    .replace(/<pre><code>/g, '<pre class="gh-pre"><code class="gh-code">')
-    .replace(/<code>/g, '<code class="gh-code-inline">')
-    .replace(/<blockquote>/g, '<blockquote class="gh-blockquote">')
-    .replace(/<ul>/g, '<ul class="gh-ul">')
-    .replace(/<ol>/g, '<ol class="gh-ol">')
-    .replace(/<table>/g, '<table class="gh-table">')
-    .replace(/<p>/g, '<p class="gh-p">');
+  // Inline code
+  html = html.replace(/`([^`]+)`/gim, '<code class="gh-code-inline">$1</code>');
+
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/gim, '<strong>$1</strong>');
+  html = html.replace(/__([^_]+)__/gim, '<strong>$1</strong>');
+
+  // Italic
+  html = html.replace(/\*([^*]+)\*/gim, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/gim, '<em>$1</em>');
+
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  // Images
+  html = html.replace(/!\[([^\]]+)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" loading="lazy" />');
+
+  // Tables (simplified)
+  html = html.replace(/\|(.+)\|/gim, function(match) {
+    const cells = match.split('|').filter(c => c.trim() !== '');
+    return '<tr><td>' + cells.join('</td><td>') + '</td></tr>';
+  });
+  html = html.replace(/<tr><td>(.*?)<\/td><\/tr>/gim, function(match) {
+    if (match.includes('---')) {
+      return ''; // Skip separator rows
+    }
+    return match;
+  });
+  
+  // Paragraphs (must be last to avoid wrapping other elements)
+  // Split by double newlines, but don't wrap elements that are already block elements
+  const parts = html.split(/\n\s*\n/);
+  html = parts.map(p => {
+    // Skip if already a block element
+    if (p.trim().startsWith('<h') || p.trim().startsWith('<blockquote') || 
+        p.trim().startsWith('<ul') || p.trim().startsWith('<ol') || 
+        p.trim().startsWith('<pre') || p.trim().startsWith('<table') ||
+        p.trim() === '') {
+      return p;
+    }
+    return `<p class="gh-p">${p}</p>`;
+  }).join('\n');
+
+  // Clean up extra whitespace
+  html = html.replace(/\n{3,}/g, '\n\n');
 
   return html;
 }
