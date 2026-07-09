@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 
 // ============================================================
-// WIKIVENDAS BUILD v6.0.1-WKGS (QUATRO COLUNAS - SEM JSON VISÍVEL)
-// glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config) + Markdown (editorial)
+// WIKIVENDAS BUILD v6.0.2-WKGS (QUATRO COLUNAS - MARKDOWN NATIVO)
 // ============================================================
 
 import { Client } from "@notionhq/client";
-import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
+import { writeFileSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
 
 // ============================================================
@@ -21,11 +20,11 @@ const owlPropertyName = process.env.NOTION_OWL_PROPERTY || process.env.NOTIONOWL
 const runtimePropertyName = process.env.NOTION_RUNTIME_PROPERTY || process.env.NOTIONRUNTIMEPROPERTY || "Runtime";
 const mdPropertyName = process.env.NOTION_MD_PROPERTY || process.env.NOTIONMDPROPERTY || "mkdom";
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v6.0.1-wkgs";
+const BUILD_VERSION = "v6.0.2-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
-// HELPERS BÁSICOS (do build antigo)
+// HELPERS BÁSICOS
 // ============================================================
 
 function plainTextFromRichText(prop) {
@@ -134,7 +133,7 @@ function firstValue(items) {
 }
 
 // ============================================================
-// GRAPH HELPERS (do build antigo)
+// GRAPH HELPERS
 // ============================================================
 
 function findNode(graph, type) {
@@ -200,7 +199,7 @@ function getEventNode(graph, termId) {
 }
 
 // ============================================================
-// VALIDAÇÃO (do build antigo)
+// VALIDAÇÃO
 // ============================================================
 
 function validateGraph(json) {
@@ -226,7 +225,7 @@ function validateGraph(json) {
 }
 
 // ============================================================
-// IDENTIDADE / TAXONOMIA (do build antigo)
+// IDENTIDADE / TAXONOMIA
 // ============================================================
 
 function getCategoryFromTerm(term) {
@@ -279,7 +278,7 @@ function parseProvenanceDescription(text = "") {
 }
 
 // ============================================================
-// EXTRACT TEMPLATE DATA (do build antigo)
+// EXTRACT TEMPLATE DATA
 // ============================================================
 
 function extractTemplateData(record) {
@@ -347,7 +346,7 @@ function fallbackTermSetNode() {
 }
 
 // ============================================================
-// [NOVO] GERADOR DE ONTOLOGY.JSONLD (do build antigo)
+// GERADOR DE ONTOLOGY.JSONLD
 // ============================================================
 
 function generateOntology(records, website, org, person) {
@@ -445,7 +444,7 @@ function generateOntology(records, website, org, person) {
 }
 
 // ============================================================
-// [NOVO] GERADOR DE RUNTIME.JSON (do build antigo)
+// GERADOR DE RUNTIME.JSON
 // ============================================================
 
 function generateRuntime(records) {
@@ -547,24 +546,68 @@ function generateRuntime(records) {
 }
 
 // ============================================================
-// PARSER DE MARKDOWN (usando marked com GFM)
+// PARSER DE MARKDOWN NATIVO (SEM DEPENDÊNCIAS)
 // ============================================================
-
-import { marked } from 'marked';
 
 function markdownToHtml(mdText = "") {
   if (!mdText || mdText.trim() === "") return "";
   
-  marked.setOptions({
-    gfm: true,
-    breaks: true,
-    tables: true,
-    sanitize: false,
-    smartLists: true,
-    smartypants: true
-  });
+  let html = mdText;
 
-  return marked.parse(mdText);
+  // Headers
+  html = html.replace(/^###### (.*$)/gim, '<h6 class="gh-heading gh-h6">$1</h6>');
+  html = html.replace(/^##### (.*$)/gim, '<h5 class="gh-heading gh-h5">$1</h5>');
+  html = html.replace(/^#### (.*$)/gim, '<h4 class="gh-heading gh-h4">$1</h4>');
+  html = html.replace(/^### (.*$)/gim, '<h3 class="gh-heading gh-h3">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 class="gh-heading gh-h2">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 class="gh-heading gh-h1">$1</h1>');
+
+  // Blockquotes
+  html = html.replace(/^\> (.*$)/gim, '<blockquote class="gh-blockquote">$1</blockquote>');
+
+  // Ordered lists
+  html = html.replace(/^\s*([0-9]+)\.\s+(.*$)/gim, '<ol class="gh-ol"><li>$2</li></ol>');
+  html = html.replace(/<\/ol>\s*<ol class="gh-ol">/gim, '');
+
+  // Unordered lists
+  html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<ul class="gh-ul"><li>$1</li></ul>');
+  html = html.replace(/<\/ul>\s*<ul class="gh-ul">/gim, '');
+
+  // Code blocks (triple backticks)
+  html = html.replace(/```([\s\S]*?)```/gim, '<pre class="gh-pre"><code class="gh-code">$1</code></pre>');
+  
+  // Inline code
+  html = html.replace(/`([^`]+)`/gim, '<code class="gh-code-inline">$1</code>');
+
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/gim, '<strong>$1</strong>');
+  html = html.replace(/__([^_]+)__/gim, '<strong>$1</strong>');
+
+  // Italic
+  html = html.replace(/\*([^*]+)\*/gim, '<em>$1</em>');
+  html = html.replace(/_([^_]+)_/gim, '<em>$1</em>');
+
+  // Links
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+  // Images
+  html = html.replace(/!\[([^\]]+)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" loading="lazy" />');
+
+  // Paragraphs (must be last)
+  const parts = html.split(/\n\s*\n/);
+  html = parts.map(p => {
+    if (p.trim().startsWith('<h') || p.trim().startsWith('<blockquote') || 
+        p.trim().startsWith('<ul') || p.trim().startsWith('<ol') || 
+        p.trim().startsWith('<pre') || p.trim() === '') {
+      return p;
+    }
+    return `<p class="gh-p">${p}</p>`;
+  }).join('\n');
+
+  // Clean up
+  html = html.replace(/\n{3,}/g, '\n\n');
+
+  return html;
 }
 
 // ============================================================
@@ -701,9 +744,6 @@ function renderTermPage(record, mdHtml) {
   const contentHash = sha256(JSON.stringify(json));
   const catColor = getCategoryColor(data.categoria);
 
-  // JSON-LD vai apenas no <head> (já foi injetado)
-  // NÃO tem <details> com JSON-LD visível
-
   return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@graph": [website, org, person, termSet, ...json["@graph"].filter(Boolean).filter(node => ![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))
@@ -794,7 +834,7 @@ function renderAboutPage(website, org, person) {
 }
 
 // ============================================================
-// INFRAESTRUTURA (do build antigo)
+// INFRAESTRUTURA
 // ============================================================
 
 function renderSitemap(records, categories) {
@@ -834,7 +874,7 @@ function writeBuildReport(report) {
 }
 
 // ============================================================
-// NOTION QUERY (adaptado para 4 colunas)
+// NOTION QUERY
 // ============================================================
 
 async function queryAllPages() {
@@ -855,7 +895,7 @@ function extractColumn(page, propertyName) {
 }
 
 // ============================================================
-// BUILD PRINCIPAL (com 4 colunas e Markdown)
+// BUILD PRINCIPAL
 // ============================================================
 
 async function build() {
