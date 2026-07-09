@@ -17,13 +17,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Use Node.js (sem cache, sem forçar versão)
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: ''
 
-      - name: Install dependencies (Cria o lock file se necessário)
+      - name: Install dependencies
         run: npm install
 
       - name: Build
