@@ -1,3 +1,4 @@
+🇺🇸 English | [🇧🇷 Português](README.pt-BR.md)
 # Wikivendas
 
 > An experimental infrastructure investigating computational agreement over domain knowledge.
