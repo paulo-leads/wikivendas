@@ -3,25 +3,23 @@
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { createHash } from "crypto";
-import { marked } from "marked";
 
 // ============================================================
-// WIKIVENDAS BUILD v6.0.0-WKGS (QUATRO COLUNAS - ADAPTADO)
+// WIKIVENDAS BUILD v5.0.0-WKGS
+// Três colunas: glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config)
+// Compatível com Wikivendas Knowledge Graph Specification (WKGS) v5.0
 // ============================================================
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN || process.env.NOTIONTOKEN });
 const databaseId = process.env.DATABASE_ID || process.env.DATABASEID;
 const siteBaseUrl = (process.env.SITE_BASE_URL || process.env.SITEBASEURL || "https://wikivendas.com.br").replace(/\/$/, "");
 const jsonPropertyName = process.env.NOTION_JSON_PROPERTY || process.env.NOTIONJSONPROPERTY || "JSON-LD";
-const owlPropertyName = process.env.NOTION_OWL_PROPERTY || process.env.NOTIONOWLPROPERTY || "OWL";
-const runtimePropertyName = process.env.NOTION_RUNTIME_PROPERTY || process.env.NOTIONRUNTIMEPROPERTY || "Runtime";
-const mdPropertyName = process.env.NOTION_MD_PROPERTY || process.env.NOTIONMDPROPERTY || "mkdom";
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v6.0.0-wkgs";
+const BUILD_VERSION = "v5.0.0-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
-// HELPERS BÁSICOS (do seu código)
+// HELPERS BÁSICOS (inalterados)
 // ============================================================
 
 function plainTextFromRichText(prop) {
@@ -142,7 +140,7 @@ function firstValue(items) {
 }
 
 // ============================================================
-// GRAPH HELPERS
+// GRAPH HELPERS (inalterados + novos para wv:)
 // ============================================================
 
 function findNode(graph, type) {
@@ -208,7 +206,7 @@ function getEventNode(graph, termId) {
 }
 
 // ============================================================
-// VALIDAÇÃO
+// VALIDAÇÃO (inalterada)
 // ============================================================
 
 function validateGraph(json) {
@@ -234,7 +232,7 @@ function validateGraph(json) {
 }
 
 // ============================================================
-// IDENTIDADE / TAXONOMIA
+// IDENTIDADE / TAXONOMIA (inalterado)
 // ============================================================
 
 function getCategoryFromTerm(term) {
@@ -287,7 +285,7 @@ function parseProvenanceDescription(text = "") {
 }
 
 // ============================================================
-// EXTRACT TEMPLATE DATA
+// EXTRACT TEMPLATE DATA (inalterado)
 // ============================================================
 
 function extractTemplateData(record) {
@@ -355,7 +353,7 @@ function fallbackTermSetNode() {
 }
 
 // ============================================================
-// GERADOR DE ONTOLOGY.JSONLD
+// [NOVO] GERADOR DE ONTOLOGY.JSONLD
 // ============================================================
 
 function generateOntology(records, website, org, person) {
@@ -420,6 +418,7 @@ function generateOntology(records, website, org, person) {
     }
   ];
 
+  // Adicionar instâncias wv: dos registros se existirem no JSON original
   for (const record of records) {
     const graph = record.json?.["@graph"] || [];
     const wvNodes = graph.filter(node => {
@@ -452,7 +451,7 @@ function generateOntology(records, website, org, person) {
 }
 
 // ============================================================
-// GERADOR DE RUNTIME.JSON
+// [NOVO] GERADOR DE RUNTIME.JSON
 // ============================================================
 
 function generateRuntime(records) {
@@ -554,7 +553,7 @@ function generateRuntime(records) {
 }
 
 // ============================================================
-// META / SHELL DO SITE (MANTÉM O SEU LAYOUT)
+// META / SHELL DO SITE - MANTÉM 100% IGUAL
 // ============================================================
 
 function buildDesignSystemMeta({ title, description, canonical }) {
@@ -669,7 +668,7 @@ function renderDetectionSection(owl, runtime, data) {
 }
 
 // ============================================================
-// RENDER - TERMO - COM MARKDOWN
+// RENDER - TERMO - MANTÉM 100% COM SEÇÃO CONDICIONAL
 // ============================================================
 
 function renderInfoGrid(data) {
@@ -702,8 +701,7 @@ function renderArtifactsGrid(data) {
   return `<div class="wv-artifacts-grid">${items.map(([label, url]) => `<a class="wv-artifact-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">${escapeHtml(label)}</span><span class="wv-artifact-url">${escapeHtml(url)}</span></a>`).join("")}</div>`;
 }
 
-// Função atualizada para renderizar com MARKDOWN
-function renderTermPage(record, mdHtml) {
+function renderTermPage(record) {
   const { json, term, website, org, person, termSet, owl, runtime } = record;
   const data = extractTemplateData(record);
   const title = data.nomeCanonico || data.slug;
@@ -713,7 +711,6 @@ function renderTermPage(record, mdHtml) {
   const pageGraph = { "@context": "https://schema.org", "@graph": [website, org, person, termSet,...json["@graph"].filter(Boolean).filter(node =>![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))] };
   const catColor = getCategoryColor(data.categoria);
 
-  // REMOVIDO O BLOCO <details> DO JSON-LD E OS ESTILOS AMARELOS
   return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
 .wv-container{max-width:860px;margin:0 auto;padding:5rem 2rem 4rem}
 .wv-back{display:inline-flex;align-items:center;gap:6px;color:var(--tm);font-size:14px;margin-bottom:2rem;transition:color.15s}
@@ -788,12 +785,17 @@ function renderTermPage(record, mdHtml) {
  .wv-info-card{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
  .wv-info-key{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);margin-bottom:.35rem}
  .wv-info-value{font-size:14px;color:var(--tp);line-height:1.5;word-break:break-word}
+ .wv-json-toggle{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;overflow:hidden;margin-top:2rem}
+ .wv-json-toggle summary{padding:1rem 1.25rem;cursor:pointer;font-size:13px;font-weight:600;color:var(--ts);font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:space-between}
+ .wv-json-toggle summary::after{content:'▾';font-size:12px;transition:transform.2s}
+ .wv-json-toggle[open] summary::after{transform:rotate(180deg)}
+ .wv-json-toggle.wv-json{padding:0 1.25rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#dbeafe;background:#020617;border-radius:12px;white-space:pre-wrap;word-break:break-word;max-height:480px;overflow:auto}
  .wv-empty{color:var(--tm);font-size:14px;font-style:italic}
  .wv-bullets{list-style:none;display:flex;flex-direction:column;gap:.7rem}
  .wv-bullets li{position:relative;padding-left:1rem;color:var(--ts);font-size:14px;line-height:1.6}
  .wv-bullets li::before{content:'';position:absolute;left:0;top:.6rem;width:6px;height:6px;border-radius:999px;background:var(--ta)}
   @media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-dual,.wv-visao-grid,.wv-links-grid,.wv-artifacts-grid,.wv-info-grid{grid-template-columns:1fr}.wv-hero{padding:1.75rem}.wv-cta-btn-secondary{margin-left:0;margin-top:.75rem}}
-  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status? `<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>` : ''}${data.versaoTermo? `<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>` : ''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-hero-meta">${data.urn? `<span>URN <code>${escapeHtml(data.urn)}</code></span>` : ''}${data.doi? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>` : ''}${data.wikisales? `<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>` : ''}${data.urlDataset? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><article class="wv-card wv-card-accent"><h2>Definição canônica</h2><p class="wv-body-large">${escapeHtml(data.descricaoLonga || data.descricaoCurta || 'Definição em desenvolvimento.')}</p>${data.alternateNames.length? `<div style="margin-top:1rem"><h3>Também conhecido como</h3><div class="wv-inline-pills">${data.alternateNames.map(v => `<span class="pill">${escapeHtml(v)}</span>`).join('')}</div></div>` : ''}</article><article class="wv-card"><h2>Fronteira conceitual</h2><div class="wv-dual"><div class="wv-subcard wv-subcard-check positive"><h3><span class="icon">✓</span> O que é</h3>${renderList(data.oQueE)}</div><div class="wv-subcard wv-subcard-check negative"><h3><span class="icon">✗</span> O que não é</h3>${renderList(data.oQueNaoE)}</div></div></article>${data.descricaoServico? `<section class="wv-visao-hidra" id="visao-hidra"><h2>Visão Hidra <span class="tag">Serviço</span></h2><p class="wv-body" style="margin-bottom:1rem">${escapeHtml(data.descricaoServico)}</p><div class="wv-visao-grid"><div class="wv-visao-item"><div class="k">Serviço</div><div class="v">${escapeHtml(data.nomeServico)}</div></div><div class="wv-visao-item"><div class="k">Público</div><div class="v">${escapeHtml(data.publico || 'Operações B2B')}</div></div><div class="wv-visao-item"><div class="k">Área</div><div class="v">${escapeHtml(data.areaAtendida || 'Brasil')}</div></div><div class="wv-visao-item"><div class="k">Protocolo</div><div class="v">${escapeHtml(data.pertenceAoProtocolo)}</div></div></div><div class="wv-btns"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn" style="background:var(--ta);color:#030712">Solicitar diagnóstico →</a></div></section>` : ''}${(data.fontesTecnicas.length || data.doi || data.urlWhitepaper || data.urlDataset || data.urlEvento)? `<article class="wv-card"><h2>Lastro técnico</h2>${data.fontesTecnicas.length? `<div style="margin-bottom:1.25rem"><h3>Fontes técnicas</h3>${renderLinkList(data.fontesTecnicas)}</div>` : ''}<div class="wv-links-grid">${data.doi? `<div class="wv-link-card"><span class="k">DOI</span><span class="v"><a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.doi.replace('https://doi.org/',''))}</a></span></div>` : ''}${data.urlWhitepaper? `<div class="wv-link-card"><span class="k">Whitepaper</span><span class="v"><a href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlDataset? `<div class="wv-link-card"><span class="k">Dataset</span><span class="v"><a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlEvento? `<div class="wv-link-card"><span class="k">Evento</span><span class="v"><a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}</div></article>` : ''}${data.mitigacoes.length? `<article class="wv-card"><h2>Mitigação</h2>${renderList(data.mitigacoes)}</article>` : ''}${renderDetectionSection(owl, runtime, data)}${data.perguntas.length? `<article class="wv-card"><h2>Perguntas relevantes</h2>${renderList(data.perguntas)}</article>` : ''}${(data.criador || data.projeto || data.contexto || data.primeiraPublicacao)? `<article class="wv-card"><h2>Proveniência</h2><div class="wv-links-grid">${data.criador? `<div class="wv-link-card"><span class="k">Criador</span><span class="v">${escapeHtml(data.criador)}</span></div>` : ''}${data.projeto? `<div class="wv-link-card"><span class="k">Projeto</span><span class="v">${escapeHtml(data.projeto)}</span></div>` : ''}${data.contexto? `<div class="wv-link-card"><span class="k">Contexto</span><span class="v">${escapeHtml(data.contexto)}</span></div>` : ''}${data.primeiraPublicacao? `<div class="wv-link-card"><span class="k">Primeira publicação</span><span class="v">${escapeHtml(data.primeiraPublicacao)}</span></div>` : ''}</div></article>` : ''}${data.urlWhitepaper || data.urlDataset || data.urlEvento || data.videoUrl? `<article class="wv-card"><h2>Artefatos</h2><div class="wv-artifacts-grid">${data.urlWhitepaper? `<a class="wv-artifact-card" href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Whitepaper</span><span class="wv-artifact-url">${escapeHtml(data.urlWhitepaper)}</span></a>` : ''}${data.urlDataset? `<a class="wv-artifact-card" href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Dataset</span><span class="wv-artifact-url">${escapeHtml(data.urlDataset)}</span></a>` : ''}${data.urlEvento? `<a class="wv-artifact-card" href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Evento</span><span class="wv-artifact-url">${escapeHtml(data.urlEvento)}</span></a>` : ''}${data.videoUrl? `<a class="wv-artifact-card" href="${escapeHtml(data.videoUrl)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Vídeo</span><span class="wv-artifact-url">${escapeHtml(data.videoUrl)}</span></a>` : ''}</div></article>` : ''}<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito e descubra como estruturar sua inteligência comercial B2B.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>${renderSiteFooter()}</body></html>`;
+  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status? `<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>` : ''}${data.versaoTermo? `<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>` : ''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-hero-meta">${data.urn? `<span>URN <code>${escapeHtml(data.urn)}</code></span>` : ''}${data.doi? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>` : ''}${data.wikisales? `<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>` : ''}${data.urlDataset? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><article class="wv-card wv-card-accent"><h2>Definição canônica</h2><p class="wv-body-large">${escapeHtml(data.descricaoLonga || data.descricaoCurta || 'Definição em desenvolvimento.')}</p>${data.alternateNames.length? `<div style="margin-top:1rem"><h3>Também conhecido como</h3><div class="wv-inline-pills">${data.alternateNames.map(v => `<span class="pill">${escapeHtml(v)}</span>`).join('')}</div></div>` : ''}</article><article class="wv-card"><h2>Fronteira conceitual</h2><div class="wv-dual"><div class="wv-subcard wv-subcard-check positive"><h3><span class="icon">✓</span> O que é</h3>${renderList(data.oQueE)}</div><div class="wv-subcard wv-subcard-check negative"><h3><span class="icon">✗</span> O que não é</h3>${renderList(data.oQueNaoE)}</div></div></article>${data.descricaoServico? `<section class="wv-visao-hidra" id="visao-hidra"><h2>Visão Hidra <span class="tag">Serviço</span></h2><p class="wv-body" style="margin-bottom:1rem">${escapeHtml(data.descricaoServico)}</p><div class="wv-visao-grid"><div class="wv-visao-item"><div class="k">Serviço</div><div class="v">${escapeHtml(data.nomeServico)}</div></div><div class="wv-visao-item"><div class="k">Público</div><div class="v">${escapeHtml(data.publico || 'Operações B2B')}</div></div><div class="wv-visao-item"><div class="k">Área</div><div class="v">${escapeHtml(data.areaAtendida || 'Brasil')}</div></div><div class="wv-visao-item"><div class="k">Protocolo</div><div class="v">${escapeHtml(data.pertenceAoProtocolo)}</div></div></div><div class="wv-btns"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn" style="background:var(--ta);color:#030712">Solicitar diagnóstico →</a></div></section>` : ''}${(data.fontesTecnicas.length || data.doi || data.urlWhitepaper || data.urlDataset || data.urlEvento)? `<article class="wv-card"><h2>Lastro técnico</h2>${data.fontesTecnicas.length? `<div style="margin-bottom:1.25rem"><h3>Fontes técnicas</h3>${renderLinkList(data.fontesTecnicas)}</div>` : ''}<div class="wv-links-grid">${data.doi? `<div class="wv-link-card"><span class="k">DOI</span><span class="v"><a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.doi.replace('https://doi.org/',''))}</a></span></div>` : ''}${data.urlWhitepaper? `<div class="wv-link-card"><span class="k">Whitepaper</span><span class="v"><a href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlDataset? `<div class="wv-link-card"><span class="k">Dataset</span><span class="v"><a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlEvento? `<div class="wv-link-card"><span class="k">Evento</span><span class="v"><a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}</div></article>` : ''}${data.mitigacoes.length? `<article class="wv-card"><h2>Mitigação</h2>${renderList(data.mitigacoes)}</article>` : ''}${renderDetectionSection(owl, runtime, data)}${data.perguntas.length? `<article class="wv-card"><h2>Perguntas relevantes</h2>${renderList(data.perguntas)}</article>` : ''}${(data.criador || data.projeto || data.contexto || data.primeiraPublicacao)? `<article class="wv-card"><h2>Proveniência</h2><div class="wv-links-grid">${data.criador? `<div class="wv-link-card"><span class="k">Criador</span><span class="v">${escapeHtml(data.criador)}</span></div>` : ''}${data.projeto? `<div class="wv-link-card"><span class="k">Projeto</span><span class="v">${escapeHtml(data.projeto)}</span></div>` : ''}${data.contexto? `<div class="wv-link-card"><span class="k">Contexto</span><span class="v">${escapeHtml(data.contexto)}</span></div>` : ''}${data.primeiraPublicacao? `<div class="wv-link-card"><span class="k">Primeira publicação</span><span class="v">${escapeHtml(data.primeiraPublicacao)}</span></div>` : ''}</div></article>` : ''}${data.urlWhitepaper || data.urlDataset || data.urlEvento || data.videoUrl? `<article class="wv-card"><h2>Artefatos</h2><div class="wv-artifacts-grid">${data.urlWhitepaper? `<a class="wv-artifact-card" href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Whitepaper</span><span class="wv-artifact-url">${escapeHtml(data.urlWhitepaper)}</span></a>` : ''}${data.urlDataset? `<a class="wv-artifact-card" href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Dataset</span><span class="wv-artifact-url">${escapeHtml(data.urlDataset)}</span></a>` : ''}${data.urlEvento? `<a class="wv-artifact-card" href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Evento</span><span class="wv-artifact-url">${escapeHtml(data.urlEvento)}</span></a>` : ''}${data.videoUrl? `<a class="wv-artifact-card" href="${escapeHtml(data.videoUrl)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Vídeo</span><span class="wv-artifact-url">${escapeHtml(data.videoUrl)}</span></a>` : ''}</div></article>` : ''}<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito e descubra como estruturar sua inteligência comercial B2B.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section><details class="wv-json-toggle"><summary>JSON-LD canônico</summary><div class="wv-json">${escapeHtml(JSON.stringify(json, null, 2))}</div></details></main>${renderSiteFooter()}</body></html>`;
 }
 
 // ============================================================
@@ -957,7 +959,7 @@ async function queryAllPages() {
 }
 
 // ============================================================
-// BUILD PRINCIPAL (ADAPTADO COM 4 COLUNAS E MARKDOWN)
+// BUILD PRINCIPAL (MODIFICADO PARA 3 COLUNAS)
 // ============================================================
 
 async function build() {
@@ -973,27 +975,18 @@ async function build() {
     const invalid = [];
     const records = [];
 
-    // --- 1. COLETA DE DADOS (4 colunas) ---
+    // --- 1. COLETA DE DADOS (INALTERADO) ---
     for (const page of pages) {
       const pageLabel = getPageLabel(page);
-      
-      // Extrair JSON-LD
-      const jsonRaw = plainTextFromRichText(page.properties?.[jsonPropertyName]);
-      if (!jsonRaw) {
+      const prop = page.properties?.[jsonPropertyName];
+      const raw = plainTextFromRichText(prop);
+
+      if (!raw) {
         skipped.push({ pageId: page.id, pageLabel, reason: `sem propriedade ${jsonPropertyName} preenchida` });
         continue;
       }
 
-      // Extrair Markdown (NOVO)
-      const mdRaw = plainTextFromRichText(page.properties?.[mdPropertyName]);
-
-      // Extrair OWL (Opcional)
-      const owlRaw = plainTextFromRichText(page.properties?.[owlPropertyName]);
-
-      // Extrair Runtime (Opcional)
-      const runtimeRaw = plainTextFromRichText(page.properties?.[runtimePropertyName]);
-
-      const parsed = tryParseJson(jsonRaw, `Página ${pageLabel}`);
+      const parsed = tryParseJson(raw, `Página ${pageLabel}`);
       if (!parsed.ok) {
         invalid.push({ pageId: page.id, pageLabel, error: parsed.error, excerpt: parsed.excerpt });
         continue;
@@ -1003,21 +996,8 @@ async function build() {
         validateGraph(parsed.value);
         const graph = parsed.value["@graph"];
         const term = findNode(graph, "DefinedTerm");
-        
-        let owl = null;
-        if (owlRaw) {
-          const owlParsed = tryParseJson(owlRaw, `OWL ${pageLabel}`);
-          if (owlParsed.ok) owl = owlParsed.value;
-        }
-
-        let runtime = null;
-        if (runtimeRaw) {
-          const runtimeParsed = tryParseJson(runtimeRaw, `Runtime ${pageLabel}`);
-          if (runtimeParsed.ok) runtime = runtimeParsed.value;
-        }
-
         const record = {
-          pageId: page.id, pageLabel, json: parsed.value, graph, md: mdRaw, owl, runtime,
+          pageId: page.id, pageLabel, json: parsed.value, graph,
           website: findNode(graph, "WebSite"),
           org: findNode(graph, "Organization"),
           person: findNode(graph, "Person"),
@@ -1030,7 +1010,7 @@ async function build() {
         };
         records.push(record);
       } catch (error) {
-        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: jsonRaw.slice(0, 320) });
+        invalid.push({ pageId: page.id, pageLabel, error: `Página ${pageLabel}: ${error.message}`, excerpt: raw.slice(0, 320) });
       }
     }
 
@@ -1040,6 +1020,7 @@ async function build() {
     ensureDir("docs/termos");
     ensureDir("docs/glossario");
     ensureDir("docs/sobre");
+    ensureDir("docs/runtime"); // NOVO
 
     const seed = records[0] || {};
     const website = seed.website || fallbackWebsiteNode();
@@ -1049,28 +1030,26 @@ async function build() {
 
     const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 
-    // --- 2. GLOSSARIO.JSON (Schema.org PURO) ---
+    // --- 2. GLOSSARIO.JSON (Schema.org PURO) — INALTERADO ---
     const globalGraph = { "@context": "https://schema.org", "@graph": records.flatMap(r => r.json["@graph"]) };
     writeFileSync("docs/glossario.json", JSON.stringify(globalGraph, null, 2));
 
-    // --- 3. ONTOLOGY.JSONLD (OWL/RDF) ---
+    // --- 3. ONTOLOGY.JSONLD (OWL/RDF) — NOVO ---
     const ontology = generateOntology(records, website, org, person);
     writeFileSync("docs/ontology.jsonld", JSON.stringify(ontology, null, 2));
 
-    // --- 4. RUNTIME.JSON (Config operacional) ---
+    // --- 4. RUNTIME.JSON (Config operacional) — NOVO ---
     const runtime = generateRuntime(records);
     writeFileSync("docs/runtime.json", JSON.stringify(runtime, null, 2));
 
-    // --- 5. PÁGINAS HTML ---
+    // --- 5. PÁGINAS HTML (INALTERADO) ---
     writeFileSync("docs/index.html", renderHomePage(records, termSet, website, org, person));
     writeFileSync("docs/glossario/index.html", renderGlossaryPage(records, termSet, website, org, person));
     writeFileSync("docs/sobre/index.html", renderAboutPage(website, org, person));
 
     for (const record of records) {
       const data = extractTemplateData(record);
-      // Converte o Markdown para HTML
-      const mdHtml = record.md ? marked.parse(record.md) : "";
-      writeFileSync(`docs/termos/${data.slug}.html`, renderTermPage(record, mdHtml));
+      writeFileSync(`docs/termos/${data.slug}.html`, renderTermPage(record));
       writeFileSync(`docs/termos/${data.slug}.json`, JSON.stringify(record.json, null, 2));
     }
 
@@ -1081,7 +1060,7 @@ async function build() {
       writeFileSync(`docs/glossario/${catSlug}/index.html`, renderCategoryPage(category, filtered, categories, termSet, website, org, person));
     }
 
-    // --- 6. INFRAESTRUTURA ---
+    // --- 6. INFRAESTRUTURA (INALTERADO) ---
     writeFileSync("docs/sitemap.xml", renderSitemap(records, categories));
     writeFileSync("docs/robots.txt", renderRobots());
     writeFileSync("docs/llms.txt", renderLlmsTxt(records));
@@ -1094,18 +1073,17 @@ async function build() {
       siteBaseUrl,
       customDomain,
       notionJsonProperty: jsonPropertyName,
-      notionMdProperty: mdPropertyName,
       pagesFound: pages.length,
       termsPublished: records.length,
       categoriesPublished: categories.length,
-      columnsGenerated: ["glossario.json", "ontology.jsonld", "runtime.json", "markdown"],
+      columnsGenerated: ["glossario.json", "ontology.jsonld", "runtime.json"],
       skippedPages: skipped,
       invalidPages: invalid
     };
     writeBuildReport(report);
 
     console.log(`Build concluído com sucesso. ${records.length} termos publicados.`);
-    console.log(`4 colunas geradas: glossario.json, ontology.jsonld, runtime.json, markdown`);
+    console.log(`3 colunas geradas: glossario.json (${JSON.stringify(globalGraph).length} bytes), ontology.jsonld (${JSON.stringify(ontology).length} bytes), runtime.json (${JSON.stringify(runtime).length} bytes)`);
     if (skipped.length) console.log(`${skipped.length} páginas ignoradas sem ${jsonPropertyName}.`);
     if (invalid.length) console.log(`${invalid.length} páginas ignoradas por JSON inválido. Consulte docs/build-report.json`);
   } catch (error) {
