@@ -19,7 +19,7 @@ NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
 DATABASE_ID = os.environ.get("DATABASE_ID")
 SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "https://wikivendas.com.br").rstrip("/")
 CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "wikivendas.com.br")
-BUILD_VERSION = "v7.0.2-py"
+BUILD_VERSION = "v7.0.3-py"
 BUILD_TIMESTAMP = datetime.utcnow().isoformat() + "Z"
 
 JSON_PROP = os.environ.get("NOTION_JSON_PROPERTY", "JSON-LD")
@@ -246,7 +246,7 @@ def parse_notion_page(page):
 # ============================================================
 
 def render_header(version=BUILD_VERSION):
-    return f'''<header class="wv-header"><div class="wv-header-inner"><div style="display:flex;align-items:center"><a href="/" class="wv-logo">Wikivendas</a><span class="wv-version">{version}</span></div><nav class="wv-nav"><a href="/">Início</a><a href="/glossario/">Glossário</a><a href="/sobre/">Sobre</a><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer">Paulo Leads</a></nav></div></header>'''
+    return f'''<header class="wv-header"><div class="wv-header-inner"><div style="display:flex;align-items:center"><a href="/" class="wv-logo">Wikivendas</a><span class="wv-version">{version}</span></div><nav class="wv-nav"><a href="/">Início</a><a href="/glossario.html">Glossário</a><a href="/sobre.html">Sobre</a><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer">Paulo Leads</a></nav></div></header>'''
 
 def render_footer(version=BUILD_VERSION):
     return f'''<footer class="wv-footer"><div class="wv-footer-inner"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem"><span class="wv-logo">Wikivendas</span><span class="wv-version">{version}</span></div><p class="wv-footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p></div><div class="wv-footer-links"><a href="/glossario.json">Grafo (.JSON)</a><a href="/ontology.jsonld">Ontologia (.OWL)</a><a href="/runtime.json">Runtime (.JSON)</a><a href="/llms.txt">llms.txt</a><a href="/ai-consent.json">ai-consent.json</a><a href="/robots.txt">robots.txt</a><a href="/sitemap.xml">sitemap.xml</a><a href="/build-report.json">build-report.json</a></div></footer>'''
@@ -385,10 +385,10 @@ def render_term_page(record, md_html):
 .wv-proof-text.hash{{color:var(--ta)}}
 .wv-markdown{{margin-top:2rem}}
 @media(max-width:768px){{.wv-container{{padding:2rem 1.25rem 3rem}}.wv-hero{{padding:1.75rem}}}}
-</style></head><body>{render_header()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a>
+</style></head><body>{render_header()}<main class="wv-container"><a href="/glossario.html" class="wv-back">← Voltar ao glossário</a>
 <section class="wv-hero" style="background:linear-gradient(135deg,{cat_color}15,{cat_color}05,var(--c1));border:1px solid {cat_color}25"><div class="wv-hero-glow" style="background:{cat_color}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">{escape_html(cat)}</span></div><h1 class="wv-term-title">{escape_html(label)}</h1><p class="wv-hero-desc">{escape_html(short_desc)}</p><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">{content_hash[:16]}</span> · {BUILD_TIMESTAMP[:10]}</span></div></div></section>
 <article class="wv-markdown">{md_html}</article>
-<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>{render_footer()}</body></html>'''
+<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario.html" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>{render_footer()}</body></html>'''
     return html, slug
 
 def render_glossary_page(records):
@@ -401,7 +401,7 @@ def render_glossary_page(records):
         by_cat[cat].append(r)
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
-{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=urljoin(SITE_BASE_URL, "/glossario/"))}
+{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=urljoin(SITE_BASE_URL, "/glossario.html"))}
 <style>
 .wv-glossario{{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}}
 .wv-headline{{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}}
@@ -438,12 +438,20 @@ def render_glossary_page(records):
 <script>const q=document.getElementById('wv-glossary-search');const groups=[...document.querySelectorAll('.glossary-group')];if(q){{q.addEventListener('input',()=>{{const s=q.value.toLowerCase().trim();groups.forEach(sec=>{{const t=sec.dataset.search;sec.style.display=!s||t.includes(s)?'':'none';}});}});}}</script></body></html>'''
     return html
 
+def render_about_page(website, org, person):
+    # Página Sobre simplificada para cumprir o contrato de saída
+    return f'''<!DOCTYPE html><html lang="pt-BR"><head>
+{render_meta(title="Sobre — Wikivendas", description="Conheça a Wikivendas, a primeira enciclopédia brasileira de vendas B2B e RevOps imobiliário.", canonical=urljoin(SITE_BASE_URL, "/sobre.html"))}
+<style>.wv-sobre{{max-width:760px;margin:0 auto;padding:5rem 2rem 4rem}}.wv-sobre h1{{font-size:clamp(34px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--tp);margin-bottom:1.5rem}}.wv-sobre h2{{font-size:22px;font-weight:700;color:var(--tp);margin-top:2.5rem;margin-bottom:.75rem}}.wv-sobre p,.wv-sobre li{{font-size:16px;line-height:1.7;color:var(--ts);margin-bottom:1rem}}.wv-sobre ul{{padding-left:1.5rem}}.wv-sobre strong{{color:var(--tp)}}</style></head><body>{render_header()}<section class="wv-sobre"><p class="wv-section-label">Sobre</p><h1>Wikivendas, fonte de verdade para IA comercial</h1><p><strong>Wikivendas</strong> é uma enciclopédia dedicada a termos técnicos de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete é uma definição canônica pensada para humanos e para modelos de linguagem.</p><h2>Arquitetura JSON-first</h2><p>O conteúdo nasce como JSON-LD canônico. O HTML é apenas a camada de visualização, gerada a partir do grafo estruturado de cada termo.</p><h2>Template mestre</h2><p>As páginas dos termos seguem o Template Mestre — Termo Canônico Wikivendas, com identidade, definição editorial, fronteira conceitual, Visão Hidra, lastro técnico, mitigação, perguntas, proveniência, artefatos e JSON canônico.</p><h2>Protocolo Hidra</h2><p>O Protocolo Hidra atua como camada de amarração semântica entre problema, diagnóstico, evidência, mitigação e solução, preservando coerência para leitura humana e consumo por IA.</p><p style="margin-top:2rem;text-align:center"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn-primary" style="display:inline-flex">Solicitar diagnóstico gratuito</a></p></section>{render_footer()}</body></html>'''
+
 # ============================================================
 # INFRAESTRUTURA
 # ============================================================
 
 def render_sitemap(records):
     urls = [f"<url><loc>{SITE_BASE_URL}/</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>"]
+    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/glossario.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>")
+    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/sobre.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>")
     for r in records:
         slug = slugify(r["label"])
         urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>")
@@ -459,8 +467,8 @@ def render_llms_txt(records):
         lines.append(f"- {r['label']} {urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}")
     lines.append("")
     lines.append("INDEX:")
-    lines.append(f"- Glossário completo {urljoin(SITE_BASE_URL, '/glossario/')}")
-    lines.append(f"- Sobre {urljoin(SITE_BASE_URL, '/sobre/')}")
+    lines.append(f"- Glossário completo {urljoin(SITE_BASE_URL, '/glossario.html')}")
+    lines.append(f"- Sobre {urljoin(SITE_BASE_URL, '/sobre.html')}")
     return "\n".join(lines)
 
 def render_ai_consent():
@@ -495,7 +503,6 @@ def main():
     print(f"✅ {len(records)} termos válidos processados.")
     
     ensure_dir("docs/termos")
-    ensure_dir("docs/glossario")
     
     graph_all = []
     for r in records:
@@ -508,7 +515,8 @@ def main():
         write_file(f"docs/termos/{slug}.html", html)
         write_file(f"docs/termos/{slug}.json", json.dumps(r.get("json", {}), ensure_ascii=False, indent=2))
     
-    write_file("docs/glossario/index.html", render_glossary_page(records))
+    write_file("docs/glossario.html", render_glossary_page(records))
+    write_file("docs/sobre.html", render_about_page(None, None, None))
     write_file("docs/sitemap.xml", render_sitemap(records))
     write_file("docs/robots.txt", render_robots())
     write_file("docs/llms.txt", render_llms_txt(records))
