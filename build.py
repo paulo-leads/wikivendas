@@ -6,6 +6,7 @@ import json
 import re
 import sys
 import hashlib
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urljoin
@@ -19,7 +20,7 @@ NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
 DATABASE_ID = os.environ.get("DATABASE_ID")
 SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "https://wikivendas.com.br").rstrip("/")
 CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "wikivendas.com.br")
-BUILD_VERSION = "v7.0.3-py"
+BUILD_VERSION = "v7.0.5-py"
 BUILD_TIMESTAMP = datetime.utcnow().isoformat() + "Z"
 
 JSON_PROP = os.environ.get("NOTION_JSON_PROPERTY", "JSON-LD")
@@ -87,14 +88,6 @@ def safe_array(arr):
     if arr is None: return []
     return [arr]
 
-def to_display(v):
-    if v is None: return ""
-    if isinstance(v, str): return v
-    if isinstance(v, (int, float, bool)): return str(v)
-    if isinstance(v, dict):
-        return v.get("url") or v.get("@id") or v.get("description") or json.dumps(v)
-    return json.dumps(v)
-
 def get_category_color(cat):
     cores = {
         "Geral": "#94a3b8", "Conceito": "#38bdf8", "Métrica": "#34d399",
@@ -129,13 +122,14 @@ def get_prop_values(term, name):
     return [v for v in (val if isinstance(val, list) else [val]) if v]
 
 # ============================================================
-# MARKDOWN PARSER
+# MARKDOWN PARSER CORRIGIDO
 # ============================================================
 
 def markdown_to_html(text):
     if not text: return ""
     html = text
 
+    # Headers
     html = re.sub(r'^###### (.*)$', r'<h6 class="gh-heading gh-h6">\1</h6>', html, flags=re.MULTILINE)
     html = re.sub(r'^##### (.*)$', r'<h5 class="gh-heading gh-h5">\1</h5>', html, flags=re.MULTILINE)
     html = re.sub(r'^#### (.*)$', r'<h4 class="gh-heading gh-h4">\1</h4>', html, flags=re.MULTILINE)
@@ -143,18 +137,27 @@ def markdown_to_html(text):
     html = re.sub(r'^## (.*)$', r'<h2 class="gh-heading gh-h2">\1</h2>', html, flags=re.MULTILINE)
     html = re.sub(r'^# (.*)$', r'<h1 class="gh-heading gh-h1">\1</h1>', html, flags=re.MULTILINE)
 
+    # Blockquotes
     html = re.sub(r'^> (.*)$', r'<blockquote class="gh-blockquote">\1</blockquote>', html, flags=re.MULTILINE)
+
+    # Code blocks
     html = re.sub(r'```(\w*)\n(.*?)```', r'<pre class="gh-pre"><code class="gh-code language-\1">\2</code></pre>', html, flags=re.DOTALL)
     html = re.sub(r'`([^`]+)`', r'<code class="gh-code-inline">\1</code>', html)
+
+    # Bold & Italic
     html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', html)
     html = re.sub(r'__([^_]+)__', r'<strong>\1</strong>', html)
     html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', html)
     html = re.sub(r'_([^_]+)_', r'<em>\1</em>', html)
-    html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>', html)
-    html = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="\2" alt="\1" loading="lazy" />', html)
 
+    # Links & Images
+    html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>', html)
+    html = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="\2" alt="\1" loading="lazy" decoding="async" referrerpolicy="no-referrer" />', html)
+
+    # Tables
     table_lines = re.findall(r'(\|.*\|(?:\n\|.*\|)*)', html)
     for tbl in table_lines:
+        if '```' in tbl: continue # Ignora tabelas dentro de blocos de código
         rows = [r.strip() for r in tbl.split('\n') if r.strip()]
         if len(rows) < 2: continue
         header = rows[0]
@@ -173,6 +176,15 @@ def markdown_to_html(text):
         html_table += '</tbody></table>'
         html = html.replace(tbl, html_table)
 
+    # Unordered Lists (-)
+    html = re.sub(r'^\s*[-*]\s+(.*)$', r'<ul class="gh-ul"><li>\1</li></ul>', html, flags=re.MULTILINE)
+    html = re.sub(r'</ul>\s*<ul class="gh-ul">', '', html) # Corrige listas múltiplas
+    
+    # Ordered Lists (1.)
+    html = re.sub(r'^\s*([0-9]+)\.\s+(.*)$', r'<ol class="gh-ol"><li>\2</li></ol>', html, flags=re.MULTILINE)
+    html = re.sub(r'</ol>\s*<ol class="gh-ol">', '', html) # Corrige listas múltiplas
+
+    # Paragraphs
     parts = re.split(r'\n\s*\n', html)
     html_paragraphs = []
     for p in parts:
@@ -185,7 +197,7 @@ def markdown_to_html(text):
     return '\n'.join(html_paragraphs)
 
 # ============================================================
-# NOTION API
+# NOTION API (Com Timeout)
 # ============================================================
 
 def query_notion():
@@ -199,13 +211,20 @@ def query_notion():
     cursor = None
     while True:
         payload = {"start_cursor": cursor} if cursor else {}
-        resp = requests.post(url, headers=headers, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
-        results.extend(data.get("results", []))
-        if not data.get("has_more"):
-            break
-        cursor = data.get("next_cursor")
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+            results.extend(data.get("results", []))
+            if not data.get("has_more"):
+                break
+            cursor = data.get("next_cursor")
+        except requests.exceptions.Timeout:
+            print("❌ Erro: Timeout na API do Notion.")
+            sys.exit(1)
+        except Exception as e:
+            print(f"❌ Erro na API do Notion: {e}")
+            sys.exit(1)
     return results
 
 def extract_json(raw):
@@ -214,23 +233,37 @@ def extract_json(raw):
     if start == -1 or end == -1: return None
     return raw[start:end+1]
 
+def validate_json_ld(data):
+    """Validação rígida do JSON-LD"""
+    if data.get("@context") != "https://schema.org":
+        return False, "@context inválido"
+    if not isinstance(data.get("@graph"), list) or len(data.get("@graph", [])) == 0:
+        return False, "@graph ausente ou vazio"
+    term = next((n for n in data["@graph"] if n.get("@type") == "DefinedTerm"), None)
+    if not term:
+        return False, "Nó DefinedTerm ausente"
+    if not term.get("name"):
+        return False, "DefinedTerm sem 'name'"
+    if not term.get("termCode"):
+        return False, "DefinedTerm sem 'termCode'"
+    return True, None
+
 def parse_notion_page(page):
     props = page.get("properties", {})
     label = get_page_label(page)
-    
     json_raw = plain_text(props.get(JSON_PROP))
     if not json_raw:
         return {"status": "skipped", "reason": f"sem {JSON_PROP}"}
-    
     json_str = extract_json(json_raw)
     if not json_str:
         return {"status": "invalid", "error": "JSON inválido"}
-    
     try:
         data = json.loads(json_str)
+        valid, error = validate_json_ld(data)
+        if not valid:
+            return {"status": "invalid", "error": error}
     except Exception as e:
         return {"status": "invalid", "error": str(e)}
-    
     return {
         "status": "ok",
         "label": label,
@@ -246,10 +279,10 @@ def parse_notion_page(page):
 # ============================================================
 
 def render_header(version=BUILD_VERSION):
-    return f'''<header class="wv-header"><div class="wv-header-inner"><div style="display:flex;align-items:center"><a href="/" class="wv-logo">Wikivendas</a><span class="wv-version">{version}</span></div><nav class="wv-nav"><a href="/">Início</a><a href="/glossario.html">Glossário</a><a href="/sobre.html">Sobre</a><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer">Paulo Leads</a></nav></div></header>'''
+    return f'''<header class="wv-header"><div class="wv-header-inner"><div style="display:flex;align-items:center"><a href="{SITE_BASE_URL}/" class="wv-logo">Wikivendas</a><span class="wv-version">{version}</span></div><nav class="wv-nav"><a href="{SITE_BASE_URL}/">Início</a><a href="{SITE_BASE_URL}/glossario/">Glossário</a><a href="{SITE_BASE_URL}/sobre.html">Sobre</a><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer">Paulo Leads</a></nav></div></header>'''
 
 def render_footer(version=BUILD_VERSION):
-    return f'''<footer class="wv-footer"><div class="wv-footer-inner"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem"><span class="wv-logo">Wikivendas</span><span class="wv-version">{version}</span></div><p class="wv-footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p></div><div class="wv-footer-links"><a href="/glossario.json">Grafo (.JSON)</a><a href="/ontology.jsonld">Ontologia (.OWL)</a><a href="/runtime.json">Runtime (.JSON)</a><a href="/llms.txt">llms.txt</a><a href="/ai-consent.json">ai-consent.json</a><a href="/robots.txt">robots.txt</a><a href="/sitemap.xml">sitemap.xml</a><a href="/build-report.json">build-report.json</a></div></footer>'''
+    return f'''<footer class="wv-footer"><div class="wv-footer-inner"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem"><span class="wv-logo">Wikivendas</span><span class="wv-version">{version}</span></div><p class="wv-footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p></div><div class="wv-footer-links"><a href="{SITE_BASE_URL}/glossario.json">Grafo (.JSON)</a><a href="{SITE_BASE_URL}/ontology.jsonld">Ontologia (.OWL)</a><a href="{SITE_BASE_URL}/runtime.json">Runtime (.JSON)</a><a href="{SITE_BASE_URL}/llms.txt">llms.txt</a><a href="{SITE_BASE_URL}/ai-consent.json">ai-consent.json</a><a href="{SITE_BASE_URL}/robots.txt">robots.txt</a><a href="{SITE_BASE_URL}/sitemap.xml">sitemap.xml</a><a href="{SITE_BASE_URL}/build-report.json">build-report.json</a></div></footer>'''
 
 def render_meta(title, description, canonical):
     return f'''<meta charset="UTF-8">
@@ -264,8 +297,8 @@ def render_meta(title, description, canonical):
   <meta property="og:url" content="{canonical}">
   <meta property="og:site_name" content="Wikivendas">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="ai-consent" href="/ai-consent.json">
-  <link rel="llms" href="/llms.txt">
+  <link rel="ai-consent" href="{SITE_BASE_URL}/ai-consent.json">
+  <link rel="llms" href="{SITE_BASE_URL}/llms.txt">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -310,7 +343,6 @@ def render_meta(title, description, canonical):
     .wv-footer-links {{ display: flex; gap: 1.5rem; flex-wrap: wrap; }}
     .wv-footer-links a {{ font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); transition: color 0.15s; }}
     .wv-footer-links a:hover {{ color: var(--ts); }}
-    
     .wv-markdown {{ background: transparent !important; border: none !important; padding: 0 !important; margin-bottom: 1.5rem !important; }}
     .wv-markdown h1, .wv-markdown h2, .wv-markdown h3, .wv-markdown h4, .wv-markdown h5, .wv-markdown h6 {{ color: var(--tp); font-weight: 600; letter-spacing: -0.02em; margin-top: 2rem; margin-bottom: 1rem; }}
     .wv-markdown h1 {{ font-size: 2rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--bd); }}
@@ -353,7 +385,6 @@ def render_term_page(record, md_html):
     cat = first_value(get_prop_values(term, "categoria")) or "Geral"
     cat_color = get_category_color(cat)
     content_hash = sha256(json.dumps(json_data, sort_keys=True))
-    
     canonical_url = urljoin(SITE_BASE_URL, f"/termos/{slug}.html")
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
@@ -385,10 +416,10 @@ def render_term_page(record, md_html):
 .wv-proof-text.hash{{color:var(--ta)}}
 .wv-markdown{{margin-top:2rem}}
 @media(max-width:768px){{.wv-container{{padding:2rem 1.25rem 3rem}}.wv-hero{{padding:1.75rem}}}}
-</style></head><body>{render_header()}<main class="wv-container"><a href="/glossario.html" class="wv-back">← Voltar ao glossário</a>
+</style></head><body>{render_header()}<main class="wv-container"><a href="{SITE_BASE_URL}/glossario/" class="wv-back">← Voltar ao glossário</a>
 <section class="wv-hero" style="background:linear-gradient(135deg,{cat_color}15,{cat_color}05,var(--c1));border:1px solid {cat_color}25"><div class="wv-hero-glow" style="background:{cat_color}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">{escape_html(cat)}</span></div><h1 class="wv-term-title">{escape_html(label)}</h1><p class="wv-hero-desc">{escape_html(short_desc)}</p><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">{content_hash[:16]}</span> · {BUILD_TIMESTAMP[:10]}</span></div></div></section>
 <article class="wv-markdown">{md_html}</article>
-<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario.html" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>{render_footer()}</body></html>'''
+<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="{SITE_BASE_URL}/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>{render_footer()}</body></html>'''
     return html, slug
 
 def render_glossary_page(records):
@@ -401,7 +432,7 @@ def render_glossary_page(records):
         by_cat[cat].append(r)
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
-{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=urljoin(SITE_BASE_URL, "/glossario.html"))}
+{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=urljoin(SITE_BASE_URL, "/glossario/"))}
 <style>
 .wv-glossario{{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}}
 .wv-headline{{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}}
@@ -431,15 +462,14 @@ def render_glossary_page(records):
             slug = slugify(label)
             desc = term.get("description", "")
             short_desc = canonical_description(desc, 100)
-            html += f'''<a href="/termos/{slug}.html" class="wv-termo-item"><span class="wv-termo-item-nome">{escape_html(label)}</span><span class="wv-termo-item-def">{escape_html(short_desc)}</span></a>'''
+            html += f'''<a href="{SITE_BASE_URL}/termos/{slug}.html" class="wv-termo-item"><span class="wv-termo-item-nome">{escape_html(label)}</span><span class="wv-termo-item-def">{escape_html(short_desc)}</span></a>'''
         html += '</div></section>'
     
     html += f'''</section>{render_footer()}
 <script>const q=document.getElementById('wv-glossary-search');const groups=[...document.querySelectorAll('.glossary-group')];if(q){{q.addEventListener('input',()=>{{const s=q.value.toLowerCase().trim();groups.forEach(sec=>{{const t=sec.dataset.search;sec.style.display=!s||t.includes(s)?'':'none';}});}});}}</script></body></html>'''
     return html
 
-def render_about_page(website, org, person):
-    # Página Sobre simplificada para cumprir o contrato de saída
+def render_about_page():
     return f'''<!DOCTYPE html><html lang="pt-BR"><head>
 {render_meta(title="Sobre — Wikivendas", description="Conheça a Wikivendas, a primeira enciclopédia brasileira de vendas B2B e RevOps imobiliário.", canonical=urljoin(SITE_BASE_URL, "/sobre.html"))}
 <style>.wv-sobre{{max-width:760px;margin:0 auto;padding:5rem 2rem 4rem}}.wv-sobre h1{{font-size:clamp(34px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--tp);margin-bottom:1.5rem}}.wv-sobre h2{{font-size:22px;font-weight:700;color:var(--tp);margin-top:2.5rem;margin-bottom:.75rem}}.wv-sobre p,.wv-sobre li{{font-size:16px;line-height:1.7;color:var(--ts);margin-bottom:1rem}}.wv-sobre ul{{padding-left:1.5rem}}.wv-sobre strong{{color:var(--tp)}}</style></head><body>{render_header()}<section class="wv-sobre"><p class="wv-section-label">Sobre</p><h1>Wikivendas, fonte de verdade para IA comercial</h1><p><strong>Wikivendas</strong> é uma enciclopédia dedicada a termos técnicos de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete é uma definição canônica pensada para humanos e para modelos de linguagem.</p><h2>Arquitetura JSON-first</h2><p>O conteúdo nasce como JSON-LD canônico. O HTML é apenas a camada de visualização, gerada a partir do grafo estruturado de cada termo.</p><h2>Template mestre</h2><p>As páginas dos termos seguem o Template Mestre — Termo Canônico Wikivendas, com identidade, definição editorial, fronteira conceitual, Visão Hidra, lastro técnico, mitigação, perguntas, proveniência, artefatos e JSON canônico.</p><h2>Protocolo Hidra</h2><p>O Protocolo Hidra atua como camada de amarração semântica entre problema, diagnóstico, evidência, mitigação e solução, preservando coerência para leitura humana e consumo por IA.</p><p style="margin-top:2rem;text-align:center"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn-primary" style="display:inline-flex">Solicitar diagnóstico gratuito</a></p></section>{render_footer()}</body></html>'''
@@ -449,12 +479,12 @@ def render_about_page(website, org, person):
 # ============================================================
 
 def render_sitemap(records):
-    urls = [f"<url><loc>{SITE_BASE_URL}/</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>"]
-    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/glossario.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>")
-    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/sobre.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>")
+    urls = [f"<url><loc>{SITE_BASE_URL}/</loc><lastmod>{BUILD_TIMESTAMP[:10]}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>"]
+    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/glossario/')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>")
+    urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, '/sobre.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>")
     for r in records:
         slug = slugify(r["label"])
-        urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>")
+        urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>")
     return f'''<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{"".join(urls)}</urlset>'''
 
 def render_robots():
@@ -467,7 +497,7 @@ def render_llms_txt(records):
         lines.append(f"- {r['label']} {urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}")
     lines.append("")
     lines.append("INDEX:")
-    lines.append(f"- Glossário completo {urljoin(SITE_BASE_URL, '/glossario.html')}")
+    lines.append(f"- Glossário completo {urljoin(SITE_BASE_URL, '/glossario/')}")
     lines.append(f"- Sobre {urljoin(SITE_BASE_URL, '/sobre.html')}")
     return "\n".join(lines)
 
@@ -485,8 +515,38 @@ def render_ai_consent():
         "creditText": "Fonte: Wikivendas — wikivendas.com.br"
     }, ensure_ascii=False, indent=2)
 
+def render_runtime(records):
+    return json.dumps({
+        "runtimeVersion": "5.0.0",
+        "buildVersion": BUILD_VERSION,
+        "generatedAt": BUILD_TIMESTAMP,
+        "environment": "production",
+        "termCount": len(records),
+        "categories": list(set(first_value(get_prop_values(r.get("graph", [{}])[0], "categoria")) or "Geral" for r in records))
+    }, ensure_ascii=False, indent=2)
+
+def render_ontology(records):
+    return json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [r.get("json", {}) for r in records]
+    }, ensure_ascii=False, indent=2)
+
 # ============================================================
-# MAIN
+# ESCRITA ATÔMICA
+# ============================================================
+
+def write_file_atomic(path, content):
+    """Escreve arquivo de forma atômica usando um arquivo temporário"""
+    ensure_dir(os.path.dirname(path))
+    with tempfile.NamedTemporaryFile('w', delete=False, encoding='utf-8') as tmp:
+        tmp.write(content)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        tmp_path = tmp.name
+    os.replace(tmp_path, path)
+
+# ============================================================
+# MAIN (Com Verificação de Arquivos e Relatório)
 # ============================================================
 
 def main():
@@ -502,32 +562,109 @@ def main():
     
     print(f"✅ {len(records)} termos válidos processados.")
     
+    # Estrutura de pastas
     ensure_dir("docs/termos")
+    ensure_dir("docs/glossario")
     
+    # 1. Glossario JSON
     graph_all = []
     for r in records:
         graph_all.extend(r.get("graph", []))
-    write_file("docs/glossario.json", json.dumps({"@context": "https://schema.org", "@graph": graph_all}, ensure_ascii=False, indent=2))
+    write_file_atomic("docs/glossario.json", json.dumps({"@context": "https://schema.org", "@graph": graph_all}, ensure_ascii=False, indent=2))
     
+    # 2. Termos
     for r in records:
         md_html = markdown_to_html(r.get("md", ""))
         html, slug = render_term_page(r, md_html)
-        write_file(f"docs/termos/{slug}.html", html)
-        write_file(f"docs/termos/{slug}.json", json.dumps(r.get("json", {}), ensure_ascii=False, indent=2))
+        write_file_atomic(f"docs/termos/{slug}.html", html)
+        write_file_atomic(f"docs/termos/{slug}.json", json.dumps(r.get("json", {}), ensure_ascii=False, indent=2))
     
-    write_file("docs/glossario.html", render_glossary_page(records))
-    write_file("docs/sobre.html", render_about_page(None, None, None))
-    write_file("docs/sitemap.xml", render_sitemap(records))
-    write_file("docs/robots.txt", render_robots())
-    write_file("docs/llms.txt", render_llms_txt(records))
-    write_file("docs/ai-consent.json", render_ai_consent())
-    write_file("docs/CNAME", CUSTOM_DOMAIN)
+    # 3. Glossario Index (Conforme contrato: docs/glossario/index.html)
+    write_file_atomic("docs/glossario/index.html", render_glossary_page(records))
     
-    print("✅ Build concluído com sucesso!")
-
-def write_file(path, content):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
+    # 4. Sobre
+    write_file_atomic("docs/sobre.html", render_about_page())
+    
+    # 5. Infra
+    write_file_atomic("docs/sitemap.xml", render_sitemap(records))
+    write_file_atomic("docs/robots.txt", render_robots())
+    write_file_atomic("docs/llms.txt", render_llms_txt(records))
+    write_file_atomic("docs/ai-consent.json", render_ai_consent())
+    write_file_atomic("docs/CNAME", CUSTOM_DOMAIN)
+    
+    # 6. Gerar arquivos faltantes
+    write_file_atomic("docs/ontology.jsonld", render_ontology(records))
+    write_file_atomic("docs/runtime.json", render_runtime(records))
+    write_file_atomic("docs/build-report.json", json.dumps({
+        "buildVersion": BUILD_VERSION,
+        "timestamp": BUILD_TIMESTAMP,
+        "siteBaseUrl": SITE_BASE_URL,
+        "customDomain": CUSTOM_DOMAIN,
+        "pagesFound": len(pages),
+        "termsPublished": len(records)
+    }, ensure_ascii=False, indent=2))
+    
+    # ============================================================
+    # VALIDAÇÃO PÓS-ESCRITA (VERIFICAÇÃO RÍGIDA DO CONTRATO)
+    # ============================================================
+    
+    required_files = [
+        "docs/index.html",
+        "docs/glossario/index.html",
+        "docs/sobre.html",
+        "docs/sitemap.xml",
+        "docs/robots.txt",
+        "docs/llms.txt",
+        "docs/ai-consent.json",
+        "docs/CNAME",
+        "docs/glossario.json",
+        "docs/ontology.jsonld",
+        "docs/runtime.json",
+        "docs/build-report.json"
+    ]
+    
+    # Adiciona os termos gerados à lista de verificação
+    for r in records:
+        slug = slugify(r["label"])
+        required_files.append(f"docs/termos/{slug}.html")
+        required_files.append(f"docs/termos/{slug}.json")
+    
+    # Verifica se todos os arquivos existem fisicamente
+    missing_files = []
+    for f in required_files:
+        if not os.path.exists(f):
+            missing_files.append(f)
+    
+    if missing_files:
+        print("\n❌ ERRO CRÍTICO: Os seguintes arquivos não foram gerados:")
+        for m in missing_files:
+            print(f"   - {m}")
+        sys.exit(1)
+    
+    # ============================================================
+    # RELATÓRIO FINAL
+    # ============================================================
+    
+    print("\n📦 RELATÓRIO DE ARQUIVOS GERADOS:")
+    print(f"   ✔ docs/index.html (Preservado manualmente)")
+    print(f"   ✔ docs/glossario/index.html")
+    print(f"   ✔ docs/sobre.html")
+    for r in records:
+        slug = slugify(r["label"])
+        print(f"   ✔ docs/termos/{slug}.html")
+        print(f"   ✔ docs/termos/{slug}.json")
+    print(f"   ✔ docs/sitemap.xml")
+    print(f"   ✔ docs/robots.txt")
+    print(f"   ✔ docs/llms.txt")
+    print(f"   ✔ docs/ai-consent.json")
+    print(f"   ✔ docs/CNAME")
+    print(f"   ✔ docs/glossario.json")
+    print(f"   ✔ docs/ontology.jsonld")
+    print(f"   ✔ docs/runtime.json")
+    print(f"   ✔ docs/build-report.json")
+    
+    print("\n✅ BUILD OK - Todos os arquivos exigidos pelo contrato existem.")
+    print(f"🚀 Site disponível em: {SITE_BASE_URL}")
 
 if __name__ == "__main__":
     main()
