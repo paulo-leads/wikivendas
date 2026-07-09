@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // ============================================================
-// WIKIVENDAS BUILD v6.0.0-WKGS (QUATRO COLUNAS - SEM DEPENDÊNCIAS)
+// WIKIVENDAS BUILD v6.0.1-WKGS (QUATRO COLUNAS - SEM JSON VISÍVEL)
 // glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config) + Markdown (editorial)
 // ============================================================
 
@@ -21,7 +21,7 @@ const owlPropertyName = process.env.NOTION_OWL_PROPERTY || process.env.NOTIONOWL
 const runtimePropertyName = process.env.NOTION_RUNTIME_PROPERTY || process.env.NOTIONRUNTIMEPROPERTY || "Runtime";
 const mdPropertyName = process.env.NOTION_MD_PROPERTY || process.env.NOTIONMDPROPERTY || "mkdom";
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v6.0.0-wkgs";
+const BUILD_VERSION = "v6.0.1-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
@@ -547,83 +547,24 @@ function generateRuntime(records) {
 }
 
 // ============================================================
-// [NOVO] PARSER DE MARKDOWN NATIVO (sem dependências)
+// PARSER DE MARKDOWN (usando marked com GFM)
 // ============================================================
+
+import { marked } from 'marked';
 
 function markdownToHtml(mdText = "") {
   if (!mdText || mdText.trim() === "") return "";
   
-  let html = mdText;
-
-  // Headers
-  html = html.replace(/^###### (.*$)/gim, '<h6 class="gh-heading gh-h6">$1</h6>');
-  html = html.replace(/^##### (.*$)/gim, '<h5 class="gh-heading gh-h5">$1</h5>');
-  html = html.replace(/^#### (.*$)/gim, '<h4 class="gh-heading gh-h4">$1</h4>');
-  html = html.replace(/^### (.*$)/gim, '<h3 class="gh-heading gh-h3">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 class="gh-heading gh-h2">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 class="gh-heading gh-h1">$1</h1>');
-
-  // Blockquotes
-  html = html.replace(/^\> (.*$)/gim, '<blockquote class="gh-blockquote">$1</blockquote>');
-
-  // Ordered lists
-  html = html.replace(/^\s*([0-9]+)\.\s+(.*$)/gim, '<ol class="gh-ol"><li>$2</li></ol>');
-  html = html.replace(/<\/ol>\s*<ol class="gh-ol">/gim, '');
-
-  // Unordered lists
-  html = html.replace(/^\s*[-*]\s+(.*$)/gim, '<ul class="gh-ul"><li>$1</li></ul>');
-  html = html.replace(/<\/ul>\s*<ul class="gh-ul">/gim, '');
-
-  // Code blocks (triple backticks)
-  html = html.replace(/```([\s\S]*?)```/gim, '<pre class="gh-pre"><code class="gh-code">$1</code></pre>');
-  
-  // Inline code
-  html = html.replace(/`([^`]+)`/gim, '<code class="gh-code-inline">$1</code>');
-
-  // Bold
-  html = html.replace(/\*\*([^*]+)\*\*/gim, '<strong>$1</strong>');
-  html = html.replace(/__([^_]+)__/gim, '<strong>$1</strong>');
-
-  // Italic
-  html = html.replace(/\*([^*]+)\*/gim, '<em>$1</em>');
-  html = html.replace(/_([^_]+)_/gim, '<em>$1</em>');
-
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
-
-  // Images
-  html = html.replace(/!\[([^\]]+)\]\(([^)]+)\)/gim, '<img src="$2" alt="$1" loading="lazy" />');
-
-  // Tables (simplified)
-  html = html.replace(/\|(.+)\|/gim, function(match) {
-    const cells = match.split('|').filter(c => c.trim() !== '');
-    return '<tr><td>' + cells.join('</td><td>') + '</td></tr>';
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+    tables: true,
+    sanitize: false,
+    smartLists: true,
+    smartypants: true
   });
-  html = html.replace(/<tr><td>(.*?)<\/td><\/tr>/gim, function(match) {
-    if (match.includes('---')) {
-      return ''; // Skip separator rows
-    }
-    return match;
-  });
-  
-  // Paragraphs (must be last to avoid wrapping other elements)
-  // Split by double newlines, but don't wrap elements that are already block elements
-  const parts = html.split(/\n\s*\n/);
-  html = parts.map(p => {
-    // Skip if already a block element
-    if (p.trim().startsWith('<h') || p.trim().startsWith('<blockquote') || 
-        p.trim().startsWith('<ul') || p.trim().startsWith('<ol') || 
-        p.trim().startsWith('<pre') || p.trim().startsWith('<table') ||
-        p.trim() === '') {
-      return p;
-    }
-    return `<p class="gh-p">${p}</p>`;
-  }).join('\n');
 
-  // Clean up extra whitespace
-  html = html.replace(/\n{3,}/g, '\n\n');
-
-  return html;
+  return marked.parse(mdText);
 }
 
 // ============================================================
@@ -727,6 +668,15 @@ function buildDesignSystemMeta({ title, description, canonical }) {
     .gh-table th, .gh-table td { border: 0.5px solid var(--bd); padding: 0.5rem 0.75rem; text-align: left; }
     .gh-table th { background: var(--c2); color: var(--tp); font-weight: 600; }
     .gh-table td { color: var(--ts); }
+    
+    /* CTA Box */
+    .wv-cta-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(129,140,248,.05));border:1px solid rgba(56,189,248,.2);border-radius:20px;padding:2rem;text-align:center;margin-top:2.5rem}
+    .wv-cta-box h2{font-size:22px;font-weight:800;color:var(--tp);margin-bottom:.75rem}
+    .wv-cta-box p{font-size:15px;color:var(--ts);max-width:520px;margin:0 auto 1.5rem;line-height:1.6}
+    .wv-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--ta);color:#030712;border-radius:999px;font-size:15px;font-weight:700;transition:all.15s;border:none;cursor:pointer}
+    .wv-cta-btn:hover{background:#7dd3fc;transform:translateY(-2px)}
+    .wv-cta-btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:transparent;color:var(--ts);border:.5px solid var(--bds);border-radius:999px;font-size:15px;font-weight:500;transition:all.15s;margin-left:.75rem}
+    .wv-cta-btn-secondary:hover{background:var(--c2);color:var(--tp)}
   </style>`;
 }
 
@@ -739,20 +689,26 @@ function renderSiteFooter(version = BUILD_VERSION) {
 }
 
 // ============================================================
-// RENDER - TERMO (layout da Home + Markdown README)
+// RENDER - TERMO (APENAS MARKDOWN - SEM JSON VISÍVEL)
 // ============================================================
 
 function renderTermPage(record, mdHtml) {
-  const { json, term, website, org, person, termSet, owl, runtime } = record;
+  const { json, term, website, org, person, termSet } = record;
   const data = extractTemplateData(record);
   const title = data.nomeCanonico || data.slug;
   const description = canonicalDescription(data.descricaoLonga || data.whitepaper?.description || "", 160);
   const canonical = data.urlPrincipalPagina || `${siteBaseUrl}/termos/${data.slug}.html`;
   const contentHash = sha256(JSON.stringify(json));
-  const pageGraph = { "@context": "https://schema.org", "@graph": [website, org, person, termSet,...json["@graph"].filter(Boolean).filter(node =>![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))] };
   const catColor = getCategoryColor(data.categoria);
 
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
+  // JSON-LD vai apenas no <head> (já foi injetado)
+  // NÃO tem <details> com JSON-LD visível
+
+  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [website, org, person, termSet, ...json["@graph"].filter(Boolean).filter(node => ![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))
+    ]
+  })}</script><style>
 .wv-container{max-width:860px;margin:0 auto;padding:5rem 2rem 4rem}
 .wv-back{display:inline-flex;align-items:center;gap:6px;color:var(--tm);font-size:14px;margin-bottom:2rem;transition:color.15s}
 .wv-back:hover{color:var(--tp)}
@@ -776,12 +732,6 @@ function renderTermPage(record, mdHtml) {
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .wv-proof-text{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ts)}
 .wv-proof-text.hash{color:var(--ta)}
-.wv-card{background:var(--c1);border:.5px solid var(--bd);border-radius:20px;padding:1.75rem;margin-bottom:1.5rem}
-.wv-card-accent{border-left:3px solid ${catColor}}
-.wv-card h2{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:1.25rem;letter-spacing:-.02em}
-.wv-card h3{font-size:14px;font-weight:700;color:var(--tp);margin-bottom:.85rem;letter-spacing:-.01em}
-.wv-body{font-size:16px;line-height:1.85;color:var(--ts)}
-.wv-body-large{font-size:18px;line-height:1.9;color:var(--tp);font-weight:400}
 .wv-markdown{background:var(--c1);border:.5px solid var(--bd);border-radius:20px;padding:2rem;margin-bottom:1.5rem}
 .wv-markdown h1,.wv-markdown h2,.wv-markdown h3,.wv-markdown h4,.wv-markdown h5,.wv-markdown h6{color:var(--tp);font-weight:700;letter-spacing:-.02em;margin-top:1.5rem;margin-bottom:0.75rem}
 .wv-markdown h1{font-size:28px}
@@ -802,28 +752,9 @@ function renderTermPage(record, mdHtml) {
 .wv-markdown table th,.wv-markdown table td{border:.5px solid var(--bd);padding:0.5rem 0.75rem;text-align:left}
 .wv-markdown table th{background:var(--c2);color:var(--tp);font-weight:600}
 .wv-markdown table td{color:var(--ts)}
-.wv-links-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.wv-link-card{display:flex;flex-direction:column;gap:.35rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
-.wv-link-card.k{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
-.wv-link-card.v{font-size:13px;color:var(--ts);word-break:break-word}
-.wv-link-card.v a{color:var(--ta)}
-.wv-artifacts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
-.wv-artifact-card{display:flex;flex-direction:column;gap:.35rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem;transition:background.15s,border-color.15s;cursor:pointer}
-.wv-artifact-card:hover{background:var(--c3);border-color:rgba(56,189,248,.24)}
-.wv-artifact-label{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
-.wv-artifact-url{font-size:12px;color:var(--ta);word-break:break-word}
-.wv-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
-.wv-info-card{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
-.wv-info-key{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);margin-bottom:.35rem}
-.wv-info-value{font-size:14px;color:var(--tp);line-height:1.5;word-break:break-word}
-.wv-json-toggle{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;overflow:hidden;margin-top:2rem}
-.wv-json-toggle summary{padding:1rem 1.25rem;cursor:pointer;font-size:13px;font-weight:600;color:var(--ts);font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:space-between}
-.wv-json-toggle summary::after{content:'▾';font-size:12px;transition:transform.2s}
-.wv-json-toggle[open] summary::after{transform:rotate(180deg)}
-.wv-json-toggle.wv-json{padding:0 1.25rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#dbeafe;background:#020617;border-radius:12px;white-space:pre-wrap;word-break:break-word;max-height:480px;overflow:auto}
 .wv-empty{color:var(--tm);font-size:14px;font-style:italic}
-@media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-links-grid,.wv-artifacts-grid,.wv-info-grid{grid-template-columns:1fr}.wv-hero{padding:1.75rem}}
-  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status? `<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>` : ''}${data.versaoTermo? `<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>` : ''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-hero-meta">${data.urn? `<span>URN <code>${escapeHtml(data.urn)}</code></span>` : ''}${data.doi? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>` : ''}${data.wikisales? `<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>` : ''}${data.urlDataset? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><article class="wv-markdown">${mdHtml}</article><section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito e descubra como estruturar sua inteligência comercial B2B.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section><details class="wv-json-toggle"><summary>JSON-LD canônico</summary><div class="wv-json">${escapeHtml(JSON.stringify(json, null, 2))}</div></details></main>${renderSiteFooter()}</body></html>`;
+@media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-hero{padding:1.75rem}}
+  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status? `<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>` : ''}${data.versaoTermo? `<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>` : ''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-hero-meta">${data.urn? `<span>URN <code>${escapeHtml(data.urn)}</code></span>` : ''}${data.doi? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>` : ''}${data.wikisales? `<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>` : ''}${data.urlDataset? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><article class="wv-markdown">${mdHtml}</article><section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito e descubra como estruturar sua inteligência comercial B2B.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section></main>${renderSiteFooter()}</body></html>`;
 }
 
 // ============================================================
