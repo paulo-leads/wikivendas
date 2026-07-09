@@ -692,34 +692,121 @@ function buildDesignSystemMeta({ title, description, canonical }) {
     .wv-bullets li::before { content: ''; position: absolute; left: 0; top:.68rem; width: 6px; height: 6px; border-radius: 999px; background: var(--ta); }
     @media (max-width: 768px) {.wv-nav { display: none; } }
     
-    /* Estilos GitHub README para Markdown */
-    .gh-heading { color: var(--tp); font-weight: 700; letter-spacing: -0.02em; margin-top: 2rem; margin-bottom: 1rem; }
-    .gh-h1 { font-size: 2rem; }
-    .gh-h2 { font-size: 1.5rem; }
-    .gh-h3 { font-size: 1.25rem; }
-    .gh-h4 { font-size: 1.125rem; }
-    .gh-h5 { font-size: 1rem; }
-    .gh-h6 { font-size: 0.875rem; color: var(--tm); }
-    .gh-p { font-size: 16px; line-height: 1.8; color: var(--ts); margin-bottom: 1rem; }
-    .gh-pre { background: var(--c2); border: 0.5px solid var(--bd); border-radius: var(--r); padding: 1rem; overflow-x: auto; margin: 1rem 0; }
-    .gh-code { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #dbeafe; }
-    .gh-code-inline { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--c2); padding: 0.1rem 0.4rem; border-radius: 4px; color: #dbeafe; }
-    .gh-blockquote { border-left: 4px solid var(--ta); padding-left: 1rem; margin: 1rem 0; color: var(--ts); font-style: italic; }
-    .gh-ul, .gh-ol { padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
-    .gh-ul li, .gh-ol li { font-size: 15px; line-height: 1.8; color: var(--ts); margin-bottom: 0.25rem; }
-    .gh-table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 14px; }
-    .gh-table th, .gh-table td { border: 0.5px solid var(--bd); padding: 0.5rem 0.75rem; text-align: left; }
-    .gh-table th { background: var(--c2); color: var(--tp); font-weight: 600; }
-    .gh-table td { color: var(--ts); }
+        /* Estilos GitHub README para Markdown */
+    .wv-markdown {
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin-bottom: 1.5rem;
+    }
+    .wv-markdown h1, .wv-markdown h2, .wv-markdown h3, .wv-markdown h4, .wv-markdown h5, .wv-markdown h6 {
+      color: var(--tp);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    .wv-markdown h1 { font-size: 2rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--bd); }
+    .wv-markdown h2 { font-size: 1.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--bd); }
+    .wv-markdown h3 { font-size: 1.3rem; }
+    .wv-markdown h4 { font-size: 1.1rem; }
+    .wv-markdown h5 { font-size: 1rem; color: var(--tm); }
+    .wv-markdown h6 { font-size: 0.875rem; color: var(--tm); }
     
-    /* CTA Box */
-    .wv-cta-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(129,140,248,.05));border:1px solid rgba(56,189,248,.2);border-radius:20px;padding:2rem;text-align:center;margin-top:2.5rem}
-    .wv-cta-box h2{font-size:22px;font-weight:800;color:var(--tp);margin-bottom:.75rem}
-    .wv-cta-box p{font-size:15px;color:var(--ts);max-width:520px;margin:0 auto 1.5rem;line-height:1.6}
-    .wv-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--ta);color:#030712;border-radius:999px;font-size:15px;font-weight:700;transition:all.15s;border:none;cursor:pointer}
-    .wv-cta-btn:hover{background:#7dd3fc;transform:translateY(-2px)}
-    .wv-cta-btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:transparent;color:var(--ts);border:.5px solid var(--bds);border-radius:999px;font-size:15px;font-weight:500;transition:all.15s;margin-left:.75rem}
-    .wv-cta-btn-secondary:hover{background:var(--c2);color:var(--tp)}
+    .wv-markdown p {
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--ts);
+      margin-bottom: 1rem;
+    }
+    
+    /* Blocos de código escuros (GitHub Dark) */
+    .wv-markdown pre {
+      background: #0d1117 !important;
+      border: 1px solid #30363d !important;
+      border-radius: 6px !important;
+      padding: 1rem !important;
+      overflow-x: auto !important;
+      margin: 1rem 0 !important;
+    }
+    .wv-markdown code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      color: #e6edf3;
+    }
+    .wv-markdown pre code {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      color: #e6edf3;
+    }
+    
+    /* Listas e Citações */
+    .wv-markdown blockquote {
+      border-left: 4px solid var(--ta);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: var(--ts);
+      background: rgba(56,189,248,0.04);
+      border-radius: 0 6px 6px 0;
+    }
+    .wv-markdown ul, .wv-markdown ol {
+      padding-left: 1.5rem;
+      margin: 0.5rem 0 1rem;
+    }
+    .wv-markdown ul li, .wv-markdown ol li {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--ts);
+      margin-bottom: 0.25rem;
+    }
+    
+    /* Tabelas limpas */
+    .wv-markdown table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+      font-size: 14px;
+      display: block;
+      overflow-x: auto;
+    }
+    .wv-markdown table th, .wv-markdown table td {
+      border: 1px solid var(--bd);
+      padding: 0.6rem 0.8rem;
+      text-align: left;
+    }
+    .wv-markdown table th {
+      background: var(--c2);
+      color: var(--tp);
+      font-weight: 600;
+    }
+    .wv-markdown table td { color: var(--ts); }
+    
+    /* Imagens e HR */
+    .wv-markdown img { max-width: 100%; display: block; margin: 1rem 0; border-radius: 6px; }
+    .wv-markdown hr { border: none; height: 1px; background: var(--bd); margin: 2rem 0; }
+    
+    /* CTA Box (sem riscos amarelos) */
+    .wv-cta-box {
+      background: var(--c2);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    .wv-cta-box h2 { font-size: 22px; font-weight: 700; color: var(--tp); margin-bottom: 0.75rem; border: none; }
+    .wv-cta-box p { font-size: 15px; color: var(--ts); max-width: 520px; margin: 0 auto 1.5rem; line-height: 1.6; }
+    .wv-cta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: #238636; color: #fff; border-radius: 6px; font-size: 14px; font-weight: 600; transition: background 0.2s; border: none; cursor: pointer; }
+    .wv-cta-btn:hover { background: #2ea043; }
+    .wv-cta-btn-secondary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: transparent; color: var(--ts); border: 1px solid var(--bds); border-radius: 6px; font-size: 14px; font-weight: 500; transition: all 0.2s; margin-left: 0.75rem; }
+    .wv-cta-btn-secondary:hover { background: var(--c2); color: var(--tp); }
+    
+    @media(max-width:768px) {
+      .wv-container { padding: 2rem 1.25rem 3rem; }
+      .wv-hero { padding: 1.5rem; }
+      .wv-cta-btn-secondary { margin-left: 0; margin-top: 0.75rem; display: block; }
+    }
   </style>`;
 }
 
