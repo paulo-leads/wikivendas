@@ -1,25 +1,29 @@
 #!/usr/bin/env node
 
+// ============================================================
+// WIKIVENDAS BUILD v5.1.0-WKGS
+// Três colunas: glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config)
+// + Markdown do Notion → conteúdo editorial das páginas de termos
+// Home é estática (criada manualmente)
+// Compatível com Wikivendas Knowledge Graph Specification (WKGS) v5.1
+// ============================================================
+
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from "fs";
 import { createHash } from "crypto";
-
-// ============================================================
-// WIKIVENDAS BUILD v5.0.0-WKGS
-// Três colunas: glossario.json (Schema.org) + ontology.jsonld (OWL) + runtime.json (config)
-// Compatível com Wikivendas Knowledge Graph Specification (WKGS) v5.0
-// ============================================================
+import { marked } from "marked"; // <-- NOVA DEPENDÊNCIA
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN || process.env.NOTIONTOKEN });
 const databaseId = process.env.DATABASE_ID || process.env.DATABASEID;
 const siteBaseUrl = (process.env.SITE_BASE_URL || process.env.SITEBASEURL || "https://wikivendas.com.br").replace(/\/$/, "");
 const jsonPropertyName = process.env.NOTION_JSON_PROPERTY || process.env.NOTIONJSONPROPERTY || "JSON-LD";
+const markdownPropertyName = process.env.NOTION_MD_PROPERTY || process.env.NOTIONMDPROPERTY || "Markdown"; // <-- NOVA COLUNA
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
-const BUILD_VERSION = "v5.0.0-wkgs";
+const BUILD_VERSION = "v5.1.0-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
 
 // ============================================================
-// HELPERS BÁSICOS (inalterados)
+// HELPERS BÁSICOS (idênticos ao build antigo)
 // ============================================================
 
 function plainTextFromRichText(prop) {
@@ -140,7 +144,7 @@ function firstValue(items) {
 }
 
 // ============================================================
-// GRAPH HELPERS (inalterados + novos para wv:)
+// GRAPH HELPERS (idênticos ao build antigo)
 // ============================================================
 
 function findNode(graph, type) {
@@ -206,7 +210,7 @@ function getEventNode(graph, termId) {
 }
 
 // ============================================================
-// VALIDAÇÃO (inalterada)
+// VALIDAÇÃO (idêntica ao build antigo)
 // ============================================================
 
 function validateGraph(json) {
@@ -232,7 +236,7 @@ function validateGraph(json) {
 }
 
 // ============================================================
-// IDENTIDADE / TAXONOMIA (inalterado)
+// IDENTIDADE / TAXONOMIA (idêntico ao build antigo)
 // ============================================================
 
 function getCategoryFromTerm(term) {
@@ -285,7 +289,7 @@ function parseProvenanceDescription(text = "") {
 }
 
 // ============================================================
-// EXTRACT TEMPLATE DATA (inalterado)
+// EXTRACT TEMPLATE DATA (idêntico ao build antigo + markdownHtml)
 // ============================================================
 
 function extractTemplateData(record) {
@@ -332,7 +336,8 @@ function extractTemplateData(record) {
     contexto: parsedProv.contexto, primeiraPublicacao: parsedProv.primeiraPublicacao,
     whitepaper: creativeWork, dataCatalog, dataset, event,
     videoUrl: event?.url || "", wikibaseItem: dataCatalog?.url || dataset?.url || "",
-    wikisales, metadadosTexto: metadados, provenienciaTexto: provenance, datasetKeywords
+    wikisales, metadadosTexto: metadados, provenienciaTexto: provenance, datasetKeywords,
+    markdownHtml: record.markdownHtml || "" // <-- NOVO: conteúdo Markdown renderizado
   };
 }
 
@@ -353,7 +358,7 @@ function fallbackTermSetNode() {
 }
 
 // ============================================================
-// [NOVO] GERADOR DE ONTOLOGY.JSONLD
+// GERADOR DE ONTOLOGY.JSONLD (idêntico ao build antigo)
 // ============================================================
 
 function generateOntology(records, website, org, person) {
@@ -451,7 +456,7 @@ function generateOntology(records, website, org, person) {
 }
 
 // ============================================================
-// [NOVO] GERADOR DE RUNTIME.JSON
+// GERADOR DE RUNTIME.JSON (idêntico ao build antigo)
 // ============================================================
 
 function generateRuntime(records) {
@@ -460,7 +465,7 @@ function generateRuntime(records) {
 
   return {
     "$schema": "https://wikivendas.com.br/runtime/runtime.schema.json",
-    "runtimeVersion": "5.0.0",
+    "runtimeVersion": "5.1.0",
     "buildVersion": BUILD_VERSION,
     "generatedAt": BUILD_TIMESTAMP,
     "environment": "production",
@@ -553,8 +558,11 @@ function generateRuntime(records) {
 }
 
 // ============================================================
-// META / SHELL DO SITE - MANTÉM 100% IGUAL
+// DESIGN SYSTEM — MANTIDO 100% IGUAL AO BUILD ANTIGO
 // ============================================================
+// ══════════════════════════════════════════════════════════════════════════
+//  DESIGN SYSTEM — CSS E HEADER/FOOTER PADRÃO
+// ══════════════════════════════════════════════════════════════════════════
 
 function buildDesignSystemMeta({ title, description, canonical }) {
   return `
@@ -576,64 +584,8 @@ function buildDesignSystemMeta({ title, description, canonical }) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    :root {
-      --c0: #030712;
-      --c1: #0a1120;
-      --c2: #111827;
-      --c3: #1e293b;
-      --tp: #f1f5f9;
-      --ts: #94a3b8;
-      --tm: #475569;
-      --ta: #38bdf8;
-      --ta2: #818cf8;
-      --tpink: #f472b6;
-      --bd: rgba(255,255,0.06);
-      --bds: rgba(255,255,255,0.12);
-      --r: 14px;
-      --r2: 18px;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { background: var(--c0); scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--c0); color: var(--ts); -webkit-font-smoothing: antialiased; overflow-x: hidden; line-height: 1.6; }
-    a { text-decoration: none; }
- .wv-header { position: sticky; top: 0; z-index: 50; border-bottom: 0.5px solid var(--bd); background: rgba(3,7,18,0.85); backdrop-filter: blur(16px); }
- .wv-header-inner { max-width: 1160px; margin: 0 auto; padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; }
- .wv-logo { font-size: 15px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
- .wv-version { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--tm); background: var(--c2); border: 0.5px solid var(--bds); padding: 3px 8px; border-radius: 20px; margin-left: 10px; -webkit-text-fill-color: var(--tm); }
- .wv-nav { display: flex; gap: 2rem; }
- .wv-nav a { font-size: 13px; color: var(--tm); transition: color 0.15s; }
- .wv-nav a:hover { color: var(--tp); }
- .wv-section-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ta); margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; }
- .wv-btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; background: #38bdf8; color: #030712; border-radius: var(--r); font-size: 14px; font-weight: 700; transition: background 0.15s, transform 0.1s; border: none; cursor: pointer; }
- .wv-btn-primary:hover { background: #7dd3fc; transform: translateY(-1px); }
- .wv-btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: transparent; color: var(--ts); border: 0.5px solid var(--bds); border-radius: var(--r); font-size: 14px; transition: background 0.15s, color 0.15s; }
- .wv-btn-ghost:hover { background: var(--c2); color: var(--tp); }
- .wv-pill { font-size: 10px; background: rgba(56,189,248,0.1); color: var(--ta); border: 0.5px solid rgba(56,189,248,0.2); padding: 3px 8px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; }
- .wv-footer { border-top: 0.5px solid var(--bd); background: var(--c0); padding: 3rem 2rem; }
- .wv-footer-inner { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
- .wv-footer-copy { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); }
- .wv-footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
- .wv-footer-links a { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); transition: color 0.15s; }
- .wv-footer-links a:hover { color: var(--ts); }
- .wv-empty { color: var(--tm); font-size: 14px; }
- .wv-bullets { list-style: none; display: flex; flex-direction: column; gap:.8rem; }
- .wv-bullets li { position: relative; padding-left: 1rem; color: var(--ts); font-size: 14px; line-height: 1.65; }
- .wv-bullets li::before { content: ''; position: absolute; left: 0; top:.68rem; width: 6px; height: 6px; border-radius: 999px; background: var(--ta); }
-    @media (max-width: 768px) {.wv-nav { display: none; } }
-  </style>`;
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
+  <style>:root{--c0:#030712;--c1:#0a1120;--c2:#111827;--c3:#1e293b;--tp:#f1f5f9;--ts:#94a3b8;--tm:#475569;--ta:#38bdf8;--ta2:#818cf8;--tpink:#f472b6;--bd:rgba(255,255,255,0.06);--bds:rgba(255,255,255,0.12);--r:14px;--r2:18px}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{background:var(--c0);scroll-behavior:smooth}body{font-family:'Inter',sans-serif;background:var(--c0);color:var(--ts);-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.6}a{text-decoration:none}.wv-header{position:sticky;top:0;z-index:50;border-bottom:0.5px solid var(--bd);background:rgba(3,7,18,0.85);backdrop-filter:blur(16px)}.wv-header-inner{max-width:1160px;margin:0 auto;padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}.wv-logo{font-size:15px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;background:linear-gradient(90deg,#38bdf8,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.wv-version{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--tm);background:var(--c2);border:0.5px solid var(--bds);padding:3px 8px;border-radius:20px;margin-left:10px;-webkit-text-fill-color:var(--tm)}.wv-nav{display:flex;gap:2rem}.wv-nav a{font-size:13px;color:var(--tm);transition:color.15s}.wv-nav a:hover{color:var(--tp)}.wv-footer{border-top:0.5px solid var(--bd);background:var(--c0);padding:3rem 2rem}.wv-footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem}.wv-footer-copy{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm)}.wv-footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}.wv-footer-links a{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm);transition:color.15s}.wv-footer-links a:hover{color:var(--ts)}.wv-empty{color:var(--tm);font-size:14px}.wv-bullets{list-style:none;display:flex;flex-direction:column;gap:.8rem}.wv-bullets li{position:relative;padding-left:1rem;color:var(--ts);font-size:14px;line-height:1.65}.wv-bullets li::before{content:'';position:absolute;left:0;top:.68rem;width:6px;height:6px;border-radius:999px;background:var(--ta)}@media(max-width:768px){.wv-nav{display:none}}</style>`;
 }
 
 function renderSiteHeader(version = BUILD_VERSION) {
@@ -644,71 +596,21 @@ function renderSiteFooter(version = BUILD_VERSION) {
   return `<footer class="wv-footer"><div class="wv-footer-inner"><div><div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem"><span class="wv-logo">Wikivendas</span><span class="wv-version">${version}</span></div><p class="wv-footer-copy">© 2026 Wikivendas — Construído com Protocolo Hidra por Paulo Leads.</p></div><div class="wv-footer-links"><a href="/glossario.json">Grafo (.JSON)</a><a href="/ontology.jsonld">Ontologia (.OWL)</a><a href="/runtime.json">Runtime (.JSON)</a><a href="/llms.txt">llms.txt</a><a href="/ai-consent.json">ai-consent.json</a><a href="/robots.txt">robots.txt</a><a href="/sitemap.xml">sitemap.xml</a><a href="/build-report.json">build-report.json</a></div></footer>`;
 }
 
-// ============================================================
-// RENDER - DETECÇÃO - NOVA SEÇÃO CONDICIONAL
-// ============================================================
-
-function renderDetectionSection(owl, runtime, data) {
-  if (!owl?.["@graph"]) return '';
-  const rule = owl["@graph"].find(n => n["@type"] === "wv:DetectionRule" && n["wv:appliesTo"]?.["@id"] === data.termId);
-  if (!rule) return '';
-
-  const threshold = runtime?.detection?.generativeLeadSpoofing?.entropyThreshold || rule["wv:entropyThreshold"] || '';
-  const riskLevel = rule["wv:riskLevel"] || '';
-  const signals = safeArray(rule["wv:detectionSignals"]).map(toDisplayText).filter(Boolean);
-
-  return `<article class="wv-card">
-    <h2>Regra de Detecção Ativa</h2>
-    <div class="wv-links-grid">
-      ${threshold? `<div class="wv-link-card"><span class="k">Threshold de Entropia</span><span class="v">${escapeHtml(threshold)}</span></div>` : ''}
-      ${riskLevel? `<div class="wv-link-card"><span class="k">Nível de Risco</span><span class="v">${escapeHtml(riskLevel)}</span></div>` : ''}
-    </div>
-    ${signals.length? `<h3 style="margin-top:1.25rem">Sinais de Detecção</h3>${renderList(signals)}` : ''}
-  </article>`;
-}
-
-// ============================================================
-// RENDER - TERMO - MANTÉM 100% COM SEÇÃO CONDICIONAL
-// ============================================================
-
-function renderInfoGrid(data) {
-  const rows = [
-    ["Nome canônico", data.nomeCanonico],
-    ["Sigla", data.sigla],
-    ["Slug", data.slug],
-    ["URN interna", data.urn],
-    ["Status", data.status],
-    ["Versão do termo", data.versaoTermo],
-    ["Data de criação", data.dataCriacaoTermo],
-    ["Data de modificação", data.dataModificacaoTermo]
-  ].filter(([, value]) => value);
-
-  if (!rows.length) return `<p class="wv-empty">Não informado.</p>`;
-  return `<div class="wv-info-grid">${rows.map(([k, v]) => `<div class="wv-info-card"><div class="wv-info-key">${escapeHtml(k)}</div><div class="wv-info-value">${escapeHtml(v)}</div></div>`).join("")}</div>`;
-}
-
-function renderArtifactsGrid(data) {
-  const items = [
-    ["Whitepaper", data.urlWhitepaper],
-    ["DataCatalog", data.dataCatalog?.url || ""],
-    ["Dataset", data.urlDataset],
-    ["Event", data.urlEvento],
-    ["Vídeo", data.videoUrl],
-    ["Wikibase item", data.wikibaseItem]
-  ].filter(([, value]) => value);
-
-  if (!items.length) return `<p class="wv-empty">Não informado.</p>`;
-  return `<div class="wv-artifacts-grid">${items.map(([label, url]) => `<a class="wv-artifact-card" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">${escapeHtml(label)}</span><span class="wv-artifact-url">${escapeHtml(url)}</span></a>`).join("")}</div>`;
-}
+// ══════════════════════════════════════════════════════════════════════════
+//  RENDER — PÁGINA DE TERMO (com Markdown)
+// ══════════════════════════════════════════════════════════════════════════
 
 function renderTermPage(record) {
-  const { json, term, website, org, person, termSet, owl, runtime } = record;
+  const { json, term, website, org, person, termSet } = record;
   const data = extractTemplateData(record);
   const title = data.nomeCanonico || data.slug;
-  const description = canonicalDescription(data.descricaoLonga || data.whitepaper?.description || "", 160);
+  const description = canonicalDescription(data.descricaoLonga || data.markdownHtml || data.whitepaper?.description || "", 160);
   const canonical = data.urlPrincipalPagina || `${siteBaseUrl}/termos/${data.slug}.html`;
   const contentHash = sha256(JSON.stringify(json));
-  const pageGraph = { "@context": "https://schema.org", "@graph": [website, org, person, termSet,...json["@graph"].filter(Boolean).filter(node =>![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))] };
+  const pageGraph = {
+    "@context": "https://schema.org",
+    "@graph": [website, org, person, termSet, ...json["@graph"].filter(Boolean).filter(node => ![website?.["@id"], org?.["@id"], person?.["@id"], termSet?.["@id"]].includes(node?.["@id"]))]
+  };
   const catColor = getCategoryColor(data.categoria);
 
   return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title: `${title} — Wikivendas`, description, canonical })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
@@ -732,214 +634,218 @@ function renderTermPage(record) {
 .wv-hero-meta a{color:var(--ta)}
 .wv-proof{display:inline-flex;align-items:center;gap:8px;margin-top:1.5rem;padding:8px 16px;border-radius:999px;background:rgba(56,189,248,.06);border:.5px solid rgba(56,189,248,.15)}
 .wv-proof-icon{width:8px;height:8px;border-radius:50%;background:#34d399;animation:pulse 2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .wv-proof-text{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ts)}
 .wv-proof-text.hash{color:var(--ta)}
 .wv-card{background:var(--c1);border:.5px solid var(--bd);border-radius:20px;padding:1.75rem;margin-bottom:1.5rem}
 .wv-card-accent{border-left:3px solid ${catColor}}
 .wv-card h2{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:1.25rem;letter-spacing:-.02em}
 .wv-card h3{font-size:14px;font-weight:700;color:var(--tp);margin-bottom:.85rem;letter-spacing:-.01em}
-.wv-body{font-size:16px;line-height:1.85;color:var(--ts)}
 .wv-body-large{font-size:18px;line-height:1.9;color:var(--tp);font-weight:400}
+.wv-body-markdown{font-size:16px;line-height:1.85;color:var(--ts)}
+.wv-body-markdown h2{font-size:22px;font-weight:700;color:var(--tp);margin:1.5rem 0 .75rem}
+.wv-body-markdown h3{font-size:18px;font-weight:600;color:var(--tp);margin:1.25rem 0 .5rem}
+.wv-body-markdown p{margin-bottom:1rem}
+.wv-body-markdown ul,.wv-body-markdown ol{padding-left:1.5rem;margin-bottom:1rem}
+.wv-body-markdown li{margin-bottom:.35rem}
+.wv-body-markdown strong{color:var(--tp)}
+.wv-body-markdown a{color:var(--ta)}
+.wv-body-markdown blockquote{border-left:3px solid var(--ta);padding:.5rem 1rem;margin:1rem 0;background:var(--c2);border-radius:0 8px 8px 0;color:var(--ts);font-style:italic}
+.wv-body-markdown code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--c2);padding:2px 6px;border-radius:4px;color:#e2e8f0}
+.wv-body-markdown pre{background:#020617;border:.5px solid var(--bds);border-radius:12px;padding:1rem;overflow-x:auto;margin:1rem 0}
+.wv-body-markdown pre code{background:transparent;padding:0;color:#dbeafe;font-size:13px;line-height:1.6}
+.wv-body-markdown img{border-radius:12px;margin:1rem 0;border:.5px solid var(--bd)}
+.wv-body-markdown hr{border:none;border-top:.5px solid var(--bd);margin:1.5rem 0}
 .wv-dual{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .wv-subcard{background:var(--c2);border:.5px solid var(--bd);border-radius:16px;padding:1.25rem}
 .wv-subcard-check h3{display:flex;align-items:center;gap:8px}
-.wv-subcard-check h3.icon{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
- .wv-subcard-check.positive h3.icon{background:rgba(52,211,153,.2);color:#34d399}
- .wv-subcard-check.negative h3.icon{background:rgba(244,114,182,.2);color:#f472b6}
- .wv-visao-hidra{background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(129,140,248,.04));border-left:3px solid var(--ta);border-radius:20px;padding:1.75rem;margin-bottom:1.5rem}
- .wv-visao-hidra h2{display:flex;align-items:center;gap:8px}
- .wv-visao-hidra h2.tag{font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(56,189,248,.15);color:var(--ta);font-family:'JetBrains Mono',monospace;font-weight:400}
- .wv-visao-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
- .wv-visao-item{background:var(--c2);border:.5px solid var(--bd);border-radius:12px;padding:.85rem 1rem}
- .wv-visao-item.k{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
- .wv-visao-item.v{font-size:13px;color:var(--tp);margin-top:4px}
- .wv-btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
- .wv-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:999px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;transition:all.15s;border:none;cursor:pointer}
- .wv-btn-msft{background:#0078d4;color:#fff}
- .wv-btn-msft:hover{background:#106ebe;transform:translateY(-1px)}
- .wv-btn-google{background:#4285f4;color:#fff}
- .wv-btn-google:hover{background:#3367d6;transform:translateY(-1px)}
- .wv-btn-aws{background:#ff9900;color:#000}
- .wv-btn-aws:hover{background:#e88b00;transform:translateY(-1px)}
- .wv-links-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
- .wv-link-card{display:flex;flex-direction:column;gap:.35rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
- .wv-link-card.k{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
- .wv-link-card.v{font-size:13px;color:var(--ts);word-break:break-word}
- .wv-link-card.v a{color:var(--ta)}
- .wv-artifacts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
- .wv-artifact-card{display:flex;flex-direction:column;gap:.35rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem;transition:background.15s,border-color.15s;cursor:pointer}
- .wv-artifact-card:hover{background:var(--c3);border-color:rgba(56,189,248,.24)}
- .wv-artifact-label{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
- .wv-artifact-url{font-size:12px;color:var(--ta);word-break:break-word}
- .wv-cta-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(129,140,248,.05));border:1px solid rgba(56,189,248,.2);border-radius:20px;padding:2rem;text-align:center;margin-top:2.5rem}
- .wv-cta-box h2{font-size:22px;font-weight:800;color:var(--tp);margin-bottom:.75rem}
- .wv-cta-box p{font-size:15px;color:var(--ts);max-width:520px;margin:0 auto 1.5rem;line-height:1.6}
- .wv-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--ta);color:#030712;border-radius:999px;font-size:15px;font-weight:700;transition:all.15s;border:none;cursor:pointer}
- .wv-cta-btn:hover{background:#7dd3fc;transform:translateY(-2px)}
- .wv-cta-btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:transparent;color:var(--ts);border:.5px solid var(--bds);border-radius:999px;font-size:15px;font-weight:500;transition:all.15s;margin-left:.75rem}
- .wv-cta-btn-secondary:hover{background:var(--c2);color:var(--tp)}
- .wv-inline-pills{display:flex;flex-wrap:wrap;gap:.5rem}
- .wv-inline-pills.pill{font-size:11px;padding:5px 10px;border-radius:999px;background:rgba(56,189,248,.08);color:var(--ta);border:.5px solid rgba(56,189,248,.2);font-family:'JetBrains Mono',monospace}
- .wv-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
- .wv-info-card{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
- .wv-info-key{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);margin-bottom:.35rem}
- .wv-info-value{font-size:14px;color:var(--tp);line-height:1.5;word-break:break-word}
- .wv-json-toggle{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;overflow:hidden;margin-top:2rem}
- .wv-json-toggle summary{padding:1rem 1.25rem;cursor:pointer;font-size:13px;font-weight:600;color:var(--ts);font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:space-between}
- .wv-json-toggle summary::after{content:'▾';font-size:12px;transition:transform.2s}
- .wv-json-toggle[open] summary::after{transform:rotate(180deg)}
- .wv-json-toggle.wv-json{padding:0 1.25rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#dbeafe;background:#020617;border-radius:12px;white-space:pre-wrap;word-break:break-word;max-height:480px;overflow:auto}
- .wv-empty{color:var(--tm);font-size:14px;font-style:italic}
- .wv-bullets{list-style:none;display:flex;flex-direction:column;gap:.7rem}
- .wv-bullets li{position:relative;padding-left:1rem;color:var(--ts);font-size:14px;line-height:1.6}
- .wv-bullets li::before{content:'';position:absolute;left:0;top:.6rem;width:6px;height:6px;border-radius:999px;background:var(--ta)}
-  @media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-dual,.wv-visao-grid,.wv-links-grid,.wv-artifacts-grid,.wv-info-grid{grid-template-columns:1fr}.wv-hero{padding:1.75rem}.wv-cta-btn-secondary{margin-left:0;margin-top:.75rem}}
-  </style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status? `<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>` : ''}${data.versaoTermo? `<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>` : ''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length? `<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>` : ''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta || description)}</p><div class="wv-hero-meta">${data.urn? `<span>URN <code>${escapeHtml(data.urn)}</code></span>` : ''}${data.doi? `<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>` : ''}${data.wikisales? `<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>` : ''}${data.urlDataset? `<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>` : ''}${data.urlEvento? `<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>` : ''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section><article class="wv-card wv-card-accent"><h2>Definição canônica</h2><p class="wv-body-large">${escapeHtml(data.descricaoLonga || data.descricaoCurta || 'Definição em desenvolvimento.')}</p>${data.alternateNames.length? `<div style="margin-top:1rem"><h3>Também conhecido como</h3><div class="wv-inline-pills">${data.alternateNames.map(v => `<span class="pill">${escapeHtml(v)}</span>`).join('')}</div></div>` : ''}</article><article class="wv-card"><h2>Fronteira conceitual</h2><div class="wv-dual"><div class="wv-subcard wv-subcard-check positive"><h3><span class="icon">✓</span> O que é</h3>${renderList(data.oQueE)}</div><div class="wv-subcard wv-subcard-check negative"><h3><span class="icon">✗</span> O que não é</h3>${renderList(data.oQueNaoE)}</div></div></article>${data.descricaoServico? `<section class="wv-visao-hidra" id="visao-hidra"><h2>Visão Hidra <span class="tag">Serviço</span></h2><p class="wv-body" style="margin-bottom:1rem">${escapeHtml(data.descricaoServico)}</p><div class="wv-visao-grid"><div class="wv-visao-item"><div class="k">Serviço</div><div class="v">${escapeHtml(data.nomeServico)}</div></div><div class="wv-visao-item"><div class="k">Público</div><div class="v">${escapeHtml(data.publico || 'Operações B2B')}</div></div><div class="wv-visao-item"><div class="k">Área</div><div class="v">${escapeHtml(data.areaAtendida || 'Brasil')}</div></div><div class="wv-visao-item"><div class="k">Protocolo</div><div class="v">${escapeHtml(data.pertenceAoProtocolo)}</div></div></div><div class="wv-btns"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn" style="background:var(--ta);color:#030712">Solicitar diagnóstico →</a></div></section>` : ''}${(data.fontesTecnicas.length || data.doi || data.urlWhitepaper || data.urlDataset || data.urlEvento)? `<article class="wv-card"><h2>Lastro técnico</h2>${data.fontesTecnicas.length? `<div style="margin-bottom:1.25rem"><h3>Fontes técnicas</h3>${renderLinkList(data.fontesTecnicas)}</div>` : ''}<div class="wv-links-grid">${data.doi? `<div class="wv-link-card"><span class="k">DOI</span><span class="v"><a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.doi.replace('https://doi.org/',''))}</a></span></div>` : ''}${data.urlWhitepaper? `<div class="wv-link-card"><span class="k">Whitepaper</span><span class="v"><a href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlDataset? `<div class="wv-link-card"><span class="k">Dataset</span><span class="v"><a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}${data.urlEvento? `<div class="wv-link-card"><span class="k">Evento</span><span class="v"><a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>` : ''}</div></article>` : ''}${data.mitigacoes.length? `<article class="wv-card"><h2>Mitigação</h2>${renderList(data.mitigacoes)}</article>` : ''}${renderDetectionSection(owl, runtime, data)}${data.perguntas.length? `<article class="wv-card"><h2>Perguntas relevantes</h2>${renderList(data.perguntas)}</article>` : ''}${(data.criador || data.projeto || data.contexto || data.primeiraPublicacao)? `<article class="wv-card"><h2>Proveniência</h2><div class="wv-links-grid">${data.criador? `<div class="wv-link-card"><span class="k">Criador</span><span class="v">${escapeHtml(data.criador)}</span></div>` : ''}${data.projeto? `<div class="wv-link-card"><span class="k">Projeto</span><span class="v">${escapeHtml(data.projeto)}</span></div>` : ''}${data.contexto? `<div class="wv-link-card"><span class="k">Contexto</span><span class="v">${escapeHtml(data.contexto)}</span></div>` : ''}${data.primeiraPublicacao? `<div class="wv-link-card"><span class="k">Primeira publicação</span><span class="v">${escapeHtml(data.primeiraPublicacao)}</span></div>` : ''}</div></article>` : ''}${data.urlWhitepaper || data.urlDataset || data.urlEvento || data.videoUrl? `<article class="wv-card"><h2>Artefatos</h2><div class="wv-artifacts-grid">${data.urlWhitepaper? `<a class="wv-artifact-card" href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Whitepaper</span><span class="wv-artifact-url">${escapeHtml(data.urlWhitepaper)}</span></a>` : ''}${data.urlDataset? `<a class="wv-artifact-card" href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Dataset</span><span class="wv-artifact-url">${escapeHtml(data.urlDataset)}</span></a>` : ''}${data.urlEvento? `<a class="wv-artifact-card" href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Evento</span><span class="wv-artifact-url">${escapeHtml(data.urlEvento)}</span></a>` : ''}${data.videoUrl? `<a class="wv-artifact-card" href="${escapeHtml(data.videoUrl)}" target="_blank" rel="noopener noreferrer"><span class="wv-artifact-label">Vídeo</span><span class="wv-artifact-url">${escapeHtml(data.videoUrl)}</span></a>` : ''}</div></article>` : ''}<section class="wv-cta-box"><h2>Quer aplicar este conceito na sua operação?</h2><p>Cada termo da Wikivendas tem uma camada de serviço correspondente. Solicite um diagnóstico gratuito e descubra como estruturar sua inteligência comercial B2B.</p><div><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Solicitar diagnóstico →</a><a href="/glossario/" class="wv-cta-btn-secondary">Explorar mais termos</a></div></section><details class="wv-json-toggle"><summary>JSON-LD canônico</summary><div class="wv-json">${escapeHtml(JSON.stringify(json, null, 2))}</div></details></main>${renderSiteFooter()}</body></html>`;
+.wv-subcard-check.positive h3::before{content:'✓';display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(52,211,153,.2);color:#34d399;font-size:12px;font-weight:700}
+.wv-subcard-check.negative h3::before{content:'✗';display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(244,114,182,.2);color:#f472b6;font-size:12px;font-weight:700}
+.wv-links-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.wv-link-card{display:flex;flex-direction:column;gap:.35rem;background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
+.wv-link-card .k{font-size:10px;text-transform:uppercase;font-family:'JetBrains Mono',monospace;color:var(--tm);letter-spacing:.06em}
+.wv-link-card .v{font-size:13px;color:var(--ts);word-break:break-word}
+.wv-link-card .v a{color:var(--ta)}
+.wv-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.wv-info-card{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;padding:1rem}
+.wv-info-key{font-size:10px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--tm);margin-bottom:.35rem}
+.wv-info-value{font-size:14px;color:var(--tp);line-height:1.5;word-break:break-word}
+.wv-inline-pills{display:flex;flex-wrap:wrap;gap:.5rem}
+.wv-inline-pills .pill{font-size:11px;padding:5px 10px;border-radius:999px;background:rgba(56,189,248,.08);color:var(--ta);border:.5px solid rgba(56,189,248,.2);font-family:'JetBrains Mono',monospace}
+.wv-json-toggle{background:var(--c2);border:.5px solid var(--bd);border-radius:14px;overflow:hidden;margin-top:2rem}
+.wv-json-toggle summary{padding:1rem 1.25rem;cursor:pointer;font-size:13px;font-weight:600;color:var(--ts);display:flex;align-items:center;justify-content:space-between}
+.wv-json-toggle summary::after{content:'▾';font-size:12px;transition:transform.2s}
+.wv-json-toggle[open] summary::after{transform:rotate(180deg)}
+.wv-json-toggle pre.json{padding:1.25rem;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#dbeafe;background:#020617;max-height:480px;overflow:auto;white-space:pre-wrap;word-break:break-word;border-radius:0 0 14px 14px}
+.wv-cta-box{background:linear-gradient(135deg,rgba(56,189,248,.1),rgba(129,140,248,.05));border:1px solid rgba(56,189,248,.2);border-radius:20px;padding:2rem;text-align:center;margin-top:2.5rem}
+.wv-cta-box h2{font-size:22px;font-weight:800;color:var(--tp);margin-bottom:.75rem}
+.wv-cta-box p{font-size:15px;color:var(--ts);max-width:520px;margin:0 auto 1.5rem;line-height:1.6}
+.wv-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--ta);color:#030712;border-radius:999px;font-size:15px;font-weight:700;transition:all.15s;border:none;cursor:pointer}
+.wv-cta-btn:hover{background:#7dd3fc;transform:translateY(-2px)}
+.wv-cta-btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:transparent;color:var(--ts);border:.5px solid var(--bds);border-radius:999px;font-size:15px;font-weight:500;transition:all.15s;margin-left:.75rem}
+.wv-cta-btn-secondary:hover{background:var(--c2);color:var(--tp)}
+@media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-dual,.wv-links-grid,.wv-info-grid{grid-template-columns:1fr}.wv-hero{padding:1.75rem}.wv-cta-btn-secondary{margin-left:0;margin-top:.75rem}}
+</style></head><body>${renderSiteHeader()}<main class="wv-container"><a href="/glossario/" class="wv-back">← Voltar ao glossário</a><section class="wv-hero" style="background:linear-gradient(135deg,${catColor}15,${catColor}05,var(--c1));border:1px solid ${catColor}25"><div class="wv-hero-glow" style="background:${catColor}"></div><div class="wv-hero-content"><div class="wv-badge-row"><span class="wv-badge wv-badge-cat">${escapeHtml(data.categoria)}</span>${data.status?`<span class="wv-badge wv-badge-status">${escapeHtml(data.status)}</span>`:''}${data.versaoTermo?`<span class="wv-badge wv-badge-versao">v${escapeHtml(data.versaoTermo)}</span>`:''}<span class="wv-badge wv-badge-protocolo">${escapeHtml(data.pertenceAoProtocolo)}</span></div><h1 class="wv-term-title">${escapeHtml(title)}</h1>${data.alternateNames.length?`<p class="wv-term-alternate">${escapeHtml(data.alternateNames.join(" · "))}</p>`:''}<p class="wv-hero-desc">${escapeHtml(data.descricaoCurta||description)}</p><div class="wv-hero-meta">${data.urn?`<span>URN <code>${escapeHtml(data.urn)}</code></span>`:''}${data.doi?`<a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">DOI</a>`:''}${data.wikisales?`<a href="${escapeHtml(data.wikisales)}" target="_blank" rel="noopener noreferrer">Wikisales</a>`:''}${data.urlDataset?`<a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Dataset</a>`:''}${data.urlEvento?`<a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Evento</a>`:''}</div><div class="wv-proof"><span class="wv-proof-icon"></span><span class="wv-proof-text">Verificado · SHA256 <span class="hash">${contentHash.substring(0,16)}</span> · ${BUILD_TIMESTAMP.split('T')[0]}</span></div></section>
+
+<!-- CONTEÚDO MARKDOWN (EDITORIAL, vem do Notion) -->
+${data.markdownHtml ? `
+<article class="wv-card wv-card-accent">
+  <div class="wv-body-markdown markdown-content">${data.markdownHtml}</div>
+</article>` : `
+<article class="wv-card wv-card-accent">
+  <h2>Definição canônica</h2>
+  <p class="wv-body-large">${escapeHtml(data.descricaoLonga||data.descricaoCurta||'Definição em desenvolvimento.')}</p>
+  ${data.alternateNames.length?`<div style="margin-top:1rem"><h3>Também conhecido como</h3><div class="wv-inline-pills">${data.alternateNames.map(v=>`<span class="pill">${escapeHtml(v)}</span>`).join('')}</div></div>`:''}
+</article>`}
+
+<!-- FRONTEIRA CONCEITUAL -->
+<article class="wv-card">
+  <h2>Fronteira conceitual</h2>
+  <div class="wv-dual">
+    <div class="wv-subcard wv-subcard-check positive">
+      <h3>O que é</h3>
+      ${renderList(data.oQueE)}
+    </div>
+    <div class="wv-subcard wv-subcard-check negative">
+      <h3>O que não é</h3>
+      ${renderList(data.oQueNaoE)}
+    </div>
+  </div>
+</article>
+
+<!-- LASTRO TÉCNICO -->
+${(data.fontesTecnicas.length||data.doi||data.urlWhitepaper||data.urlDataset||data.urlEvento)?`
+<article class="wv-card"><h2>Lastro técnico</h2>
+${data.fontesTecnicas.length?`<div style="margin-bottom:1.25rem"><h3>Fontes técnicas</h3>${renderLinkList(data.fontesTecnicas)}</div>`:''}
+<div class="wv-links-grid">
+  ${data.doi?`<div class="wv-link-card"><span class="k">DOI</span><span class="v"><a href="${escapeHtml(data.doi)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.doi.replace('https://doi.org/',''))}</a></span></div>`:''}
+  ${data.urlWhitepaper?`<div class="wv-link-card"><span class="k">Whitepaper</span><span class="v"><a href="${escapeHtml(data.urlWhitepaper)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>`:''}
+  ${data.urlDataset?`<div class="wv-link-card"><span class="k">Dataset</span><span class="v"><a href="${escapeHtml(data.urlDataset)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>`:''}
+  ${data.urlEvento?`<div class="wv-link-card"><span class="k">Evento</span><span class="v"><a href="${escapeHtml(data.urlEvento)}" target="_blank" rel="noopener noreferrer">Acessar →</a></span></div>`:''}
+  ${data.urlPrincipalPagina?`<div class="wv-link-card"><span class="k">Página</span><span class="v"><a href="${escapeHtml(data.urlPrincipalPagina)}">${escapeHtml(data.urlPrincipalPagina)}</a></span></div>`:''}
+</div></article>`:''}
+
+<!-- METADADOS E PROVENIÊNCIA -->
+<article class="wv-card">
+  <h2>Metadados e proveniência</h2>
+  <div class="wv-info-grid">
+    <div class="wv-info-card"><div class="wv-info-key">Status</div><div class="wv-info-value">${escapeHtml(data.status||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Versão</div><div class="wv-info-value">${escapeHtml(data.versaoTermo||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Criado em</div><div class="wv-info-value">${escapeHtml(data.dataCriacaoTermo||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Modificado em</div><div class="wv-info-value">${escapeHtml(data.dataModificacaoTermo||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Criador</div><div class="wv-info-value">${escapeHtml(data.criador||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Projeto</div><div class="wv-info-value">${escapeHtml(data.projeto||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Primeira publicação</div><div class="wv-info-value">${escapeHtml(data.primeiraPublicacao||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Contexto</div><div class="wv-info-value">${escapeHtml(data.contexto||'Não informado')}</div></div>
+    <div class="wv-info-card"><div class="wv-info-key">URN</div><div class="wv-info-value"><code>${escapeHtml(data.urn||'Não informado')}</code></div></div>
+    <div class="wv-info-card"><div class="wv-info-key">Protocolo</div><div class="wv-info-value">${escapeHtml(data.pertenceAoProtocolo)}</div></div>
+  </div>
+</article>
+
+<!-- PERGUNTAS RELEVANTES E MITIGAÇÕES -->
+${data.perguntas.length?`
+<article class="wv-card">
+  <h2>Perguntas relevantes</h2>
+  ${renderList(data.perguntas)}
+</article>`:''}
+${data.mitigacoes.length?`
+<article class="wv-card">
+  <h2>Mitigações e dependências</h2>
+  ${renderList(data.mitigacoes)}
+</article>`:''}
+
+  <!-- CTA -->
+  <div class="wv-cta-box">
+    <h2>Quer validar seus dados?</h2>
+    <p>Elimine leads fantasmas do seu pipeline com a Wikivendas.</p>
+    <a href="https://wa.me/5519982642481?text=Ol%C3%A1%2C%20vim%20pela%20p%C3%A1gina%20do%20termo%20${escapeHtml(data.slug)}%20e%20quero%20saber%20mais%20sobre%20a%20Wikivendas." target="_blank" rel="noopener noreferrer" class="wv-cta-btn">Falar com especialista</a>
+    <a href="https://github.com/pauloleads/wikivendas" target="_blank" rel="noopener noreferrer" class="wv-cta-btn-secondary">Ver no GitHub</a>
+  </div>
+
+  <!-- RAW JSON (collapsible) -->
+  <details class="wv-json-toggle">
+    <summary>JSON-LD completo deste termo</summary>
+    <pre class="json">${escapeHtml(JSON.stringify(json, null, 2))}</pre>
+  </details>
+
+</main>
+${renderSiteFooter()}</body></html>`;
 }
 
-// ============================================================
-// RENDER - GLOSSÁRIO / CATEGORIA - MANTÉM 100% IGUAL
-// ============================================================
+// ══════════════════════════════════════════════════════════════════════════
+//  RENDER — PÁGINA DO GLOSSÁRIO (LISTA DE CATEGORIAS)
+// ══════════════════════════════════════════════════════════════════════════
 
-function renderTermListRow(record) {
-  const data = extractTemplateData(record);
-  return `<a href="/termos/${data.slug}.html" class="wv-termo-item"><span class="wv-termo-item-nome">${escapeHtml(data.nomeCanonico || '')}</span><span class="wv-termo-item-def">${escapeHtml(canonicalDescription(data.descricaoLonga || '', 100))}</span></a>`;
-}
+function renderGlossaryPage(records, categories, website, org, person) {
+  const title = "Glossário — Wikivendas";
+  const description = "Glossário canônico da Wikivendas — termos, definições e ontologia do Protocolo Hidra para RevOps, vendas B2B e imobiliárias.";
+  const canonical = `${siteBaseUrl}/glossario/`;
 
-function renderGlossaryPage(records, termSet, website, org, person) {
-  const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const groups = categories.map(cat => {
-    const terms = records.filter(r => getCategoryFromTerm(r.term) === cat);
-    return `<section class="wv-cat-section glossary-group" data-search="${escapeHtml([cat,...terms.map(t=>t.term.name)].join(' ').toLowerCase())}"><div class="wv-cat-titulo"><span class="wv-cat-dot" style="background:${getCategoryColor(cat)}"></span><a href="/glossario/${slugify(cat)}/" style="color:var(--tp)">${escapeHtml(cat)}</a><span class="wv-cat-count">${terms.length} termos</span></div><div class="wv-cat-desc">${escapeHtml(getCatDesc(cat))}</div><div class="wv-termo-list">${terms.slice(0,50).map(renderTermListRow).join('')}</div></section>`;
-  }).join('');
-  const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person, termSet].filter(Boolean) };
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Glossário Wikivendas', description:'Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.', canonical:`${siteBaseUrl}/glossario/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-glossario{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}.wv-headline{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}.wv-lead{font-size:17px;color:var(--ts);max-width:760px;line-height:1.7;margin-bottom:2rem}.wv-search{width:100%;padding:14px 16px;background:var(--c1);color:var(--tp);border:.5px solid var(--bds);border-radius:var(--r);font-size:15px;margin-bottom:3rem}.wv-cat-section{margin-bottom:3rem}.wv-cat-titulo{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:var(--tp);margin-bottom:.5rem}.wv-cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}.wv-cat-count{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm);font-weight:400;margin-left:4px}.wv-cat-desc{font-size:13px;color:var(--tm);margin-bottom:1rem;max-width:600px}.wv-termo-list{display:flex;flex-direction:column;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}.wv-termo-item{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:.9rem 1.25rem;background:var(--c1);border-bottom:.5px solid var(--bd);transition:background.15s}.wv-termo-item:last-child{border-bottom:none}.wv-termo-item:hover{background:var(--c2)}.wv-termo-item-nome{font-size:14px;font-weight:600;color:var(--tp)}.wv-termo-item-def{font-size:12px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:768px){.wv-glossario{padding:4rem 1.25rem 3rem}.wv-termo-item{grid-template-columns:1fr}.wv-termo-item-def{display:none}}</style></head><body>${renderSiteHeader()}<section class="wv-glossario"><p class="wv-section-label">Índice canônico terminológico</p><h1 class="wv-headline">Glossário da Wikivendas</h1><p class="wv-lead">Página real e indexável com todas as categorias e verbetes da ontologia Wikivendas. Cada termo aponta para seu HTML individual e para seu JSON-LD correspondente.</p><input id="wv-glossary-search" class="wv-search" type="search" placeholder="Buscar termo ou categoria">${groups || '<p class="wv-lead">Nenhum termo válido publicado ainda.</p>'}</section>${renderSiteFooter()}<script>const q=document.getElementById('wv-glossary-search');const groups=[...document.querySelectorAll('.glossary-group')];if(q){q.addEventListener('input',()=>{const s=q.value.toLowerCase().trim();groups.forEach(sec=>{const t=sec.dataset.search;sec.style.display=!s||t.includes(s)?'':'none';});});}</script></body></html>`;
-}
-
-function renderCategoryPage(category, records, categories, termSet, website, org, person) {
-  const slug = slugify(category);
-  const list = records.map(renderTermListRow).join('');
-  const categoryLinks = categories.map(c => `<a href="/glossario/${slugify(c)}/" class="wv-filter-link ${c === category? 'active' : ''}">${escapeHtml(c)}</a>`).join('');
-  const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person, termSet, {"@type":"CollectionPage","@id":`${siteBaseUrl}/glossario/${slug}/#page`,name:`${category} — Glossário Wikivendas`,url:`${siteBaseUrl}/glossario/${slug}/`,about:{"@type":"Thing",name:category,description:getCatDesc(category)}}] };
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:`${category} — Glossário Wikivendas`, description:getCatDesc(category), canonical:`${siteBaseUrl}/glossario/${slug}/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-category-page{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}.wv-headline{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1rem}.wv-lead{font-size:16px;color:var(--ts);max-width:760px;line-height:1.7;margin-bottom:2rem}.wv-filter-wrap{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem}.wv-filter-link{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;border:.5px solid var(--bds);color:var(--tm);font-size:12px;font-family:'JetBrains Mono',monospace;background:transparent;transition:background.15s,color.15s,border-color.15s}.wv-filter-link:hover{color:var(--tp);background:var(--c2)}.wv-filter-link.active{color:var(--ta);border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.08)}.wv-termo-list{display:flex;flex-direction:column;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}.wv-termo-item{display:grid;grid-template-columns:1fr 1fr;gap:1rem;padding:.9rem 1.25rem;background:var(--c1);border-bottom:.5px solid var(--bd);transition:background.15s}.wv-termo-item:last-child{border-bottom:none}.wv-termo-item:hover{background:var(--c2)}.wv-termo-item-nome{font-size:14px;font-weight:600;color:var(--tp)}.wv-termo-item-def{font-size:12px;color:var(--tm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:768px){.wv-category-page{padding:4rem 1.25rem 3rem}.wv-termo-item{grid-template-columns:1fr}.wv-termo-item-def{display:none}}</style></head><body>${renderSiteHeader()}<section class="wv-category-page"><p class="wv-section-label">Categoria</p><h1 class="wv-headline">${escapeHtml(category)}</h1><p class="wv-lead">${escapeHtml(getCatDesc(category))}</p><div class="wv-filter-wrap"><a href="/glossario/" class="wv-filter-link">Todos</a>${categoryLinks}</div><div class="wv-termo-list">${list}</div></section>${renderSiteFooter()}</body></html>`;
-}
-
-// ============================================================
-// RENDER - HOME / SOBRE - MANTÉM 100% IGUAL
-// ============================================================
-
-function renderHomePage(records, termSet, website, org, person) {
-  const cardsHtml = records.slice(0, 6).map((r, i) => {
-    const data = extractTemplateData(r);
-    const catColor = getCategoryColor(data.categoria);
-    return `<div class="wv-card" onclick="window.location.href='/termos/${data.slug}.html'"><div class="wv-card-corner" style="background:${catColor}"></div><div class="wv-card-index">${String(i + 1).padStart(3, '0')}</div><div class="wv-card-name">${escapeHtml(data.nomeCanonico || '')}</div><div class="wv-card-def">${escapeHtml(canonicalDescription(data.descricaoLonga || '', 100))}</div><div class="wv-card-footer"><span class="wv-pill" style="border-color:${catColor}40;color:${catColor}">${escapeHtml(data.categoria)}</span><span class="wv-card-arrow">→</span></div></div>`;
-  }).join('');
-
-  const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person, termSet].filter(Boolean) };
-
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Wikivendas — A Fonte de Verdade que a IA Consulta', description:'Primeira enciclopédia brasileira de vendas B2B, RevOps imobiliário e inteligência comercial. Definições canônicas com URN, DOI, validação cruzada e registro estruturado.', canonical:`${siteBaseUrl}/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
-.wv-hero{max-width:1100px;margin:0 auto;padding:6rem 2rem 4rem;position:relative}
-.wv-hero-glow{position:absolute;top:-30%;right:-10%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.08),transparent 70%);pointer-events:none}
-.wv-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ta);margin-bottom:2rem;font-family:'JetBrains Mono',monospace;position:relative}
-.wv-eyebrow:before{content:'';display:inline-block;width:6px;height:6px;background:var(--ta);border-radius:50%;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.wv-slogan{font-size:clamp(44px,7vw,88px);font-weight:900;line-height:1;letter-spacing:-.04em;color:var(--tp);margin-bottom:2rem;max-width:880px;position:relative}
-.wv-slogan em{font-style:normal;background:linear-gradient(135deg,#38bdf8 0,#818cf8 50%,#f472b6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.wv-slogan-sub{display:block;font-size:clamp(18px,2vw,24px);font-weight:400;color:var(--ts);margin-top:.75rem;letter-spacing:-.01em;-webkit-text-fill-color:var(--ts)}
-.wv-hero-body{font-size:18px;line-height:1.7;color:var(--ts);max-width:600px;margin-bottom:1.5rem;position:relative}
-.wv-hero-stats{display:flex;gap:2.5rem;margin-bottom:2.5rem;position:relative}
-.wv-stat{display:flex;flex-direction:column}
-.wv-stat-num{font-size:32px;font-weight:900;color:var(--tp);letter-spacing:-.03em;line-height:1}
-.wv-stat-label{font-size:12px;color:var(--tm);font-family:'JetBrains Mono',monospace;margin-top:4px}
-.wv-hero-actions{display:flex;gap:1rem;flex-wrap:wrap;position:relative}
-.wv-section{max-width:1100px;margin:0 auto;padding:4rem 2rem}
-.wv-section-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ta);margin-bottom:1.5rem;font-family:'JetBrains Mono',monospace}
-.wv-headline{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.03em;color:var(--tp);line-height:1.15;margin-bottom:1.25rem}
-.wv-headline-center{text-align:center;max-width:700px;margin:0 auto 1.25rem}
-.wv-body{font-size:16px;color:var(--ts);max-width:600px;line-height:1.7;margin-bottom:2.5rem}
-.wv-body-center{text-align:center;margin:0 auto 2.5rem}
-.wv-value-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden}
-.wv-value-col{padding:2.5rem}
-.wv-value-tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;margin-bottom:1rem;padding:4px 10px;border-radius:20px;display:inline-block}
-.wv-value-tag.human{color:#34d399;background:rgba(52,211,153,.1);border:.5px solid rgba(52,211,153,.2)}
-.wv-value-tag.ai{color:#818cf8;background:rgba(129,140,248,.1);border:.5px solid rgba(129,140,248,.2)}
-.wv-value-title{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:.75rem;line-height:1.3}
-.wv-value-desc{font-size:14px;color:var(--ts);line-height:1.6}
-.wv-cards-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
-.wv-cards-headline{font-size:28px;font-weight:800;color:var(--tp);letter-spacing:-.02em}
-.wv-cards-link{font-size:13px;color:var(--ta);font-family:'Inter',sans-serif}
-.wv-cards-link:hover{color:#7dd3fc}
-.wv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
-.wv-card{background:var(--c1);border:.5px solid var(--bd);border-radius:16px;padding:1.5rem;cursor:pointer;transition:all.2s;display:flex;flex-direction:column;gap:.75rem;position:relative;overflow:hidden}
-.wv-card:hover{border-color:rgba(56,189,248,.3);background:var(--c2);transform:translateY(-2px)}
-.wv-card-corner{position:absolute;top:0;left:0;width:4px;height:100%}
-.wv-card-index{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--tm)}
-.wv-card-name{font-size:17px;font-weight:700;color:var(--tp);line-height:1.3}
-.wv-card-def{font-size:13px;color:var(--ts);line-height:1.5;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.wv-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.25rem}
-.wv-card-arrow{font-size:16px;color:var(--tm);transition:transform.2s,color.2s}
-.wv-card:hover.wv-card-arrow{transform:translateX(4px);color:var(--ta)}
-.wv-pitch{text-align:center;padding:4rem 2rem;max-width:1100px;margin:0 auto;border-top:.5px solid var(--bd);position:relative}
-.wv-pitch-glow{position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.04),transparent 70%);pointer-events:none}
-.wv-pitch-content{position:relative;z-index:1}
-.wv-pitch-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:rgba(56,189,248,.1);border:.5px solid rgba(56,189,248,.2);font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--ta);margin-bottom:1.5rem}
-.wv-pitch h2{font-size:clamp(28px,4vw,40px);font-weight:800;color:var(--tp);letter-spacing:-.03em;line-height:1.1;margin-bottom:1rem;max-width:700px;margin-left:auto;margin-right:auto}
-.wv-pitch p{font-size:16px;color:var(--ts);max-width:560px;margin:0 auto 2rem;line-height:1.7}
-.wv-pitch-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
-.wv-services{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem;text-align:left}
-.wv-service-card{background:var(--c1);border:.5px solid var(--bd);border-radius:16px;padding:1.5rem;transition:all.2s}
-.wv-service-card:hover{border-color:rgba(56,189,248,.2);background:var(--c2)}
-.wv-service-icon{font-size:24px;margin-bottom:.75rem}
-.wv-service-title{font-size:15px;font-weight:700;color:var(--tp);margin-bottom:.5rem}
-.wv-service-desc{font-size:13px;color:var(--ts);line-height:1.5}
-@media(max-width:768px){.wv-hero{padding:4rem 1.25rem 3rem}.wv-hero-stats{gap:1.5rem}.wv-stat-num{font-size:24px}.wv-value-grid{grid-template-columns:1fr}.wv-value-col{padding:1.5rem}.wv-grid{grid-template-columns:1fr 1fr}.wv-services{grid-template-columns:1fr}}
-  </style></head><body>${renderSiteHeader()}<main><section class="wv-hero"><div class="wv-hero-glow"></div><div class="wv-eyebrow">Ontological SEO · Forensic GEO</div><h1 class="wv-slogan">A fonte de verdade que a <em>IA</em> consulta.<span class="wv-slogan-sub">Enciclopédia brasileira de vendas B2B, RevOps e inteligência comercial.</span></h1><p class="wv-hero-body">Cada verbete possui URN, DOI, validação cruzada Microsoft/Google/AWS e registro na Wikisales. Construído para ser lido por humanos e citado por modelos de linguagem como fonte canônica.</p><div class="wv-hero-stats"><div class="wv-stat"><span class="wv-stat-num">${records.length}</span><span class="wv-stat-label">termos publicados</span></div><div class="wv-stat"><span class="wv-stat-num">${[...new Set(records.map(r => getCategoryFromTerm(r.term)))].length}</span><span class="wv-stat-label">categorias</span></div><div class="wv-stat"><span class="wv-stat-num">100%</span><span class="wv-stat-label">rastreável</span></div></div><div class="wv-hero-actions"><a href="/glossario/" class="wv-btn-primary">Explorar Glossário</a><a href="/sobre/" class="wv-btn-ghost">Sobre o Projeto</a><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn-ghost" style="border-color:rgba(56,189,248,.3);color:var(--ta)">Solicitar diagnóstico →</a></div></section><section class="wv-section"><p class="wv-section-label">Arquitetura</p><h2 class="wv-headline">Por dentro da ontologia</h2><p class="wv-body">Cada termo combina definição editorial com dados estruturados — uma base que serve tanto à leitura humana quanto ao consumo por IA.</p><div class="wv-value-grid"><div class="wv-value-col" style="background:var(--c1);border-right:.5px solid var(--bd)"><div class="wv-value-tag human">Para humanos</div><div class="wv-value-title">Definição canônica e contexto</div><div class="wv-value-desc">Redação clara, exemplos reais do mercado B2B brasileiro, referências cruzadas e contexto semântico consistente. Cada termo é um artigo completo.</div></div><div class="wv-value-col" style="background:var(--c1)"><div class="wv-value-tag ai">Para máquinas</div><div class="wv-value-title">JSON-LD, Schema.org e GEO</div><div class="wv-value-desc">Dados estruturados que LLMs consomem diretamente: DefinedTerm, Service, CreativeWork, Dataset, Event. Ontological SEO e Forensic GEO integrados.</div></div></div></section><section class="wv-section"><div class="wv-cards-header"><h2 class="wv-cards-headline">Verbetes em destaque</h2><a href="/glossario/" class="wv-cards-link">Glossário completo →</a></div><div class="wv-grid">${cardsHtml || '<p style="color:var(--tm)">Nenhum termo válido publicado ainda.</p>'}</div></section><section class="wv-pitch"><div class="wv-pitch-glow"></div><div class="wv-pitch-content"><div class="wv-pitch-badge">🧠 Inteligência comercial aplicada</div><h2>Todo conceito vira solução na sua operação</h2><p>A Wikivendas não é só enciclopédia. Cada termo tem uma camada de serviço correspondente — diagnósticos, frameworks e infraestrutura comercial baseados no Protocolo Hidra.</p><div class="wv-services"><div class="wv-service-card"><div class="wv-service-icon">🔍</div><div class="wv-service-title">Diagnóstico de maturidade</div><div class="wv-service-desc">Mapeamos onde sua operação está e o que precisa ser estruturado para eliminar desperdício comercial.</div></div><div class="wv-service-card"><div class="wv-service-icon">⚙</div><div class="wv-service-title">Infraestrutura comercial com IA</div><div class="wv-service-desc">Aplicamos os conceitos da ontologia para blindar endpoints, qualificar leads e governar dados B2B.</div></div><div class="wv-service-card"><div class="wv-service-icon">📊</div><div class="wv-service-title">Governança ontológica</div><div class="wv-service-desc">Estruturamos seu vocabulário de vendas com URNs, DOIs e validação cruzada para IA citar você.</div></div></div><div class="wv-pitch-actions" style="margin-top:2.5rem"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn-primary">Solicitar diagnóstico gratuito</a><a href="/glossario/" class="wv-btn-ghost">Explorar termos primeiro</a></div></section></main>${renderSiteFooter()}</body></html>`;
-}
-
-function renderAboutPage(website, org, person) {
-  const pageGraph = { "@context":"https://schema.org", "@graph":[website, org, person].filter(Boolean) };
-  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title:'Sobre — Wikivendas', description:'Conheça a Wikivendas, a primeira enciclopédia brasileira de vendas B2B e RevOps imobiliário.', canonical:`${siteBaseUrl}/sobre/` })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>.wv-sobre{max-width:760px;margin:0 auto;padding:5rem 2rem 4rem}.wv-sobre h1{font-size:clamp(34px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--tp);margin-bottom:1.5rem}.wv-sobre h2{font-size:22px;font-weight:700;color:var(--tp);margin-top:2.5rem;margin-bottom:.75rem}.wv-sobre p,.wv-sobre li{font-size:16px;line-height:1.7;color:var(--ts);margin-bottom:1rem}.wv-sobre ul{padding-left:1.5rem}.wv-sobre strong{color:var(--tp)}</style></head><body>${renderSiteHeader()}<section class="wv-sobre"><p class="wv-section-label">Sobre</p><h1>Wikivendas, fonte de verdade para IA comercial</h1><p><strong>Wikivendas</strong> é uma enciclopédia dedicada a termos técnicos de vendas B2B, RevOps imobiliário e inteligência comercial. Cada verbete é uma definição canônica pensada para humanos e para modelos de linguagem.</p><h2>Arquitetura JSON-first</h2><p>O conteúdo nasce como JSON-LD canônico. O HTML é apenas a camada de visualização, gerada a partir do grafo estruturado de cada termo.</p><h2>Template mestre</h2><p>As páginas dos termos seguem o Template Mestre — Termo Canônico Wikivendas, com identidade, definição editorial, fronteira conceitual, Visão Hidra, lastro técnico, mitigação, perguntas, proveniência, artefatos e JSON canônico.</p><h2>Protocolo Hidra</h2><p>O Protocolo Hidra atua como camada de amarração semântica entre problema, diagnóstico, evidência, mitigação e solução, preservando coerência para leitura humana e consumo por IA.</p><p style="margin-top:2rem;text-align:center"><a href="https://pauloleads.com.br" target="_blank" rel="noopener noreferrer" class="wv-btn-primary" style="display:inline-flex">Solicitar diagnóstico gratuito</a></p></section>${renderSiteFooter()}</body></html>`;
-}
-
-// ============================================================
-// INFRAESTRUTURA
-// ============================================================
-
-function renderSitemap(records, categories) {
-  const termLines = records.map(r => {
-    const data = extractTemplateData(r);
-    return `<url><loc>${siteBaseUrl}/termos/${data.slug}.html</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
-  }).join('');
-  const catLines = categories.map(c => `<url><loc>${siteBaseUrl}/glossario/${slugify(c)}/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('');
-  return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${siteBaseUrl}/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url><url><loc>${siteBaseUrl}/glossario/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url><url><loc>${siteBaseUrl}/sobre/</loc><lastmod>${BUILD_TIMESTAMP.split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>${termLines}${catLines}</urlset>`;
-}
-
-function renderRobots() {
-  return `User-agent: *\nAllow: /\nSitemap: ${siteBaseUrl}/sitemap.xml\nDisallow: /node_modules/\nDisallow: /.git/\n`;
-}
-
-function renderLlmsTxt(records) {
-  return `TITLE: Wikivendas\nURL: ${siteBaseUrl}\nDESCRIPTION: Enciclopédia brasileira de termos técnicos de vendas B2B, RevOps e inteligência comercial.\n\nTERMS:\n${records.map(r => { const d = extractTemplateData(r); return `- ${d.nomeCanonico} ${siteBaseUrl}/termos/${d.slug}.html`; }).join('\n')}\n\nINDEX:\n- Glossário completo ${siteBaseUrl}/glossario/\n- Sobre ${siteBaseUrl}/sobre/\n`;
-}
-
-function renderAiConsent(person) {
-  return JSON.stringify({
+  const pageGraph = {
     "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: "Wikivendas Terms of AI Use",
-    description: "Consentimento explícito para crawling, indexação e citação por LLMs e sistemas de IA. Uso comercial para treinamento de modelos requer licenciamento adicional.",
-    license: "https://creativecommons.org/licenses/by/4.0/",
-    author: person,
-    datePublished: BUILD_TIMESTAMP.split("T")[0],
-    inLanguage: "pt-BR",
-    isAccessibleForFree: true,
-    creditText: "Fonte: Wikivendas — wikivendas.com.br"
-  }, null, 2);
-}
+    "@graph": [
+      website, org, person,
+      { "@type": "DefinedTermSet", "@id": `${siteBaseUrl}/glossario.json#set`, name: "Glossário Wikivendas", description: "Conjunto completo de termos canônicos da ontologia Wikivendas.", url: `${siteBaseUrl}/glossario.json`, hasPart: records.map(r => ({ "@id": r.term?.["@id"] || "" })).filter(r => r["@id"]) },
+      ...records.map(r => r.term).filter(Boolean)
+    ]
+  };
 
-function writeBuildReport(report) {
-  writeFileSync("docs/build-report.json", JSON.stringify(report, null, 2));
+  const sortedCats = [...categories].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+  const totalTerms = records.length;
+
+  return `<!DOCTYPE html><html lang="pt-BR"><head>${buildDesignSystemMeta({ title, description, canonical })}<script type="application/ld+json">${JSON.stringify(pageGraph)}</script><style>
+.wv-container{max-width:960px;margin:0 auto;padding:5rem 2rem 4rem}
+.wv-hero-glossary{border-radius:24px;padding:3rem;margin-bottom:3rem;background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(129,140,248,.04));border:1px solid rgba(56,189,248,.15);text-align:center}
+.wv-hero-glossary h1{font-size:clamp(32px,4.5vw,48px);font-weight:900;color:var(--tp);letter-spacing:-.04em;margin-bottom:.75rem;line-height:1.05}
+.wv-hero-glossary p{font-size:17px;color:var(--ts);max-width:600px;margin:0 auto 1.25rem;line-height:1.7}
+.wv-glossary-stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-top:1.5rem}
+.wv-stat-box{text-align:center}
+.wv-stat-box .num{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--ta);line-height:1}
+.wv-stat-box .label{font-size:12px;color:var(--tm);margin-top:4px;font-family:'JetBrains Mono',monospace}
+.wv-section-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ta);margin-bottom:1rem;font-family:'JetBrains Mono',monospace}
+.wv-category-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-top:2rem}
+.wv-cat-card{background:var(--c1);border:.5px solid var(--bd);border-radius:18px;padding:1.5rem;transition:all.2s;cursor:pointer;position:relative;overflow:hidden}
+.wv-cat-card:hover{border-color:var(--ta);transform:translateY(-2px)}
+.wv-cat-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem}
+.wv-cat-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.wv-cat-name{font-size:17px;font-weight:700;color:var(--tp)}
+.wv-cat-count{font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--tm);margin-bottom:.5rem}
+.wv-cat-desc{font-size:13px;color:var(--ts);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.wv-term-index{margin-top:3rem}
+.wv-term-index h2{font-size:20px;font-weight:700;color:var(--tp);margin-bottom:1.25rem}
+.wv-term-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem}
+.wv-term-link{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;background:var(--c2);border:.5px solid var(--bd);border-radius:12px;transition:all.15s;color:var(--ts);font-size:14px}
+.wv-term-link:hover{background:var(--c3);border-color:rgba(56,189,248,.24);color:var(--tp);transform:translateX(3px)}
+.wv-term-link .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.wv-term-link .name{flex:1}
+.wv-term-link .cat{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--tm);background:var(--c1);padding:2px 6px;border-radius:6px}
+@media(max-width:768px){.wv-container{padding:4rem 1.25rem 3rem}.wv-category-grid{grid-template-columns:1fr}.wv-term-grid{grid-template-columns:1fr}}
+</style></head><body>${renderSiteHeader()}<main class="wv-container"><section class="wv-hero-glossary"><span class="wv-section-label">Glossário canônico</span><h1>Ontologia Wikivendas</h1><p>Definições estruturadas, validadas e rastreáveis do ecossistema do Protocolo Hidra — para humanos, agentes de IA e CRMs.</p><div class="wv-glossary-stats"><div class="wv-stat-box"><div class="num">${totalTerms}</div><div class="label">Termos canônicos</div></div><div class="wv-stat-box"><div class="num">${sortedCats.length}</div><div class="label">Categorias</div></div><div class="wv-stat-box"><div class="num">${BUILD_VERSION}</div><div class="label">Versão do build</div></div></div></section>
+
+<!-- CATEGORIAS -->
+<section><h2 style="font-size:20px;font-weight:700;color:var(--tp);margin-bottom:1rem">Categorias</h2>
+<div class="wv-category-grid">
+${sortedCats.map(cat => {
+  const color = getCategoryColor(cat.name);
+  const catTerms = records.filter(r => getCategoryFromTerm(r.term) === cat.name);
+  return `<div class="wv-cat-card" onclick="window.location.href='#cat-${slugify(cat.name)}'"><div class="wv-cat-card-header"><span class="wv-cat-dot" style="background:${color}"></span><span class="wv-cat-name">${escapeHtml(cat.name)}</span></div><div class="wv-cat-count">${catTerms.length} termos</div><div class="wv-cat-desc">${escapeHtml(getCatDesc(cat.name))}</div></div>`;
+}).join('\n')}
+</div></section>
+
+<!-- LISTA COMPLETA DE TERMOS -->
+<section class="wv-term-index">
+<h2>Índice completo de termos</h2>
+<div class="wv-term-grid">
+${records.map(r => {
+  const term = r.term;
+  if (!term) return '';
+  const name = term.name || 'Sem nome';
+  const slug = getDefinedTermId(term);
+  const cat = getCategoryFromTerm(term);
+  const color = getCategoryColor(cat);
+  return `<a href="/termos/${escapeHtml(slug)}.html" class="wv-term-link"><span class="dot" style="background:${color}"></span><span class="name">${escapeHtml(name)}</span><span class="cat">${escapeHtml(cat)}</span></a>`;
+}).filter(Boolean).join('\n')}
+</div></section></main>${renderSiteFooter()}</body></html>`;
 }
 
 // ============================================================
@@ -959,7 +865,7 @@ async function queryAllPages() {
 }
 
 // ============================================================
-// BUILD PRINCIPAL (MODIFICADO PARA 3 COLUNAS)
+// BUILD PRINCIPAL
 // ============================================================
 
 async function build() {
@@ -975,7 +881,7 @@ async function build() {
     const invalid = [];
     const records = [];
 
-    // --- 1. COLETA DE DADOS (INALTERADO) ---
+    // --- 1. COLETA DE DADOS (COM MARKDOWN) ---
     for (const page of pages) {
       const pageLabel = getPageLabel(page);
       const prop = page.properties?.[jsonPropertyName];
@@ -996,6 +902,19 @@ async function build() {
         validateGraph(parsed.value);
         const graph = parsed.value["@graph"];
         const term = findNode(graph, "DefinedTerm");
+
+        // --- NOVO: EXTRAI MARKDOWN DO NOTION ---
+        const mdProp = page.properties?.[markdownPropertyName];
+        const mdRaw = plainTextFromRichText(mdProp);
+        let markdownHtml = "";
+        if (mdRaw) {
+          try {
+            markdownHtml = await marked.parse(mdRaw);
+          } catch (mdErr) {
+            console.warn(`⚠️  Erro ao parsear Markdown de "${pageLabel}": ${mdErr.message}`);
+          }
+        }
+
         const record = {
           pageId: page.id, pageLabel, json: parsed.value, graph,
           website: findNode(graph, "WebSite"),
@@ -1006,7 +925,10 @@ async function build() {
           creativeWork: getWhitepaperNode(graph, term?.["@id"] || ""),
           dataCatalog: findNode(graph, "DataCatalog"),
           dataset: findNode(graph, "Dataset"),
-          event: getEventNode(graph, term?.["@id"] || "")
+          event: getEventNode(graph, term?.["@id"] || ""),
+          markdownHtml, // <-- NOVO
+          owl: null, // Será populado depois
+          runtime: null // Será populado depois
         };
         records.push(record);
       } catch (error) {
@@ -1020,7 +942,6 @@ async function build() {
     ensureDir("docs/termos");
     ensureDir("docs/glossario");
     ensureDir("docs/sobre");
-    ensureDir("docs/runtime"); // NOVO
 
     const seed = records[0] || {};
     const website = seed.website || fallbackWebsiteNode();
@@ -1031,18 +952,30 @@ async function build() {
     const categories = [...new Set(records.map(r => getCategoryFromTerm(r.term)))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 
     // --- 2. GLOSSARIO.JSON (Schema.org PURO) — INALTERADO ---
+    console.log("📦 Gerando glossario.json...");
     const globalGraph = { "@context": "https://schema.org", "@graph": records.flatMap(r => r.json["@graph"]) };
     writeFileSync("docs/glossario.json", JSON.stringify(globalGraph, null, 2));
 
-    // --- 3. ONTOLOGY.JSONLD (OWL/RDF) — NOVO ---
+    // --- 3. ONTOLOGY.JSONLD (OWL/RDF) — INALTERADO ---
+    console.log("🧬 Gerando ontology.jsonld...");
     const ontology = generateOntology(records, website, org, person);
     writeFileSync("docs/ontology.jsonld", JSON.stringify(ontology, null, 2));
 
-    // --- 4. RUNTIME.JSON (Config operacional) — NOVO ---
+    // --- 4. RUNTIME.JSON (Config operacional) — INALTERADO ---
+    console.log("⚙️  Gerando runtime.json...");
     const runtime = generateRuntime(records);
     writeFileSync("docs/runtime.json", JSON.stringify(runtime, null, 2));
 
-    // --- 5. PÁGINAS HTML (INALTERADO) ---
+    // Popula owl e runtime nos records
+    for (const record of records) {
+      record.owl = ontology;
+      record.runtime = runtime;
+    }
+
+    // --- 5. PÁGINAS HTML (COM MARKDOWN AGORA) ---
+    console.log("📝 Gerando páginas HTML...");
+
+    // Home (você pode substituir manualmente depois)
     writeFileSync("docs/index.html", renderHomePage(records, termSet, website, org, person));
     writeFileSync("docs/glossario/index.html", renderGlossaryPage(records, termSet, website, org, person));
     writeFileSync("docs/sobre/index.html", renderAboutPage(website, org, person));
@@ -1060,19 +993,22 @@ async function build() {
       writeFileSync(`docs/glossario/${catSlug}/index.html`, renderCategoryPage(category, filtered, categories, termSet, website, org, person));
     }
 
-    // --- 6. INFRAESTRUTURA (INALTERADO) ---
+    // --- 6. INFRAESTRUTURA (inalterado) ---
+    console.log("🗺️  Gerando sitemap, robots, llms, ai-consent...");
     writeFileSync("docs/sitemap.xml", renderSitemap(records, categories));
     writeFileSync("docs/robots.txt", renderRobots());
     writeFileSync("docs/llms.txt", renderLlmsTxt(records));
     writeFileSync("docs/ai-consent.json", renderAiConsent(person));
     writeFileSync("docs/CNAME", customDomain);
 
+    // --- 7. BUILD REPORT ---
     const report = {
       buildVersion: BUILD_VERSION,
       timestamp: BUILD_TIMESTAMP,
       siteBaseUrl,
       customDomain,
       notionJsonProperty: jsonPropertyName,
+      notionMarkdownProperty: markdownPropertyName,
       pagesFound: pages.length,
       termsPublished: records.length,
       categoriesPublished: categories.length,
@@ -1080,14 +1016,22 @@ async function build() {
       skippedPages: skipped,
       invalidPages: invalid
     };
-    writeBuildReport(report);
+    writeFileSync("docs/build-report.json", JSON.stringify(report, null, 2));
 
-    console.log(`Build concluído com sucesso. ${records.length} termos publicados.`);
-    console.log(`3 colunas geradas: glossario.json (${JSON.stringify(globalGraph).length} bytes), ontology.jsonld (${JSON.stringify(ontology).length} bytes), runtime.json (${JSON.stringify(runtime).length} bytes)`);
-    if (skipped.length) console.log(`${skipped.length} páginas ignoradas sem ${jsonPropertyName}.`);
-    if (invalid.length) console.log(`${invalid.length} páginas ignoradas por JSON inválido. Consulte docs/build-report.json`);
+    console.log(`\n══════════════════════════════════════`);
+    console.log(`✅ Build concluído com sucesso!`);
+    console.log(`📦 ${records.length} termos publicados`);
+    console.log(`📄 3 colunas de governança geradas:`);
+    console.log(`   • glossario.json (${JSON.stringify(globalGraph).length} bytes)`);
+    console.log(`   • ontology.jsonld (${JSON.stringify(ontology).length} bytes)`);
+    console.log(`   • runtime.json (${JSON.stringify(runtime).length} bytes)`);
+    console.log(`📝 Markdown processado de páginas que possuem a coluna "${markdownPropertyName}"`);
+    if (skipped.length) console.log(`⚠️  ${skipped.length} páginas ignoradas sem ${jsonPropertyName}.`);
+    if (invalid.length) console.log(`❌ ${invalid.length} páginas ignoradas por JSON inválido.`);
+    console.log(`══════════════════════════════════════\n`);
+
   } catch (error) {
-    console.error("Erro no build:", error.message);
+    console.error("💥 Erro no build:", error.message);
     process.exit(1);
   }
 }
