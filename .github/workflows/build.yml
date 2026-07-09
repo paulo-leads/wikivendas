@@ -21,13 +21,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # CACHE REMOVIDO – estava restaurando tarballs corrompidos
-
-      - name: Limpar cache npm (resolve EINTEGRITY)
-        run: npm cache clean --force
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
