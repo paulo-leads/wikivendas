@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
+from os.path import join 
 # ============================================================
 # CONFIGURAÇÃO
 # ============================================================
@@ -372,6 +372,9 @@ def render_term_page(record, md_html):
     cat = first_value(get_prop_values(term, "categoria")) or "Geral"
     cat_color = get_category_color(cat)
     content_hash = sha256(json.dumps(json_data, sort_keys=True))
+    
+    # CORREÇÃO AQUI (NUNCA MAIS ERRA)
+    canonical = join(SITE_BASE_URL, "termos", f"{slug}.html").replace("\\", "/")
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
 {render_meta(title=f"{label} — Wikivendas", description=short_desc, canonical=f"{SITE_BASE_URL}/termos/{slug}.html")}
