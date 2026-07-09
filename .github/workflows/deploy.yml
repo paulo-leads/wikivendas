@@ -23,7 +23,7 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install dependencies (gera package-lock.json se não existir)
         run: npm install
 
       - name: Build
