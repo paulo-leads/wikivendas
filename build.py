@@ -8,10 +8,9 @@ import sys
 import hashlib
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urljoin  # <--- A SALVAÇÃO DA PÁTRIA
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-from os.path import join 
+
 # ============================================================
 # CONFIGURAÇÃO
 # ============================================================
@@ -20,7 +19,7 @@ NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
 DATABASE_ID = os.environ.get("DATABASE_ID")
 SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "https://wikivendas.com.br").rstrip("/")
 CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "wikivendas.com.br")
-BUILD_VERSION = "v7.0.0-py"
+BUILD_VERSION = "v7.0.1-py"
 BUILD_TIMESTAMP = datetime.utcnow().isoformat() + "Z"
 
 # Colunas do Notion
@@ -373,11 +372,11 @@ def render_term_page(record, md_html):
     cat_color = get_category_color(cat)
     content_hash = sha256(json.dumps(json_data, sort_keys=True))
     
-    # CORREÇÃO AQUI (NUNCA MAIS ERRA)
-    canonical = join(SITE_BASE_URL, "termos", f"{slug}.html").replace("\\", "/")
+    # URL ÚNICA E CORRETA PARA TUDO
+    canonical_url = urljoin(SITE_BASE_URL, f"/termos/{slug}.html")
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
-{render_meta(title=f"{label} — Wikivendas", description=short_desc, canonical=f"{SITE_BASE_URL}/termos/{slug}.html")}
+{render_meta(title=f"{label} — Wikivendas", description=short_desc, canonical=canonical_url)}
 <script type="application/ld+json">{json.dumps(json_data, ensure_ascii=False, indent=2)}</script>
 <style>
 .wv-container{{max-width:860px;margin:0 auto;padding:3rem 2rem 4rem}}
@@ -421,7 +420,7 @@ def render_glossary_page(records):
         by_cat[cat].append(r)
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
-{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=f"{SITE_BASE_URL}/glossario/")}
+{render_meta(title="Glossário Wikivendas", description="Glossário geral da Wikivendas com todas as categorias e verbetes indexáveis.", canonical=urljoin(SITE_BASE_URL, "/glossario/"))}
 <style>
 .wv-glossario{{max-width:1100px;margin:0 auto;padding:5rem 2rem 4rem}}
 .wv-headline{{font-size:clamp(34px,5vw,58px);font-weight:900;line-height:1.02;letter-spacing:-.04em;color:var(--tp);margin-bottom:1.5rem}}
@@ -466,21 +465,21 @@ def render_sitemap(records):
     urls = [f"<url><loc>{SITE_BASE_URL}/</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>"]
     for r in records:
         slug = slugify(r["label"])
-        urls.append(f"<url><loc>{SITE_BASE_URL}/termos/{slug}.html</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>")
+        urls.append(f"<url><loc>{urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}</loc><lastmod>{BUILD_TIMESTAMP[:10]}</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>")
     return f'''<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{"".join(urls)}</urlset>'''
 
 def render_robots():
-    return f'''User-agent: *\nAllow: /\nSitemap: {SITE_BASE_URL}/sitemap.xml\nDisallow: /node_modules/\nDisallow: /.git/\n'''
+    return f'''User-agent: *\nAllow: /\nSitemap: {urljoin(SITE_BASE_URL, '/sitemap.xml')}\nDisallow: /node_modules/\nDisallow: /.git/\n'''
 
 def render_llms_txt(records):
     lines = [f"TITLE: Wikivendas", f"URL: {SITE_BASE_URL}", "DESCRIPTION: Enciclopédia brasileira de termos técnicos de vendas B2B, RevOps e inteligência comercial.", "", "TERMS:"]
     for r in records:
         slug = slugify(r["label"])
-        lines.append(f"- {r['label']} {SITE_BASE_URL}/termos/{slug}.html")
+        lines.append(f"- {r['label']} {urljoin(SITE_BASE_URL, f'/termos/{slug}.html')}")
     lines.append("")
     lines.append("INDEX:")
-    lines.append(f"- Glossário completo {SITE_BASE_URL}/glossario/")
-    lines.append(f"- Sobre {SITE_BASE_URL}/sobre/")
+    lines.append(f"- Glossário completo {urljoin(SITE_BASE_URL, '/glossario/')}")
+    lines.append(f"- Sobre {urljoin(SITE_BASE_URL, '/sobre/')}")
     return "\n".join(lines)
 
 def render_ai_consent():
