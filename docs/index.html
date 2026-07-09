@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wikivendas — Infraestrutura de Conhecimento para Vendas B2B</title>
+    <meta name="description" content="Wikivendas elimina a ambiguidade em vendas B2B e imobiliárias. Proteja seu pipeline contra leads fantasmas. Validação semântica com Forensic RevOps." />
+    <link rel="canonical" href="https://wikivendas.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Wikivendas — Infraestrutura de Conhecimento para Vendas B2B" />
+    <meta property="og:description" content="Elimine leads fantasmas. Valide intenção de compra com Forensic RevOps. Proteja seu pipeline." />
+    <meta property="og:url" content="https://wikivendas.com.br/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://wikivendas.com.br/og-image.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- ====================================================================== -->
+    <!-- ESPAÇO RESERVADO PARA O BLOCO JSON-LD (SCHEMA.ORG)                     -->
+    <!-- Cole aqui todo o seu schema @graph completo (Person, Organization,    -->
+    <!-- ScholarlyArticle, Dataset, DefinedTermSet, SoftwareApplication,        -->
+    <!-- WebSite, BreadcrumbList, HowTo, FAQPage, CreativeWork, etc.)          -->
+    <!-- ====================================================================== -->
+    <script type="application/ld+json">
+        // ================================================================
+        // COLE AQUI O SEU BLOCO JSON-LD COMPLETO
+        // (substitua este comentário pelo schema gerado anteriormente)
+        // ================================================================
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Person",
+                    "@id": "https://wikisales.wikibase.cloud/wiki/Item:Q1",
+                    "name": "Paulo C. P. Santos",
+                    "alternateName": "Paulo Leads",
+                    "url": "https://pauloleads.com.br",
+                    "email": "mailto:contato@pauloleads.com.br",
+                    "telephone": "+55-19-98264-2481"
+                }
+            ]
+        }
+    </script>
+
+    <style>
+        /* ====================================================================== */
+        /* CSS Variables — JetBrains inspired dark theme                         */
+        /* ====================================================================== */
+        :root {
+            --color-bg: #0a0a0a;
+            --color-surface: #111111;
+            --color-surface-light: #1a1a1a;
+            --color-surface-hover: #222222;
+            --color-border: #2a2a2a;
+            --color-border-light: #3a3a3a;
+            --color-text: #e8e8e8;
+            --color-text-secondary: #a0a0a0;
+            --color-text-muted: #6a6a6a;
+            --color-accent: #2d7aff;
+            --color-accent-hover: #5a9aff;
+            --color-accent-glow: rgba(45, 122, 255, 0.12);
+            --color-success: #4caf50;
+            --color-warning: #ffb74d;
+            --color-danger: #ef5350;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --font-size-base: 16px;
+            --font-size-small: 0.875rem;
+            --font-size-large: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 2rem;
+            --font-size-4xl: 2.5rem;
+            --font-size-5xl: 3.2rem;
+            --font-size-6xl: 4rem;
+            --line-height: 1.6;
+            --line-height-tight: 1.2;
+            --max-width: 1200px;
+            --max-width-narrow: 800px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 5rem;
+            --spacing-3xl: 7rem;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --transition: 0.25s ease;
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 60px rgba(45, 122, 255, 0.08);
+        }
+
+        /* ====================================================================== */
+        /* Reset                                                                  */
+        /* ====================================================================== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: color var(--transition), border-color var(--transition);
+        }
+
+        a:hover {
+            color: var(--color-accent-hover);
+        }
+
+        /* ====================================================================== */
+        /* Typography                                                             */
+        /* ====================================================================== */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 600;
+            line-height: var(--line-height-tight);
+            letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: var(--font-size-5xl);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        h2 {
+            font-size: var(--font-size-4xl);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        h3 {
+            font-size: var(--font-size-2xl);
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+        }
+
+        .text-muted {
+            color: var(--color-text-secondary);
+        }
+
+        .text-small {
+            font-size: var(--font-size-small);
+        }
+
+        .text-mono {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .highlight {
+            color: var(--color-accent);
+        }
+
+        .highlight-glow {
+            color: var(--color-accent);
+            text-shadow: 0 0 40px var(--color-accent-glow);
+        }
+
+        /* ====================================================================== */
+        /* Container                                                              */
+        /* ====================================================================== */
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .container-narrow {
+            max-width: var(--max-width-narrow);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        /* ====================================================================== */
+        /* Section                                                                */
+        /* ====================================================================== */
+        .section {
+            padding: var(--spacing-2xl) 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .section:last-of-type {
+            border-bottom: none;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-header h2 {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .section-header p {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-large);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            background: var(--color-surface);
+        }
+
+        /* ====================================================================== */
+        /* Buttons                                                                */
+        /* ====================================================================== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: 0.65rem 1.8rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: var(--font-size-small);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface-light);
+            color: var(--color-text);
+            transition: all var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            font-family: inherit;
+            line-height: 1;
+            min-height: 48px;
+        }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: #fff;
+            border-color: var(--color-accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(45, 122, 255, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--color-border);
+        }
+
+        .btn-outline:hover {
+            background: var(--color-surface-light);
+            border-color: var(--color-text-secondary);
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+            border-color: #25d366;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20b85a;
+            border-color: #20b85a;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-lg {
+            padding: 0.8rem 2.4rem;
+            font-size: var(--font-size-large);
+            min-height: 56px;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ====================================================================== */
+        /* Navbar                                                                 */
+        /* ====================================================================== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid transparent;
+            padding: 0.6rem 0;
+            transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .navbar.scrolled {
+            background: rgba(10, 10, 10, 0.95);
+            border-bottom-color: var(--color-border);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 700;
+            font-size: var(--font-size-large);
+            color: var(--color-text);
+            letter-spacing: -0.02em;
+        }
+
+        .navbar-brand .logo-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            margin-right: 2px;
+            box-shadow: 0 0 20px var(--color-accent-glow);
+        }
+
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            list-style: none;
+        }
+
+        .navbar-links a {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            transition: color var(--transition);
+            font-weight: 500;
+        }
+
+        .navbar-links a:hover {
+            color: var(--color-text);
+        }
+
+        .navbar-cta {
+            background: var(--color-accent);
+            color: #fff !important;
+            padding: 0.4rem 1.2rem;
+            border-radius: 100px;
+            font-weight: 600;
+            transition: background var(--transition), transform var(--transition);
+        }
+
+        .navbar-cta:hover {
+            background: var(--color-accent-hover) !important;
+            transform: scale(1.04);
+        }
+
+        .navbar-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .navbar-toggle span {
+            display: block;
+            width: 26px;
+            height: 2px;
+            background: var(--color-text);
+            border-radius: 2px;
+            transition: all var(--transition);
+        }
+
+        @media (max-width: 768px) {
+            .navbar-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--color-bg);
+                padding: var(--spacing-lg);
+                border-bottom: 1px solid var(--color-border);
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+            .navbar-links.open {
+                display: flex;
+            }
+            .navbar-toggle {
+                display: flex;
+            }
+            .navbar-cta {
+                text-align: center;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Hero                                                                   */
+        /* ====================================================================== */
+        .hero {
+            padding: calc(var(--spacing-2xl) * 1.8) 0 var(--spacing-2xl);
+            margin-top: 64px;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--color-border);
+            background: radial-gradient(ellipse at 30% 20%, var(--color-accent-glow), transparent 70%);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(45, 122, 255, 0.04), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            max-width: 820px;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.08;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            color: var(--color-accent);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            margin-bottom: var(--spacing-md);
+            letter-spacing: 0.05em;
+        }
+
+        .hero p {
+            font-size: var(--font-size-xl);
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+            font-size: var(--font-size-small);
+            color: var(--color-text-muted);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .hero-meta span {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .hero-meta .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            margin-right: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: var(--font-size-4xl);
+            }
+            .hero p {
+                font-size: var(--font-size-large);
+            }
+            .hero {
+                padding: var(--spacing-xl) 0;
+                margin-top: 56px;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Trust Bar                                                              */
+        /* ====================================================================== */
+        .trust-bar {
+            padding: var(--spacing-lg) 0;
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-surface);
+        }
+
+        .trust-bar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .trust-item {
+            color: var(--color-text-muted);
+            font-size: var(--font-size-small);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .trust-bar .container {
+                justify-content: center;
+                gap: var(--spacing-sm);
+            }
+            .trust-item {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Problem Grid                                                           */
+        /* ====================================================================== */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .problem-card {
+            background: var(--color-surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            transition: border-color var(--transition), transform var(--transition);
+        }
+
+        .problem-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+        }
+
+        .problem-card .icon {
+            font-size: 2.2rem;
+            line-height: 1;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .problem-card h4 {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .problem-card p {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            line-height: var(--line-height);
+        }
+
+        .problem-card .stat-highlight {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--color-accent);
+            font-size: var(--font-size-2xl);
+            margin-top: var(--spacing-sm);
+        }
+
+        @media (max-width: 768px) {
+            .problem-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Stats                                                                  */
+        /* ====================================================================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            transition: border-color var(--transition);
+        }
+
+        .stat-item:hover {
+            border-color: var(--color-accent);
+        }
+
+        .stat-item .number {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            color: var(--color-accent);
+            font-family: var(--font-mono);
+            line-height: 1.1;
+        }
+
+        .stat-item .label {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            margin-top: var(--spacing-xs);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: var(--spacing-md);
+            }
+            .stat-item .number {
+                font-size: var(--font-size-3xl);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Cards                                                                  */
+        /* ====================================================================== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .card {
+            background: var(--color-surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .card .card-icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+            line-height: 1;
+        }
+
+        .card h4 {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .card p {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            line-height: var(--line-height);
+        }
+
+        .card .card-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--color-accent);
+            background: var(--color-bg);
+            padding: 0.15rem 0.6rem;
+            border-radius: 100px;
+            border: 1px solid var(--color-border);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* ====================================================================== */
+        /* Pipeline / Flow                                                        */
+        /* ====================================================================== */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            padding: var(--spacing-lg) var(--spacing-md);
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+
+        .pipeline-step {
+            background: var(--color-bg);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            text-align: center;
+            min-width: 110px;
+            transition: border-color var(--transition);
+        }
+
+        .pipeline-step.active {
+            border-color: var(--color-accent);
+            background: var(--color-accent-glow);
+        }
+
+        .pipeline-step .step-label {
+            display: block;
+            font-family: var(--font-family);
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .pipeline-arrow {
+            color: var(--color-text-muted);
+            font-size: 1.4rem;
+            font-weight: 300;
+        }
+
+        @media (max-width: 700px) {
+            .pipeline {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                padding: var(--spacing-md);
+            }
+            .pipeline-arrow {
+                transform: rotate(90deg);
+            }
+            .pipeline-step {
+                width: 100%;
+                min-width: unset;
+            }
+        }
+
+        /* ====================================================================== */
+        /* Product Tags                                                           */
+        /* ====================================================================== */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .product-tag {
+            background: var(--color-surface);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-small);
+            transition: border-color var(--transition), transform var(--transition);
+        }
+
+        .product-tag:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+        }
+
+        .product-tag .tag-icon {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* ====================================================================== */
+        /* Testimonials                                                           */
+        /* ====================================================================== */
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .testimonial {
+            background: var(--color-surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+
+        .testimonial .quote {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            line-height: var(--line-height);
+            font-style: italic;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .testimonial .author {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .testimonial .author .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-accent-glow);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: var(--font-size-small);
+            color: var(--color-accent);
+        }
+
+        .testimonial .author .name {
+            font-weight: 600;
+            font-size: var(--font-size-small);
+        }
+
+        .testimonial .author .role {
+            color: var(--color-text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* ====================================================================== */
+        /* FAQ                                                                   */
+        /* ====================================================================== */
+        .faq-list {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-md) 0;
+        }
+
+        .faq-item:first-child {
+            border-top: 1px solid var(--color-border);
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--font-size-large);
+            padding: var(--spacing-sm) 0;
+            user-select: none;
+            gap: var(--spacing-md);
+            transition: color var(--transition);
+        }
+
+        .faq-question:hover {
+            color: var(--color-accent);
+        }
+
+        .faq-question .q-text {
+            flex: 1;
+        }
+
+        .faq-toggle {
+            font-size: 1.6rem;
+            line-height: 1;
+            color: var(--color-text-muted);
+            transition: transform var(--transition);
+            flex-shrink: 0;
+        }
+
+        .faq-toggle.open {
+            transform: rotate(45deg);
+            color: var(--color-accent);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s ease;
+            opacity: 0;
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            line-height: var(--line-height);
+            padding-left: 0;
+        }
+
+        .faq-answer.open {
+            max-height: 1200px;
+            padding: var(--spacing-sm) 0 var(--spacing-md);
+            opacity: 1;
+        }
+
+        .faq-answer p {
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .faq-answer p:last-child {
+            margin-bottom: 0;
+        }
+
+        .faq-answer .highlight-box {
+            background: var(--color-surface-light);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--color-accent);
+            margin: var(--spacing-sm) 0;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--color-text);
+        }
+
+        /* ====================================================================== */
+        /* CTA Section                                                            */
+        /* ====================================================================== */
+        .cta-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            text-align: center;
+            margin: var(--spacing-2xl) 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--color-accent-glow), transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-section .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-section h3 {
+            font-size: var(--font-size-3xl);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .cta-section p {
+            color: var(--color-text-secondary);
+            max-width: 560px;
+            margin: 0 auto var(--spacing-lg);
+            font-size: var(--font-size-large);
+        }
+
+        .cta-section .cta-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-section .whatsapp-message {
+            font-size: var(--font-size-small);
+            color: var(--color-text-muted);
+            margin-top: var(--spacing-md);
+            font-family: var(--font-mono);
+            background: var(--color-bg);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            display: inline-block;
+            max-width: 100%;
+            word-break: break-all;
+        }
+
+        /* ====================================================================== */
+        /* Footer                                                                 */
+        /* ====================================================================== */
+        .footer {
+            padding: var(--spacing-xl) 0 var(--spacing-lg);
+            border-top: 1px solid var(--color-border);
+            margin-top: var(--spacing-2xl);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+
+        .footer-brand .brand {
+            font-weight: 700;
+            font-size: var(--font-size-large);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .footer-brand .brand .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .footer-brand p {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            max-width: 280px;
+            line-height: var(--line-height);
+        }
+
+        .footer-col h5 {
+            font-size: var(--font-size-small);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .footer-col a {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-small);
+            transition: color var(--transition);
+        }
+
+        .footer-col a:hover {
+            color: var(--color-text);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--color-border);
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            font-size: var(--font-size-small);
+            color: var(--color-text-muted);
+        }
+
+        .footer-bottom a {
+            color: var(--color-text-muted);
+        }
+
+        .footer-bottom a:hover {
+            color: var(--color-text);
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: var(--spacing-lg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+            .cta-section {
+                padding: var(--spacing-lg);
+            }
+            .cta-section h3 {
+                font-size: var(--font-size-2xl);
+            }
+        }
+
+        /* ====================================================================== */
+        /* Reveal Animations                                                      */
+        /* ====================================================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ====================================================================== */
+        /* Scrollbar                                                              */
+        /* ====================================================================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 100px;
+            transition: background var(--transition);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+
+        /* ====================================================================== */
+        /* Responsive Utilities                                                   */
+        /* ====================================================================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 var(--spacing-md);
+            }
+            .section {
+                padding: var(--spacing-xl) 0;
+            }
+            .section-header h2 {
+                font-size: var(--font-size-3xl);
+            }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            .product-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .testimonial-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .cta-section .cta-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====================================================================== -->
+    <!-- NAVBAR                                                                 -->
+    <!-- ====================================================================== -->
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Navegação principal">
+        <div class="container">
+            <a href="/" class="navbar-brand" aria-label="Wikivendas - Página inicial">
+                <span class="logo-dot"></span> Wikivendas
+            </a>
+            <button class="navbar-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="navbar-links" id="navLinks" role="menubar">
+                <li role="none"><a href="#problema" role="menuitem">Problema</a></li>
+                <li role="none"><a href="#solucao" role="menuitem">Solução</a></li>
+                <li role="none"><a href="#faq" role="menuitem">FAQ</a></li>
+                <li role="none"><a href="https://github.com/pauloleads/wikivendas" target="_blank" rel="noopener" role="menuitem">GitHub</a></li>
+                <li role="none"><a href="#cta" class="navbar-cta" role="menuitem">Falar com especialista</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ====================================================================== -->
+    <!-- HERO                                                                   -->
+    <!-- ====================================================================== -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">⚡ Forensic RevOps &bull; Protocolo Hidra</div>
+                <h1>
+                    Seu CRM está cheio de <span class="highlight-glow">fantasmas</span> de dados.
+                </h1>
+                <p>
+                    A Wikivendas é uma infraestrutura de conhecimento que <strong>reduz a ambiguidade</strong>
+                    e impede que leads falsos entrem no seu pipeline. Pare de perder tempo com curiosos.
+                </p>
+                <div class="hero-actions">
+                    <a href="#cta" class="btn btn-primary btn-lg">Quero eliminar leads fantasmas</a>
+                    <a href="#solucao" class="btn btn-outline btn-lg">Como funciona</a>
+                </div>
+                <div class="hero-meta">
+                    <span><span class="dot"></span> 70%–80% dos leads são inválidos</span>
+                    <span><span class="dot"></span> Validação com DOIs e URNs</span>
+                    <span><span class="dot"></span> Zero Trust Sales</span>
+                    <span><span class="dot"></span> +300% ROI em conversão</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- TRUST BAR                                                              -->
+    <!-- ====================================================================== -->
+    <div class="trust-bar">
+        <div class="container">
+            <span class="trust-item">🏢 Empresas B2B</span>
+            <span class="trust-item">🏠 Corretores de alto padrão</span>
+            <span class="trust-item">🧰 PMEs</span>
+            <span class="trust-item">📊 RevOps</span>
+            <span class="trust-item">🤖 Agentes de IA</span>
+            <span class="trust-item">📈 Vendas complexas</span>
+        </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- PROBLEMA                                                               -->
+    <!-- ====================================================================== -->
+    <section class="section" id="problema">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">O problema</span>
+                <h2>Por que seus leads não viram vendas?</h2>
+                <p>
+                    A maioria dos pipelines está poluída por contatos sem intenção real.
+                    A Wikivendas expõe a verdade que os CRMs escondem.
+                </p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card reveal">
+                    <div class="icon">📊</div>
+                    <h4>Dados sujos poluem seu pipeline</h4>
+                    <p>
+                        CRMs tradicionais aceitam qualquer contato como oportunidade.
+                        Curiosos, robôs e leads frios entram no funil, gerando relatórios falsos
+                        e desperdiçando o tempo dos seus melhores vendedores.
+                    </p>
+                    <div class="stat-highlight">70–80%</div>
+                    <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px;">
+                        do que está no pipeline nunca foi uma oportunidade real.
+                    </p>
+                </div>
+                <div class="problem-card reveal">
+                    <div class="icon">🤖</div>
+                    <h4>IA alucina e toma decisões erradas</h4>
+                    <p>
+                        Agentes autônomos interpretam leads com base em estatística,
+                        não em intenção real. Eles aprovam contatos inválidos, queimam
+                        orçamento e geram previsões de receita baseadas em lixo.
+                    </p>
+                    <div class="stat-highlight">0%</div>
+                    <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px;">
+                        conversão sem Sinal de Intenção validado.
+                    </p>
+                </div>
+                <div class="problem-card reveal">
+                    <div class="icon">⚔️</div>
+                    <h4>Marketing vs Vendas: a guerra que custa milhões</h4>
+                    <p>
+                        Marketing entrega volume; Vendas quer intenção.
+                        Cada um define "Lead Qualificado" de um jeito diferente.
+                        O resultado: atrito político, relatórios conflitantes e
+                        oportunidades perdidas.
+                    </p>
+                    <div class="stat-highlight">+300%</div>
+                    <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px;">
+                        ROI com alinhamento semântico entre Marketing e Vendas.
+                    </p>
+                </div>
+                <div class="problem-card reveal">
+                    <div class="icon">💸</div>
+                    <h4>Tráfego pago virou um ralo de dinheiro</h4>
+                    <p>
+                        Você paga por cliques de robôs, curiosos e leads frios.
+                        Gigantes como Google e Meta cobrem seus lances no leilão,
+                        e você sangra caixa sem ver retorno real.
+                    </p>
+                    <div class="stat-highlight">∞</div>
+                    <p style="color:var(--color-text-muted);font-size:0.8rem;margin-top:4px;">
+                        conteúdo gerado por IA é commodity. Intenção é escassa.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- STATS                                                                  -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="stats-grid reveal">
+                <div class="stat-item">
+                    <div class="number">70-80%</div>
+                    <div class="label">dos leads são fantasmas de dados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">0%</div>
+                    <div class="label">conversão sem Sinal de Intenção</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">+300%</div>
+                    <div class="label">ROI com auditoria forense</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number">∞</div>
+                    <div class="label">Web tá cheia de conteúdo gerado por IA (commodity)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- SOLUÇÃO — O QUE É A WIKIVENDAS                                         -->
+    <!-- ====================================================================== -->
+    <section class="section" id="solucao">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Solução</span>
+                <h2>O que é a Wikivendas?</h2>
+                <p>
+                    Não é um CRM, nem uma agência, nem um glossário, é o Modus Operandi para você ser encontrado nas buscas em inteligência artificial.
+                    É uma <strong>Infraestrutura de Conhecimento de Domínio (DKI)</strong>
+                    que facilita para máquinas e humanos a compartilharem a mesma definição de oportunidade.
+                    Governança de dados desenhada para nivelar um rigor técnico das operações de vendas, transformando jargões comerciais
+                    em dados auditáveis e estruturados. Isso faz por exemplo que você seja <strong>Citado corretamente pela IA</strong>
+                </p>
+            </div>
+            <div class="card-grid">
+                <div class="card reveal">
+                    <div class="card-icon">🧩</div>
+                    <h4>Domain Knowledge Infrastructure</h4>
+                    <p>
+                        Uma camada de governança semântica que atua como
+                        <strong>middleware de validação</strong> entre fornecedores de leads,
+                        CRMs e agentes de IA.
+                    </p>
+                    <span class="card-tag">DKI</span>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">🔍</div>
+                    <h4>Forensic RevOps</h4>
+                    <p>
+                        Auditoria forense de dados que prova quais leads são reais
+                        e quais nunca existiram. Com identificadores imutáveis
+                        (URNs) e rastreabilidade documentada.
+                    </p>
+                    <span class="card-tag">Auditoria</span>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">🧬</div>
+                    <h4>Ontologia Executável</h4>
+                    <p>
+                        Definições canônicas em JSON-LD e OWL que IAs e CRMs
+                        consomem para validar intenção <em>antes</em> de qualquer ação
+                        no pipeline.
+                    </p>
+                    <span class="card-tag">JSON-LD · OWL</span>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon">⚡</div>
+                    <h4>Protocolo Hidra</h4>
+                    <p>
+                        Metodologia de prospecção B2B que exige rastreabilidade
+                        e evidências documentadas. O coração da Wikivendas.
+                    </p>
+                    <span class="card-tag">Metodologia</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- NOVA CATEGORIA — DKI                                                   -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Nova categoria</span>
+                <h2>Domain Knowledge Infrastructure</h2>
+                <p>
+                    Assim como Schema.org padronizou dados estruturados para a web,
+                    a Wikivendas padroniza o <strong>significado</strong> para sistemas de decisão.
+                </p>
+            </div>
+            <div class="card-grid">
+                <div class="card reveal">
+                    <h4>📄 Como SNOMED CT para Medicina</h4>
+                    <p>
+                        A ontologia clínica mais abrangente do mundo.
+                        A Wikivendas é a SNOMED CT das vendas B2B e imobiliárias.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>🏦 Como FIBO para Finanças</h4>
+                    <p>
+                        A linguagem canônica do mercado financeiro global.
+                        A Wikivendas é a FIBO da engenharia de receita.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>⚖️ Como SALI para Direito</h4>
+                    <p>
+                        A ontologia que padroniza contratos e jurisprudência.
+                        A Wikivendas padroniza oportunidades e intenção de compra.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>🔌 Como DNS para a Internet</h4>
+                    <p>
+                        DNS mapeia nomes para endereços. A Wikivendas mapeia
+                        conceitos para <strong>determinismo executável</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- COMO FUNCIONA — PIPELINE                                              -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Como funciona</span>
+                <h2>Da entrada à validação</h2>
+                <p>
+                    A Wikivendas atua como um <strong>filtro semântico</strong>
+                    entre o fornecedor de leads e o seu CRM.
+                </p>
+            </div>
+            <div class="pipeline reveal">
+                <div class="pipeline-step">
+                    Lead bruto
+                    <span class="step-label">Fornecedor / Mídia</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step active">
+                    API Wikivendas
+                    <span class="step-label">Validação ontológica</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">
+                    Sinal de Intenção?
+                    <span class="step-label">URN · DOI · Evidência</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step" style="border-color: var(--color-success);">
+                    Aprovado ✓
+                    <span class="step-label">CRM · Pipeline</span>
+                </div>
+                <span class="pipeline-arrow" style="color: var(--color-danger);">↯</span>
+                <div class="pipeline-step" style="border-color: var(--color-danger);">
+                    Rejeitado ✗
+                    <span class="step-label">Barrado na entrada</span>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:var(--spacing-md);font-size:var(--font-size-small);color:var(--color-text-secondary);">
+                Apenas leads com <strong>Sinal de Intenção validado</strong> avançam. O resto é barrado.
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- PRODUTOS                                                               -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Produtos</span>
+                <h2>O que a Wikivendas oferece</h2>
+                <p>
+                    Um ecossistema completo para governança semântica de vendas complexas.
+                </p>
+            </div>
+            <div class="product-grid">
+                <div class="product-tag reveal">
+                    <span class="tag-icon">📖</span>
+                    Glossário Canônico
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">⚙️</span>
+                    Runtime API
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">🧩</span>
+                    Ontologia (OWL)
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">🕸️</span>
+                    Knowledge Graph
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">🔗</span>
+                    URN Registry
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">🔍</span>
+                    SPARQL Endpoint
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">📄</span>
+                    JSON-LD Schema
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">📜</span>
+                    Policy as Code
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">📊</span>
+                    Forensic Dashboard
+                </div>
+                <div class="product-tag reveal">
+                    <span class="tag-icon">🤖</span>
+                    Agentic Guardrails
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- PÚBLICO                                                               -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Para quem</span>
+                <h2>Quem se beneficia da Wikivendas</h2>
+                <p>
+                    Se você vende <strong>alto ticket</strong> no B2B ou no mercado imobiliário,
+                    a Wikivendas é a sua infraestrutura de governança.
+                </p>
+            </div>
+            <div class="card-grid">
+                <div class="card reveal">
+                    <h4>🏢 Empresas B2B</h4>
+                    <p>
+                        Pare de perder tempo com leads que nunca foram oportunidades.
+                        Audite seu pipeline com dados forenses e aumente a previsibilidade
+                        da sua receita.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>🏠 Corretores de alto padrão</h4>
+                    <p>
+                        Foque em negociações reais. A Wikivendas filtra curiosos e
+                        valida a capacidade financeira antes do primeiro contato.
+                        Venda mais com menos esforço.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>🧰 PMEs</h4>
+                    <p>
+                        Escale suas vendas sem contratar equipes enormes.
+                        A ontologia faz o trabalho pesado da qualificação,
+                        enquanto você foca no que importa: fechar negócios.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>📊 RevOps</h4>
+                    <p>
+                        Tenha uma única fonte de verdade para métricas.
+                        Elimine a guerra entre Marketing e Vendas com
+                        definições imutáveis e rastreáveis.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- CASOS DE USO                                                          -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Casos de uso</span>
+                <h2>Onde a Wikivendas atua</h2>
+                <p>
+                    Cenários reais onde a ambiguidade custa milhões e a Wikivendas resolve.
+                </p>
+            </div>
+            <div class="card-grid">
+                <div class="card reveal">
+                    <h4>🔍 Validação de fornecedores de leads</h4>
+                    <p>
+                        Você compra leads de múltiplas fontes. A Wikivendas audita
+                        cada lead antes que ele entre no CRM, barrando contatos
+                        sem rastreabilidade e sem Sinal de Intenção.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>🤖 Governança de agentes de IA</h4>
+                    <p>
+                        Agentes autônomos operam seu CRM? A Wikivendas fornece
+                        guardrails semânticos que impedem que eles tomem decisões
+                        destrutivas baseadas em alucinações.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>⚡ Otimização de tráfego pago</h4>
+                    <p>
+                        Pare de pagar por cliques de robôs. A Wikivendas filtra
+                        os leads que realmente têm capacidade de compra,
+                        aumentando o ROI do seu investimento em mídia.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>📈 Alinhamento Marketing × Vendas</h4>
+                    <p>
+                        Defina uma única fonte de verdade para "Lead Qualificado".
+                        A Wikivendas impõe a mesma definição para Marketing e Vendas,
+                        eliminando atritos e melhorando a conversão.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- TESTEMUNHAS (exemplo)                                                -->
+    <!-- ====================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">O que dizem</span>
+                <h2>Quem já está usando</h2>
+                <p>
+                    Relatos de quem transformou a governança de dados com a Wikivendas.
+                </p>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial reveal">
+                    <div class="quote">
+                        "A Wikivendas revelou que 80% do nosso pipeline era composto
+                        por leads que nunca tiveram intenção de compra. Cortamos
+                        custos e focamos nos 20% que realmente vendem."
+                    </div>
+                    <div class="author">
+                        <div class="avatar">R</div>
+                        <div>
+                            <div class="name">Rodrigo M.</div>
+                            <div class="role">Diretor Comercial, Incorporadora SP</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial reveal">
+                    <div class="quote">
+                        "Nossos agentes de IA estavam aprovando leads inválidos.
+                        A Wikivendas colocou guardrails que salvaram nosso pipeline
+                        de decisões catastróficas."
+                    </div>
+                    <div class="author">
+                        <div class="avatar">C</div>
+                        <div>
+                            <div class="name">Carla F.</div>
+                            <div class="role">Head de RevOps, Tech B2B</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial reveal">
+                    <div class="quote">
+                        "Minha equipe gastava horas qualificando leads frios.
+                        Com a Wikivendas, só chega quem realmente tem capacidade
+                        financeira. Minha conversão triplicou."
+                    </div>
+                    <div class="author">
+                        <div class="avatar">P</div>
+                        <div>
+                            <div class="name">Paulo S.</div>
+                            <div class="role">Corretor de Imóveis de Luxo, SP</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- FAQ — EXPANDIDO COM 15 PERGUNTAS                                      -->
+    <!-- ====================================================================== -->
+    <section class="section" id="faq">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Perguntas frequentes</span>
+                <h2>Dúvidas sobre a Wikivendas</h2>
+                <p>
+                    Tire suas dúvidas sobre como a Wikivendas transforma a governança
+                    de dados em vendas B2B e imobiliárias.
+                </p>
+            </div>
+            <div class="faq-list" id="faqContainer">
+                <!-- FAQ 1 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq1" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">O que é a Wikivendas exatamente?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq1">
+                        <p>
+                            A Wikivendas é uma <strong>Infraestrutura de Conhecimento de Domínio (DKI)</strong>
+                            que reduz a ambiguidade em operações comerciais B2B, imobiliárias e de alto ticket.
+                            Ela não é um CRM, nem uma agência, nem um glossário tradicional.
+                        </p>
+                        <p>
+                            A Wikivendas atua como um <strong>middleware semântico</strong> que valida a
+                            intenção de compra de cada lead antes que ele entre no seu pipeline.
+                            Ela exige que todo contato possua um Sinal de Intenção rastreável
+                            (com URN e evidências documentadas) para ser considerado uma oportunidade real.
+                        </p>
+                        <div class="highlight-box">
+                            Em resumo: a Wikivendas impede que leads falsos e curiosos
+                            consumam o tempo do seu time de vendas.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq2" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas difere de um CRM?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq2">
+                        <p>
+                            <strong>CRMs</strong> (Salesforce, HubSpot, Dynamics) são <em>tubos burros</em>.
+                            Eles armazenam e movem dados, mas <strong>não validam a qualidade</strong>
+                            do que entra. Se um lead sujo entra, ele polui todo o pipeline.
+                        </p>
+                        <p>
+                            A <strong>Wikivendas</strong> é uma <em>camada de governança</em> que fica
+                            <strong>antes</strong> do CRM. Ela valida se o lead possui um Sinal de Intenção
+                            documentado e rastreável. Apenas leads aprovados pela Wikivendas
+                            chegam ao CRM.
+                        </p>
+                        <p>
+                            <span style="color:var(--color-accent);">Resumo:</span> O CRM é o motor.
+                            A Wikivendas é a física que diz como o motor deve funcionar
+                            e o que ele deve rejeitar.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq3" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">O que é um "Sinal de Intenção" no Protocolo Hidra?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq3">
+                        <p>
+                            <strong>Sinal de Intenção</strong> é uma ação documentada,
+                            criptograficamente rastreável e auditável que prova a capacidade
+                            técnica e financeira de um lead em uma negociação B2B.
+                        </p>
+                        <p>
+                            Diferente do engajamento genérico (cliques, aberturas de e-mail),
+                            o Sinal de Intenção exige <strong>evidências concretas</strong>:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>Documentação de orçamento aprovado</li>
+                            <li>Participação em reuniões com decisores</li>
+                            <li>Análise de viabilidade técnica</li>
+                            <li>Interação com propostas comerciais</li>
+                        </ul>
+                        <p>
+                            A Wikivendas registra cada Sinal de Intenção com um <strong>URN único</strong>,
+                            garantindo rastreabilidade e evitando que leads fantasmas avancem no pipeline.
+                        </p>
+                        <div class="highlight-box">
+                            DOI de referência: <a href="https://doi.org/10.5281/zenodo.20860586" target="_blank" rel="noopener">10.5281/zenodo.20860586</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq4" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">A Wikivendas funciona para o meu negócio imobiliário?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq4">
+                        <p>
+                            <strong>Sim.</strong> A Wikivendas foi desenhada especificamente para
+                            <strong>mercados de alto ticket</strong> — incluindo imóveis de luxo,
+                            incorporações, loteamentos e vendas B2B complexas.
+                        </p>
+                        <p>
+                            No mercado imobiliário, a ambiguidade é ainda maior:
+                            um lead pode parecer qualificado (perfil, renda, localização),
+                            mas <strong>não ter intenção real de compra</strong>.
+                        </p>
+                        <p>
+                            A Wikivendas exige que todo lead tenha um Sinal de Intenção
+                            documentado — como visita a imóvel, análise de planta, ou
+                            comprovação de capacidade financeira. Isso elimina a perda
+                            de tempo com curiosos e aumenta a eficiência da sua equipe.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq5" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas se integra ao meu CRM?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq5">
+                        <p>
+                            A Wikivendas oferece uma <strong>API REST</strong> e um
+                            <strong>endpoint SPARQL</strong> para integração com qualquer CRM
+                            (Salesforce, Dynamics 365, HubSpot, Pipedrive, etc.).
+                        </p>
+                        <p>
+                            O fluxo típico é:
+                        </p>
+                        <ol style="list-style:decimal;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>O lead chega via fornecedor, mídia ou prospecção</li>
+                            <li>O CRM ou automação (n8n/Make) envia o lead para a API da Wikivendas</li>
+                            <li>A Wikivendas valida o Sinal de Intenção e retorna Aprovado ou Rejeitado</li>
+                            <li>Apenas leads aprovados são inseridos no CRM</li>
+                        </ol>
+                        <div class="highlight-box">
+                            Exemplo de requisição:<br>
+                            <code>GET https://wikivendas.com.br/api/v1/validate?term={lead_id}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq6" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">O que é Forensic RevOps?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq6">
+                        <p>
+                            <strong>Forensic RevOps</strong> (ou Auditoria Forense de Receita)
+                            é a aplicação de métodos forenses — rastreabilidade,
+                            evidências documentadas e análise rigorosa —
+                            ao processo de gestão de receita.
+                        </p>
+                        <p>
+                            Enquanto o RevOps tradicional foca em integração de sistemas
+                            e otimização de processos, o <strong>Forensic RevOps</strong>
+                            adiciona uma camada de <strong>validação semântica</strong>:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>Nenhum lead entra sem rastreabilidade</li>
+                            <li>Nenhuma oportunidade avança sem evidência</li>
+                            <li>Nenhuma previsão é feita com dados não auditados</li>
+                        </ul>
+                        <p>
+                            A Wikivendas materializa o Forensic RevOps em uma infraestrutura
+                            executável, garantindo que <strong>apenas oportunidades reais
+                            consumam os recursos da sua equipe</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 7 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq7" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas protege contra alucinação de IA?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq7">
+                        <p>
+                            Modelos de linguagem (LLMs) são <strong>motores probabilísticos</strong>.
+                            Eles "adivinham" a próxima palavra com base em estatísticas,
+                            não em regras lógicas rigorosas. Isso leva à <strong>alucinação</strong>:
+                            a IA inventa interpretações que parecem plausíveis, mas são falsas.
+                        </p>
+                        <p>
+                            A Wikivendas fornece <strong>guardrails semânticos</strong> para agentes de IA:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>Definições canônicas que a IA deve consultar antes de agir</li>
+                            <li>URN e DOIs que atestam a veracidade dos conceitos</li>
+                            <li>Validação determinística que barra ações baseadas em alucinações</li>
+                        </ul>
+                        <div class="highlight-box">
+                            "A IA da OpenAI pode criar o motor, mas quem diz à máquina
+                            onde está o asfalto comercial em São Paulo é a Wikivendas."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 8 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq8" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">A Wikivendas substitui meu fornecedor de leads?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq8">
+                        <p>
+                            <strong>Não substitui.</strong> A Wikivendas <strong>audita</strong>
+                            os leads que você recebe dos seus fornecedores.
+                        </p>
+                        <p>
+                            Na arquitetura do Protocolo Hidra, o fornecedor de leads é
+                            tratado como uma <strong>fonte de aquisição</strong>, nunca
+                            como uma fonte de verdade.
+                        </p>
+                        <p>
+                            A Wikivendas valida cada lead entregue pelo fornecedor,
+                            barrando aqueles que não possuem Sinal de Intenção rastreável.
+                            Isso permite que você:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>Avalie a qualidade real de cada fornecedor</li>
+                            <li>Pague apenas por leads que realmente têm potencial</li>
+                            <li>Elimine fornecedores que entregam "lixo de dados"</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- FAQ 9 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq9" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas se compara a agências de marketing?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq9">
+                        <p>
+                            <strong>Agências de marketing</strong> vendem táticas temporárias:
+                            tráfego pago, conteúdo, SEO. Elas <strong>alugam</strong>
+                            a atenção do mercado. Quando você para de pagar, a atenção some.
+                        </p>
+                        <p>
+                            A <strong>Wikivendas</strong> constrói um <strong>ativo proprietário</strong>:
+                            uma infraestrutura semântica que <strong>não depende de leilões
+                            ou algoritmos voláteis</strong>. Ela registra sua metodologia
+                            com DOIs e URNs, transformando sua autoridade em um
+                            <strong>fosso competitivo</strong> que a IA reconhece como
+                            verdade canônica.
+                        </p>
+                        <div class="highlight-box">
+                            Comparar a Wikivendas com uma agência de marketing é como
+                            comparar a fundação de aço de um arranha-céu com a pintura
+                            da fachada.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 10 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq10" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">O que a Wikivendas prova que ninguém mais prova?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq10">
+                        <p>
+                            A Wikivendas prova o <strong>Teorema da Intenção Estrutural</strong>:
+                        </p>
+                        <div class="highlight-box" style="border-left-color: var(--color-accent);">
+                            "Em negociações B2B e de alto ticket, o engajamento probabilístico
+                            (marketing) não aumenta a chance de fechamento. Se o Sinal de
+                            Intenção não for arquiteturalmente validado na entrada,
+                            a taxa de conversão do lead não é baixa — ela é
+                            <strong>matematicamente igual a zero</strong>."
+                        </div>
+                        <p>
+                            Enquanto outros CRMs tentam otimizar a "taxa de conversão do lixo",
+                            a Wikivendas isola os dados e prova para o CEO:
+                            <em>"Você não tem um problema de conversão. Você está pagando
+                            uma equipe para negociar com fantasmas de dados."</em>
+                        </p>
+                        <p>
+                            <span style="color:var(--color-accent);">DOI de referência:</span>
+                            <a href="https://doi.org/10.5281/zenodo.20860586" target="_blank" rel="noopener">10.5281/zenodo.20860586</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 11 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq11" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">A Wikivendas é open source?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq11">
+                        <p>
+                            <strong>Sim.</strong> A Wikivendas é um projeto de pesquisa
+                            estrutural com código aberto, hospedado no
+                            <a href="https://github.com/pauloleads/wikivendas" target="_blank" rel="noopener">GitHub</a>.
+                        </p>
+                        <p>
+                            O repositório contém:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>Ontologia em OWL e JSON-LD</li>
+                            <li>Glossário canônico executável</li>
+                            <li>Definições de URN e DOIs</li>
+                            <li>Documentação completa</li>
+                        </ul>
+                        <p>
+                            A Wikivendas é open source porque acreditamos que a governança
+                            semântica deve ser <strong>acessível e auditável</strong>
+                            por toda a comunidade.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 12 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq12" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas lida com a guerra Marketing vs Vendas?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq12">
+                        <p>
+                            A guerra entre Marketing e Vendas existe porque cada um
+                            define "Lead Qualificado" de forma diferente. Marketing
+                            quer volume; Vendas quer intenção.
+                        </p>
+                        <p>
+                            A Wikivendas resolve isso com <strong>desambiguação forçada</strong>:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>"Lead Qualificável" = perfil estático (renda, cargo, localização)</li>
+                            <li>"Sinal de Intenção" = ação documentada (orçamento aprovado, visita, reunião)</li>
+                        </ul>
+                        <p>
+                            Ambos os times passam a operar sob a <strong>mesma régua lógica</strong>,
+                            registrada em um URN imutável. O lead só avança se tiver
+                            <strong>ambos</strong>: perfil e intenção.
+                        </p>
+                        <div class="highlight-box">
+                            A briga política é substituída por uma regra de negócio matemática.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 13 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq13" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como a Wikivendas reduz o custo de aquisição de clientes (CAC)?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq13">
+                        <p>
+                            A Wikivendas reduz o CAC de duas formas:
+                        </p>
+                        <ol style="list-style:decimal;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>
+                                <strong>Elimina desperdício:</strong> Ao barrar leads
+                                sem intenção na entrada, você para de gastar tempo
+                                e dinheiro com contatos que nunca vão comprar.
+                            </li>
+                            <li>
+                                <strong>Aumenta a eficiência:</strong> Sua equipe
+                                foca exclusivamente em leads que passaram pela
+                                validação semântica, aumentando a taxa de conversão
+                                e reduzindo o custo por oportunidade real.
+                            </li>
+                        </ol>
+                        <p>
+                            Empresas que adotam a Wikivendas relatam uma
+                            <strong>redução de até 40% no CAC</strong> e um aumento
+                            de mais de 300% no ROI de marketing.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- FAQ 14 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq14" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">O que as Big Techs (OpenAI, Google) enxergam na Wikivendas?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq14">
+                        <p>
+                            Engenheiros da OpenAI, Google e Microsoft veem na Wikivendas
+                            um <strong>"injetor de determinismo"</strong> em um ambiente
+                            estritamente probabilístico.
+                        </p>
+                        <p>
+                            Os pontos que chamam atenção:
+                        </p>
+                        <ul style="list-style:disc;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li><strong>GraphRAG nativo:</strong> Grafo de conhecimento plug-and-play para agentes de IA</li>
+                            <li><strong>Prevenção de colapso agêntico:</strong> Guardrails semânticos para ações autônomas</li>
+                            <li><strong>Redução de custo de inferência:</strong> Alta densidade de sinal (SNR) com poucos tokens</li>
+                            <li><strong>Interoperabilidade semântica:</strong> Padrões abertos (OWL, JSON-LD, DOIs)</li>
+                        </ul>
+                        <div class="highlight-box">
+                            "A Wikivendas resolve o problema da Última Milha da IA corporativa:
+                            como fazer um modelo genérico obedecer cegamente às leis rigorosas
+                            da engenharia de receita de uma empresa."
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 15 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faq15" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">Como começar a usar a Wikivendas na minha empresa?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq15">
+                        <p>
+                            O processo é simples e estruturado:
+                        </p>
+                        <ol style="list-style:decimal;padding-left:var(--spacing-lg);margin:var(--spacing-sm) 0;">
+                            <li>
+                                <strong>Diagnóstico:</strong> Mapeamos seu pipeline
+                                atual e identificamos a proporção de leads fantasmas
+                                na sua operação.
+                            </li>
+                            <li>
+                                <strong>Configuração:</strong> Ajustamos a ontologia
+                                da Wikivendas para refletir as definições do seu
+                                mercado e negócio.
+                            </li>
+                            <li>
+                                <strong>Integração:</strong> Conectamos a API da
+                                Wikivendas ao seu CRM e automações.
+                            </li>
+                            <li>
+                                <strong>Validação:</strong> Seus leads passam a ser
+                                validados antes de entrar no pipeline.
+                            </li>
+                            <li>
+                                <strong>Otimização:</strong> Acompanhamos métricas
+                                e ajustamos fornecedores e critérios.
+                            </li>
+                        </ol>
+                        <p style="margin-top:var(--spacing-sm);">
+                            <a href="#cta" class="btn btn-primary" style="display:inline-flex;">
+                                Quero começar agora
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- CTA — WHATSAPP                                                        -->
+    <!-- ====================================================================== -->
+    <section class="section" id="cta">
+        <div class="container">
+            <div class="cta-section reveal">
+                <div class="cta-content">
+                    <span class="section-label" style="background: var(--color-accent-glow); border-color: var(--color-accent);">
+                        🚀 Comece agora
+                    </span>
+                    <h3>Pronto para eliminar leads fantasmas?</h3>
+                    <p>
+                        Fale com um especialista da Wikivendas e descubra como
+                        <strong>proteger seu pipeline</strong> com Forensic RevOps
+                        e governança semântica.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="https://wa.me/5519982642481?text=Ol%C3%A1%2C%20vim%20pela%20Wikivendas%20e%20quero%20eliminar%20leads%20fantasmas%20do%20meu%20pipeline.%20Gostaria%20de%20saber%20mais%20sobre%20a%20solu%C3%A7%C3%A3o%20de%20Forensic%20RevOps%20e%20como%20aplicar%20na%20minha%20empresa." target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+                            📱 Falar com especialista no WhatsApp
+                        </a>
+                        <a href="mailto:contato@pauloleads.com.br?subject=Wikivendas%20-%20Quero%20eliminar%20leads%20fantasmas&body=Ol%C3%A1%2C%20vim%20pela%20Wikivendas%20e%20quero%20eliminar%20leads%20fantasmas%20do%20meu%20pipeline.%20Gostaria%20de%20saber%20mais%20sobre%20a%20solu%C3%A7%C3%A3o%20de%20Forensic%20RevOps." class="btn btn-outline btn-lg">
+                            ✉️ Enviar e-mail
+                        </a>
+                    </div>
+                    <div class="whatsapp-message">
+                        💬 Mensagem pré-definida: <br>
+                        <span style="color: var(--color-text-secondary);">
+                            "Olá, vim pela Wikivendas e quero eliminar leads fantasmas do meu pipeline."
+                        </span>
+                    </div>
+                    <div style="margin-top: var(--spacing-lg); font-size: var(--font-size-small); color: var(--color-text-muted);">
+                        <span>🔗 <a href="https://github.com/pauloleads/wikivendas" target="_blank" rel="noopener">Acesse o repositório no GitHub</a></span>
+                        &nbsp;·&nbsp;
+                        <span>📄 <a href="https://doi.org/10.5281/zenodo.21272104" target="_blank" rel="noopener">Leia o paper DKI</a></span>
+                        &nbsp;·&nbsp;
+                        <span>📊 <a href="#faq">FAQ completo</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ====================================================================== -->
+    <!-- FOOTER                                                                 -->
+    <!-- ====================================================================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="brand">
+                        <span class="dot"></span> Wikivendas
+                    </div>
+                    <p>
+                        Infraestrutura de Conhecimento de Domínio para vendas B2B,
+                        imobiliárias e de alto ticket. Reduz a ambiguidade e
+                        protege seu pipeline contra leads fantasmas.
+                    </p>
+                    <p style="margin-top: var(--spacing-sm); font-size: var(--font-size-small); color: var(--color-text-muted);">
+                        <a href="https://pauloleads.com.br" target="_blank" rel="noopener">Paulo Leads</a>
+                        &nbsp;·&nbsp;
+                        <a href="https://orcid.org/0009-0003-3436-3117" target="_blank" rel="noopener">ORCID</a>
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="#solucao">Solução</a></li>
+                        <li><a href="#problema">Problema</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="https://github.com/pauloleads/wikivendas" target="_blank" rel="noopener">GitHub</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Recursos</h5>
+                    <ul>
+                        <li><a href="https://doi.org/10.5281/zenodo.21272104" target="_blank" rel="noopener">Paper DKI</a></li>
+                        <li><a href="https://doi.org/10.5281/zenodo.20320049" target="_blank" rel="noopener">Protocolo Hidra</a></li>
+                        <li><a href="https://doi.org/10.5281/zenodo.20860586" target="_blank" rel="noopener">Sinal de Intenção</a></li>
+                        <li><a href="https://wikivendas.com.br/glossario.json">Glossário JSON-LD</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Contato</h5>
+                    <ul>
+                        <li><a href="mailto:contato@pauloleads.com.br">contato@pauloleads.com.br</a></li>
+                        <li><a href="tel:+5519982642481">+55 19 98264-2481</a></li>
+                        <li><a href="https://wa.me/5519982642481" target="_blank" rel="noopener">WhatsApp</a></li>
+                        <li><a href="https://pauloleads.com.br" target="_blank" rel="noopener">pauloleads.com.br</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 Wikivendas. Todos os direitos reservados.</span>
+                <span>
+                    Construído com
+                    <a href="https://schema.org" target="_blank" rel="noopener">Schema.org</a>,
+                    <a href="https://www.wikidata.org" target="_blank" rel="noopener">Wikidata</a> e
+                    <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>.
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ====================================================================== -->
+    <!-- JAVASCRIPT                                                             -->
+    <!-- ====================================================================== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ================================================================
+            // NAVBAR TOGGLE (mobile)
+            // ================================================================
+            const toggle = document.getElementById('navToggle');
+            const links = document.getElementById('navLinks');
+            if (toggle && links) {
+                toggle.addEventListener('click', function() {
+                    const open = links.classList.toggle('open');
+                    toggle.setAttribute('aria-expanded', open);
+                });
+                links.querySelectorAll('a').forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        links.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+
+            // ================================================================
+            // NAVBAR SCROLL EFFECT
+            // ================================================================
+            const navbar = document.getElementById('navbar');
+            let lastScroll = 0;
+            window.addEventListener('scroll', function() {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                if (currentScroll > 30) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+                lastScroll = currentScroll;
+            });
+
+            // ================================================================
+            // SCROLL REVEAL (Intersection Observer)
+            // ================================================================
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+            revealElements.forEach(function(el) {
+                revealObserver.observe(el);
+            });
+
+            // ================================================================
+            // FAQ TOGGLE (com suporte a múltiplas aberturas)
+            // ================================================================
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(function(q) {
+                q.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const answer = document.getElementById(targetId);
+                    const toggleIcon = this.querySelector('.faq-toggle');
+                    if (answer) {
+                        const isOpen = answer.classList.toggle('open');
+                        toggleIcon.classList.toggle('open');
+                        this.setAttribute('aria-expanded', isOpen);
+                    }
+                });
+                q.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+
+            // ================================================================
+            // HERO GRADIENTE DINÂMICO (mouse)
+            // ================================================================
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+                    const posX = Math.round(x * 100);
+                    const posY = Math.round(y * 100);
+                    this.style.background =
+                        `radial-gradient(ellipse at ${posX}% ${posY}%, var(--color-accent-glow), transparent 70%)`;
+                });
+                hero.addEventListener('mouseleave', function() {
+                    this.style.background =
+                        'radial-gradient(ellipse at 30% 20%, var(--color-accent-glow), transparent 70%)';
+                });
+            }
+
+            // ================================================================
+            // SMOOTH SCROLL PARA LINKS INTERNOS (fallback)
+            // ================================================================
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetEl = document.querySelector(targetId);
+                    if (targetEl) {
+                        e.preventDefault();
+                        const offsetTop = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
+                        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // ================================================================
+            // PERFORMANCE: lazy load de imagens (se houver)
+            // ================================================================
+            if ('loading' in HTMLImageElement.prototype) {
+                document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
+                    img.src = img.dataset.src || img.src;
+                });
+            }
+
+            console.log('🚀 Wikivendas — Infraestrutura de Conhecimento para Vendas B2B');
+            console.log('📄 DOI: 10.5281/zenodo.21272104');
+            console.log('🔗 GitHub: https://github.com/pauloleads/wikivendas');
+            console.log('📱 WhatsApp: +55 19 98264-2481');
+
+        })();
+    </script>
+
+</body>
+</html>
