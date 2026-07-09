@@ -8,7 +8,7 @@ import sys
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urljoin  # <--- A SALVAÇÃO DA PÁTRIA
+from urllib.parse import urljoin
 import requests
 
 # ============================================================
@@ -19,10 +19,9 @@ NOTION_TOKEN = os.environ.get("NOTION_TOKEN")
 DATABASE_ID = os.environ.get("DATABASE_ID")
 SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "https://wikivendas.com.br").rstrip("/")
 CUSTOM_DOMAIN = os.environ.get("CUSTOM_DOMAIN", "wikivendas.com.br")
-BUILD_VERSION = "v7.0.1-py"
+BUILD_VERSION = "v7.0.2-py"
 BUILD_TIMESTAMP = datetime.utcnow().isoformat() + "Z"
 
-# Colunas do Notion
 JSON_PROP = os.environ.get("NOTION_JSON_PROPERTY", "JSON-LD")
 OWL_PROP = os.environ.get("NOTION_OWL_PROPERTY", "OWL")
 RUNTIME_PROP = os.environ.get("NOTION_RUNTIME_PROPERTY", "Runtime")
@@ -130,14 +129,13 @@ def get_prop_values(term, name):
     return [v for v in (val if isinstance(val, list) else [val]) if v]
 
 # ============================================================
-# MARKDOWN PARSER PURO (sem bibliotecas externas)
+# MARKDOWN PARSER
 # ============================================================
 
 def markdown_to_html(text):
     if not text: return ""
     html = text
 
-    # Headers
     html = re.sub(r'^###### (.*)$', r'<h6 class="gh-heading gh-h6">\1</h6>', html, flags=re.MULTILINE)
     html = re.sub(r'^##### (.*)$', r'<h5 class="gh-heading gh-h5">\1</h5>', html, flags=re.MULTILINE)
     html = re.sub(r'^#### (.*)$', r'<h4 class="gh-heading gh-h4">\1</h4>', html, flags=re.MULTILINE)
@@ -145,30 +143,16 @@ def markdown_to_html(text):
     html = re.sub(r'^## (.*)$', r'<h2 class="gh-heading gh-h2">\1</h2>', html, flags=re.MULTILINE)
     html = re.sub(r'^# (.*)$', r'<h1 class="gh-heading gh-h1">\1</h1>', html, flags=re.MULTILINE)
 
-    # Blockquotes
     html = re.sub(r'^> (.*)$', r'<blockquote class="gh-blockquote">\1</blockquote>', html, flags=re.MULTILINE)
-
-    # Code blocks (triple backticks)
     html = re.sub(r'```(\w*)\n(.*?)```', r'<pre class="gh-pre"><code class="gh-code language-\1">\2</code></pre>', html, flags=re.DOTALL)
-
-    # Inline code
     html = re.sub(r'`([^`]+)`', r'<code class="gh-code-inline">\1</code>', html)
-
-    # Bold
     html = re.sub(r'\*\*([^*]+)\*\*', r'<strong>\1</strong>', html)
     html = re.sub(r'__([^_]+)__', r'<strong>\1</strong>', html)
-
-    # Italic
     html = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', html)
     html = re.sub(r'_([^_]+)_', r'<em>\1</em>', html)
-
-    # Links
     html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2" target="_blank" rel="noopener noreferrer">\1</a>', html)
-
-    # Images
     html = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="\2" alt="\1" loading="lazy" />', html)
 
-    # Tables (simplificadas)
     table_lines = re.findall(r'(\|.*\|(?:\n\|.*\|)*)', html)
     for tbl in table_lines:
         rows = [r.strip() for r in tbl.split('\n') if r.strip()]
@@ -189,7 +173,6 @@ def markdown_to_html(text):
         html_table += '</tbody></table>'
         html = html.replace(tbl, html_table)
 
-    # Paragraphs
     parts = re.split(r'\n\s*\n', html)
     html_paragraphs = []
     for p in parts:
@@ -328,7 +311,6 @@ def render_meta(title, description, canonical):
     .wv-footer-links a {{ font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--tm); transition: color 0.15s; }}
     .wv-footer-links a:hover {{ color: var(--ts); }}
     
-    /* GitHub README Style - SEM RISCOS AMARELOS */
     .wv-markdown {{ background: transparent !important; border: none !important; padding: 0 !important; margin-bottom: 1.5rem !important; }}
     .wv-markdown h1, .wv-markdown h2, .wv-markdown h3, .wv-markdown h4, .wv-markdown h5, .wv-markdown h6 {{ color: var(--tp); font-weight: 600; letter-spacing: -0.02em; margin-top: 2rem; margin-bottom: 1rem; }}
     .wv-markdown h1 {{ font-size: 2rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--bd); }}
@@ -372,7 +354,6 @@ def render_term_page(record, md_html):
     cat_color = get_category_color(cat)
     content_hash = sha256(json.dumps(json_data, sort_keys=True))
     
-    # URL ÚNICA E CORRETA PARA TUDO
     canonical_url = urljoin(SITE_BASE_URL, f"/termos/{slug}.html")
     
     html = f'''<!DOCTYPE html><html lang="pt-BR"><head>
@@ -516,13 +497,11 @@ def main():
     ensure_dir("docs/termos")
     ensure_dir("docs/glossario")
     
-    # Gerar JSONs
     graph_all = []
     for r in records:
         graph_all.extend(r.get("graph", []))
     write_file("docs/glossario.json", json.dumps({"@context": "https://schema.org", "@graph": graph_all}, ensure_ascii=False, indent=2))
     
-    # Gerar HTMLs
     for r in records:
         md_html = markdown_to_html(r.get("md", ""))
         html, slug = render_term_page(r, md_html)
