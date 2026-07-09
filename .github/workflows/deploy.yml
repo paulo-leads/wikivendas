@@ -17,21 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Install Python dependencies
-        run: pip install requests
+      - name: Install dependencies
+        run: npm install
 
       - name: Build
-        run: python3 build.py
+        run: npm run build
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           SITE_BASE_URL: ${{ secrets.SITE_BASE_URL || 'https://wikivendas.com.br' }}
-          CUSTOM_DOMAIN: ${{ secrets.CUSTOM_DOMAIN || 'wikivendas.com.br' }}
+          NOTION_JSON_PROPERTY: ${{ secrets.NOTION_JSON_PROPERTY || 'JSON-LD' }}
+          NOTION_MD_PROPERTY: ${{ secrets.NOTION_MD_PROPERTY || 'mkdom' }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
