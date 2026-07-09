@@ -7,7 +7,7 @@
 import { Client } from "@notionhq/client";
 import { writeFileSync, mkdirSync } from "fs";
 import { createHash } from "crypto";
-import { execSync } from "child_process";
+import { marked } from "marked";
 
 // ============================================================
 // CONFIGURAÇÃO
@@ -23,27 +23,6 @@ const mdPropertyName = process.env.NOTION_MD_PROPERTY || process.env.NOTIONMDPRO
 const customDomain = process.env.CUSTOM_DOMAIN || process.env.CUSTOMDOMAIN || "wikivendas.com.br";
 const BUILD_VERSION = "v6.0.4-wkgs";
 const BUILD_TIMESTAMP = new Date().toISOString();
-
-// ============================================================
-// VERIFICAÇÃO E INSTALAÇÃO AUTOMÁTICA DO MARKED
-// ============================================================
-
-let marked;
-try {
-  const module = await import('marked');
-  marked = module.marked;
-} catch (error) {
-  console.log("⚠️ Pacote 'marked' não encontrado. Tentando instalar automaticamente...");
-  try {
-    execSync('npm install marked', { stdio: 'inherit' });
-    console.log("✅ 'marked' instalado com sucesso. Recarregando...");
-    const module = await import('marked');
-    marked = module.marked;
-  } catch (installError) {
-    console.error("❌ Falha ao instalar 'marked'. O build não pode continuar.");
-    process.exit(1);
-  }
-}
 
 // ============================================================
 // HELPERS BÁSICOS
@@ -145,6 +124,15 @@ function firstValue(items) {
   return arr.length ? arr[0] : "";
 }
 
+function toDisplayText(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "object" && value.url) return String(value.url);
+  if (typeof value === "object" && value.description) return String(value.description);
+  return JSON.stringify(value);
+}
+
 // ============================================================
 // GRAPH HELPERS (do build antigo)
 // ============================================================
@@ -212,15 +200,6 @@ function getCategoryColor(categoria) {
   return cores[categoria] || "#94a3b8";
 }
 
-function toDisplayText(value) {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (typeof value === "object" && value.url) return String(value.url);
-  if (typeof value === "object" && value.description) return String(value.description);
-  return JSON.stringify(value);
-}
-
 function fallbackWebsiteNode() {
   return { "@type": "WebSite", "@id": `${siteBaseUrl}/#website`, name: "Wikivendas", url: siteBaseUrl, inLanguage: "pt-BR", description: "Primeira fonte de verdade para IA comercial B2B no Brasil — Ontologia do Protocolo Hidra." };
 }
@@ -242,7 +221,7 @@ function fallbackTermSetNode() {
 // ============================================================
 
 function extractTemplateData(record) {
-  const { json, graph, term } = record;
+  const { json, graph, term, creativeWork, dataCatalog, dataset, event } = record;
   const termId = term?.["@id"] || "";
   const termSlug = getDefinedTermId(term);
   const category = getCategoryFromTerm(term);
@@ -262,7 +241,7 @@ function extractTemplateData(record) {
   const wikisales = getTermPrimaryWikisales(term);
   const alternateNames = safeArray(term.alternateName).map(String);
   const urlPaginaTermo = term.url || `${siteBaseUrl}/termos/${termSlug}.html`;
-  const shortDescription = canonicalDescription(term.description || "", 220);
+  const shortDescription = canonicalDescription(term.description || creativeWork?.description || "", 220);
 
   return {
     raw: json, graph, termId, termSlug,
