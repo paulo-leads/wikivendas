@@ -1,4 +1,4 @@
-# build_static.py - Gerador de Páginas Estáticas para GitHub Pages
+# build_static.py - Gerador de Páginas Estáticas com validação Notion
 import os
 import json
 import requests
@@ -14,12 +14,70 @@ HEADERS = {"Accept": "application/sparql-results+json"}
 
 OUTPUT_DIR = "docs"
 
+# Notion Config (via secrets do GitHub)
+NOTION_TOKEN = os.environ.get("NOTION_TOKEN", "")
+NOTION_DATABASE_ID = os.environ.get("DATABASE_ID", "")
+
 # Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Cache simples
 cache = {}
+
+def get_notion_items():
+    """Busca itens válidos da coluna ITEM no Notion"""
+    if not NOTION_TOKEN or not NOTION_DATABASE_ID:
+        logger.warning("⚠️  Notion credentials não configuradas. Usando SPARQL para todos os itens.")
+        return None
+    
+    try:
+        url = f"https://api.notion.com/v1/databases/{NOTION_DATABASE_ID}/query"
+        headers = {
+            "Authorization": f"Bearer {NOTION_TOKEN}",
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28"
+        }
+        
+        response = requests.post(url, headers=headers, timeout=30)
+        response.raise_for_status()
+        
+        data = response.json()
+        valid_items = []
+        
+        for result in data.get("results", []):
+            properties = result.get("properties", {})
+            item_property = properties.get("ITEM", {})
+            
+            # Verifica se a coluna ITEM existe e tem valor
+            if item_property.get("type") == "rich_text":
+                items_text = item_property.get("rich_text", [])
+                if items_text:
+                    # Pega o valor do texto
+                    item_value = items_text[0].get("plain_text", "").strip()
+                    if item_value:
+                        valid_items.append(item_value)
+            elif item_property.get("type") == "title":
+                # Se ITEM for o título
+                title_text = item_property.get("title", [])
+                if title_text:
+                    item_value = title_text[0].get("plain_text", "").strip()
+                    if item_value:
+                        valid_items.append(item_value)
+            elif item_property.get("type") == "select":
+                # Se for select
+                select = item_property.get("select", {})
+                if select:
+                    item_value = select.get("name", "").strip()
+                    if item_value:
+                        valid_items.append(item_value)
+        
+        logger.info(f"📋 {len(valid_items)} itens válidos encontrados no Notion: {valid_items}")
+        return valid_items
+        
+    except Exception as e:
+        logger.error(f"Erro ao buscar itens do Notion: {e}")
+        return None
 
 def read_entity_json(entity_id: str):
     """Lê entidade do WikiSales"""
@@ -143,7 +201,7 @@ def get_item_with_properties(qid: str):
     return item_data
 
 def discover_items(limit: int = 50):
-    """Descobre itens disponíveis"""
+    """Descobre itens disponíveis via SPARQL"""
     query = f"""
     PREFIX wikibase: <http://wikiba.se/ontology#>
     SELECT ?item WHERE {{
@@ -178,32 +236,46 @@ def generate_html(item_data: Dict) -> str:
                     if v.get("type") == "item":
                         values_html += f'<span class="value-tag value-tag-item"><a href="/item/{v.get("id").lower()}">{v.get("label") or v.get("value")}</a></span>'
                     else:
-                        values_html += f'<span class="value-tag">{v.get("value") or "N/A"}</span>'
+                        safe_value = str(v.get("value") or "N/A")
+                        values_html += f'<span class="value-tag">{safe_value}</span>'
+            
+            prop_label = prop.get("label") or prop.get("id")
+            prop_desc = prop.get("description")
+            prop_datatype = prop.get("datatype") or "unknown"
+            prop_count = prop.get("count", 0)
+            prop_url = prop.get("url")
             
             props_html += f'''
             <div class="property-card">
                 <div class="property-header">
-                    <span class="property-name">{prop.get("label") or prop.get("id")}</span>
+                    <span class="property-name">{prop_label}</span>
                     <span class="property-id">{prop.get("id")}</span>
                 </div>
-                {f'<div class="property-desc">💡 {prop.get("description")}</div>' if prop.get("description") else ''}
+                {f'<div class="property-desc">💡 {prop_desc}</div>' if prop_desc else ''}
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin:5px 0;">
-                    <span class="property-datatype">📊 {prop.get("datatype") or "unknown"}</span>
-                    <span style="font-size:0.85em;color:#718096;">{prop.get("count", 0)} valor(es)</span>
+                    <span class="property-datatype">📊 {prop_datatype}</span>
+                    <span style="font-size:0.85em;color:#718096;">{prop_count} valor(es)</span>
                 </div>
                 {f'<div class="property-values">{values_html}</div>' if values_html else '<div style="color:#a0aec0;font-size:0.9em;">Sem valores</div>'}
-                {f'<a href="{prop.get("url")}" target="_blank" style="font-size:0.8em;color:#667eea;">Ver propriedade</a>' if prop.get("url") else ''}
+                {f'<a href="{prop_url}" target="_blank" style="font-size:0.8em;color:#667eea;">Ver propriedade</a>' if prop_url else ''}
             </div>
             '''
+    
+    item_id = item_data.get("id", "")
+    item_label = item_data.get("label") or item_id
+    item_desc = item_data.get("description") or f"Informações sobre {item_label}"
+    item_url = item_data.get("url", "")
+    item_aliases = item_data.get("aliases", [])
+    props_count = len(item_data.get("properties", []))
     
     return f'''<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{item_data.get("label") or item_data.get("id")} - WikiSales</title>
-    <meta name="description" content="{item_data.get("description") or f"Informações sobre {item_data.get("label")}"}" />
-    <link rel="canonical" href="https://wikivendas.com.br/item/{item_data.get("id").lower()}" />
+    <title>{item_label} - WikiSales</title>
+    <meta name="description" content="{item_desc}" />
+    <link rel="canonical" href="https://wikivendas.com.br/item/{item_id.lower()}" />
     <style>
         :root {{
             --color-bg: #0a0a0a;
@@ -565,11 +637,11 @@ def generate_html(item_data: Dict) -> str:
     <section class="hero">
         <div class="container">
             <div class="badge">📦 Item do WikiSales</div>
-            <h1>{item_data.get("label") or item_data.get("id")}</h1>
-            <div class="item-id">ID: {item_data.get("id")}</div>
-            {f'<p style="color:var(--color-text-secondary);font-size:1.1rem;margin:var(--spacing-sm) 0;">{item_data.get("description")}</p>' if item_data.get("description") else ''}
-            {f'<div class="aliases">Também conhecido como: {"".join([f"<span>{a}</span>" for a in item_data.get("aliases", [])])}</div>' if item_data.get("aliases") else ''}
-            <a href="{item_data.get("url")}" target="_blank" class="item-url">🔗 Ver no WikiSales</a>
+            <h1>{item_label}</h1>
+            <div class="item-id">ID: {item_id}</div>
+            {f'<p style="color:var(--color-text-secondary);font-size:1.1rem;margin:var(--spacing-sm) 0;">{item_desc}</p>' if item_desc else ''}
+            {f'<div class="aliases">Também conhecido como: {"".join([f"<span>{a}</span>" for a in item_aliases])}</div>' if item_aliases else ''}
+            <a href="{item_url}" target="_blank" class="item-url">🔗 Ver no WikiSales</a>
         </div>
     </section>
 
@@ -580,7 +652,7 @@ def generate_html(item_data: Dict) -> str:
                 <a href="/items">📋 Ver todos os itens</a>
             </div>
             
-            <div class="properties-title">📋 Propriedades ({len(item_data.get("properties", []))})</div>
+            <div class="properties-title">📋 Propriedades ({props_count})</div>
             
             {props_html if props_html else '<div class="no-props">Este item não possui propriedades registradas</div>'}
         </div>
@@ -624,15 +696,20 @@ def generate_index_html(items: List[Dict]) -> str:
     """Gera página inicial com lista de itens"""
     items_html = ""
     for item in items:
+        item_id = item.get("id", "")
+        item_label = item.get("label") or item_id
+        item_desc = item.get("description", "")
+        props_count = len(item.get("properties", []))
+        
         items_html += f'''
-        <div class="item-card" onclick="window.location.href='/item/{item.get("id").lower()}'" style="cursor:pointer;">
+        <div class="item-card" onclick="window.location.href='/item/{item_id.lower()}'" style="cursor:pointer;">
             <div class="item-header">
                 <div>
-                    <span class="item-id">{item.get("id")}</span>
-                    <h3 class="item-title">{item.get("label") or item.get("id")}</h3>
-                    {f'<p class="item-desc">{item.get("description")}</p>' if item.get("description") else ''}
+                    <span class="item-id">{item_id}</span>
+                    <h3 class="item-title">{item_label}</h3>
+                    {f'<p class="item-desc">{item_desc}</p>' if item_desc else ''}
                 </div>
-                <span style="color:var(--color-accent);font-size:0.9rem;">{len(item.get("properties", []))} propriedades →</span>
+                <span style="color:var(--color-accent);font-size:0.9rem;">{props_count} propriedades →</span>
             </div>
         </div>
         '''
@@ -977,24 +1054,45 @@ def build_site(limit: int = 50):
     """Constrói o site estático completo"""
     logger.info("🚀 Iniciando build do site estático...")
     
+    # 1. Tenta buscar itens válidos do Notion
+    notion_items = get_notion_items()
+    
+    # 2. Se tiver itens do Notion, usa eles
+    if notion_items:
+        logger.info(f"📋 Usando {len(notion_items)} itens do Notion: {notion_items}")
+        qids = notion_items
+    else:
+        # 3. Fallback: busca todos os itens via SPARQL
+        logger.info("📊 Buscando itens via SPARQL...")
+        qids = discover_items(limit)
+    
+    if not qids:
+        logger.error("❌ Nenhum item encontrado para processar!")
+        return 0
+    
+    logger.info(f"📊 {len(qids)} itens para processar")
+    
     # Cria diretórios
     output_path = Path(OUTPUT_DIR)
     items_path = output_path / "item"
     output_path.mkdir(exist_ok=True)
     items_path.mkdir(exist_ok=True)
     
-    # Descobre itens
-    qids = discover_items(limit)
-    logger.info(f"📊 {len(qids)} itens encontrados")
-    
     items_data = []
+    processed_count = 0
     
     # Gera página para cada item
     for qid in qids:
         logger.info(f"📄 Gerando página para {qid}...")
+        
+        # Valida se é um QID válido
+        if not qid or not qid.startswith('Q'):
+            logger.warning(f"⚠️  ID inválido: {qid}")
+            continue
+        
         item = get_item_with_properties(qid)
         if not item:
-            logger.warning(f"⚠️  Falha ao processar {qid}")
+            logger.warning(f"⚠️  Falha ao processar {qid} - item não encontrado no WikiSales")
             continue
         
         items_data.append(item)
@@ -1009,6 +1107,13 @@ def build_site(limit: int = 50):
         json_path = items_path / f"{qid.lower()}.json"
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(item, f, ensure_ascii=False, indent=2)
+        
+        processed_count += 1
+        logger.info(f"✅ {qid} processado com sucesso")
+    
+    if processed_count == 0:
+        logger.error("❌ Nenhum item válido foi processado!")
+        return 0
     
     # Gera página inicial
     logger.info("🏠 Gerando página inicial...")
@@ -1034,8 +1139,8 @@ Sitemap: https://wikivendas.com.br/sitemap.xml
     with open(output_path / ".nojekyll", "w") as f:
         f.write("")
     
-    logger.info(f"✅ Build concluído! {len(items_data)} páginas geradas em '{OUTPUT_DIR}/'")
-    return len(items_data)
+    logger.info(f"✅ Build concluído! {processed_count} páginas geradas em '{OUTPUT_DIR}/'")
+    return processed_count
 
 def generate_sitemap(items: List[Dict]):
     """Gera sitemap.xml para SEO"""
@@ -1055,9 +1160,10 @@ def generate_sitemap(items: List[Dict]):
   </url>
 '''
     for item in items:
+        item_id = item.get("id", "").lower()
         sitemap += f'''
   <url>
-    <loc>https://wikivendas.com.br/item/{item.get("id").lower()}</loc>
+    <loc>https://wikivendas.com.br/item/{item_id}</loc>
     <lastmod>{datetime.now().date().isoformat()}</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
@@ -1081,5 +1187,9 @@ if __name__ == "__main__":
             pass
     
     count = build_site(limit)
-    logger.info(f"✨ Pronto! {count} páginas geradas.")
-    logger.info("📂 Pasta 'docs' pronta para deploy no GitHub Pages")
+    if count > 0:
+        logger.info(f"✨ Pronto! {count} páginas geradas.")
+        logger.info("📂 Pasta 'docs' pronta para deploy no GitHub Pages")
+    else:
+        logger.error("❌ Build falhou! Nenhuma página foi gerada.")
+        sys.exit(1)
