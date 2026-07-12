@@ -4,9 +4,8 @@ import json
 import requests
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Optional
 import logging
-from functools import lru_cache
 
 # Configuração
 BASE = "https://wikisales.wikibase.cloud/wiki/Special:EntityData"
@@ -14,49 +13,57 @@ SPARQL = "https://wikisales.wikibase.cloud/query/sparql"
 HEADERS = {"Accept": "application/sparql-results+json"}
 
 OUTPUT_DIR = "docs"
-TEMPLATE_DIR = "templates"
 
 # Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ==================== CACHE ====================
-@lru_cache(maxsize=512)
+# Cache simples
+cache = {}
+
 def read_entity_json(entity_id: str):
     """Lê entidade do WikiSales"""
+    if entity_id in cache:
+        return cache[entity_id]
+    
     url = f"{BASE}/{entity_id}.json"
     try:
         r = requests.get(url, timeout=20)
         r.raise_for_status()
-        return r.json()["entities"][entity_id]
+        data = r.json()["entities"][entity_id]
+        cache[entity_id] = data
+        return data
     except Exception as e:
         logger.error(f"Erro ao ler entidade {entity_id}: {e}")
         return None
 
-@lru_cache(maxsize=512)
+def pick_lang(block):
+    """Pega o melhor idioma disponível"""
+    if not block:
+        return None
+    for key in ("pt-br", "pt", "en"):
+        if key in block:
+            return block[key].get("value")
+    first = next(iter(block.values()))
+    return first.get("value")
+
+def pick_aliases(data):
+    """Pega aliases"""
+    aliases = []
+    if not data:
+        return aliases
+    for lang in ("pt-br", "pt", "en"):
+        for item in data.get("aliases", {}).get(lang, []):
+            val = item.get("value")
+            if val and val not in aliases:
+                aliases.append(val)
+    return aliases
+
 def get_property_info(pid: str):
     """Obtém informações de uma propriedade"""
     data = read_entity_json(pid)
     if not data:
         return None
-    
-    def pick_lang(block):
-        if not block:
-            return None
-        for key in ("pt-br", "pt", "en"):
-            if key in block:
-                return block[key].get("value")
-        first = next(iter(block.values()))
-        return first.get("value")
-    
-    def pick_aliases(data):
-        aliases = []
-        for lang in ("pt-br", "pt", "en"):
-            for item in data.get("aliases", {}).get(lang, []):
-                val = item.get("value")
-                if val and val not in aliases:
-                    aliases.append(val)
-        return aliases
     
     return {
         "id": pid,
@@ -72,16 +79,6 @@ def get_item_label(qid: str):
     data = read_entity_json(qid)
     if not data:
         return qid
-    
-    def pick_lang(block):
-        if not block:
-            return None
-        for key in ("pt-br", "pt", "en"):
-            if key in block:
-                return block[key].get("value")
-        first = next(iter(block.values()))
-        return first.get("value")
-    
     return pick_lang(data.get("labels", {})) or qid
 
 def get_item_with_properties(qid: str):
@@ -89,24 +86,6 @@ def get_item_with_properties(qid: str):
     data = read_entity_json(qid)
     if not data:
         return None
-    
-    def pick_lang(block):
-        if not block:
-            return None
-        for key in ("pt-br", "pt", "en"):
-            if key in block:
-                return block[key].get("value")
-        first = next(iter(block.values()))
-        return first.get("value")
-    
-    def pick_aliases(data):
-        aliases = []
-        for lang in ("pt-br", "pt", "en"):
-            for item in data.get("aliases", {}).get(lang, []):
-                val = item.get("value")
-                if val and val not in aliases:
-                    aliases.append(val)
-        return aliases
     
     item_data = {
         "id": qid,
@@ -188,58 +167,6 @@ def discover_items(limit: int = 50):
         logger.error(f"Erro ao descobrir itens: {e}")
         return []
 
-# ==================== GERADOR DE PÁGINAS ====================
-
-def generate_json_ld(item_data: Dict) -> Dict:
-    """Gera JSON-LD para o item"""
-    properties = []
-    for prop in item_data.get("properties", []):
-        prop_values = []
-        for v in prop.get("values", []):
-            if v.get("type") == "item":
-                prop_values.append({
-                    "@type": "PropertyValue",
-                    "value": v.get("label"),
-                    "propertyID": "wikibase-item",
-                    "valueReference": {
-                        "@id": f"https://wikisales.wikibase.cloud/wiki/Item:{v.get('id')}"
-                    }
-                })
-            else:
-                prop_values.append({
-                    "@type": "PropertyValue",
-                    "value": v.get("value"),
-                    "propertyID": prop.get("datatype", "text")
-                })
-        
-        properties.append({
-            "@type": "PropertyValue",
-            "name": prop.get("label"),
-            "description": prop.get("description"),
-            "propertyID": prop.get("id"),
-            "value": prop_values if len(prop_values) > 1 else (prop_values[0] if prop_values else None),
-            "additionalType": prop.get("datatype")
-        })
-    
-    return {
-        "@context": "https://schema.org",
-        "@type": "Product",
-        "@id": f"https://wikivendas.com.br/item/{item_data.get('id')}",
-        "name": item_data.get("label"),
-        "description": item_data.get("description"),
-        "alternateName": item_data.get("aliases", []),
-        "identifier": {
-            "@type": "PropertyValue",
-            "propertyID": "wikibase-id",
-            "value": item_data.get("id"),
-            "url": f"https://wikisales.wikibase.cloud/wiki/Item:{item_data.get('id')}"
-        },
-        "additionalProperty": properties if properties else None,
-        "url": item_data.get("url"),
-        "dateCreated": datetime.now().isoformat(),
-        "inLanguage": "pt-BR"
-    }
-
 def generate_html(item_data: Dict) -> str:
     """Gera HTML completo para o item"""
     props_html = ""
@@ -249,7 +176,7 @@ def generate_html(item_data: Dict) -> str:
             if prop.get("values"):
                 for v in prop["values"]:
                     if v.get("type") == "item":
-                        values_html += f'<span class="value-tag value-tag-item"><a href="/item/{v.get("id")}">{v.get("label") or v.get("value")}</a></span>'
+                        values_html += f'<span class="value-tag value-tag-item"><a href="/item/{v.get("id").lower()}">{v.get("label") or v.get("value")}</a></span>'
                     else:
                         values_html += f'<span class="value-tag">{v.get("value") or "N/A"}</span>'
             
@@ -269,28 +196,14 @@ def generate_html(item_data: Dict) -> str:
             </div>
             '''
     
-    # HTML Base com layout da Wikivendas
     return f'''<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WikiSales - {item_data.get("label")} ({item_data.get("id")})</title>
-    <meta name="description" content="{item_data.get("description") or f"Informações sobre {item_data.get("label")} no WikiSales"}" />
-    <link rel="canonical" href="https://wikivendas.com.br/item/{item_data.get("id")}" />
-    
-    <!-- Open Graph -->
-    <meta property="og:title" content="{item_data.get("label")} - WikiSales" />
-    <meta property="og:description" content="{item_data.get("description") or f"Informações sobre {item_data.get("label")}"}" />
-    <meta property="og:url" content="https://wikivendas.com.br/item/{item_data.get("id")}" />
-    <meta property="og:type" content="product" />
-    <meta name="twitter:card" content="summary_large_image" />
-    
-    <!-- JSON-LD -->
-    <script type="application/ld+json">
-{json.dumps(generate_json_ld(item_data), indent=2, ensure_ascii=False)}
-    </script>
-    
+    <title>{item_data.get("label") or item_data.get("id")} - WikiSales</title>
+    <meta name="description" content="{item_data.get("description") or f"Informações sobre {item_data.get("label")}"}" />
+    <link rel="canonical" href="https://wikivendas.com.br/item/{item_data.get("id").lower()}" />
     <style>
         :root {{
             --color-bg: #0a0a0a;
@@ -329,7 +242,6 @@ def generate_html(item_data: Dict) -> str:
             padding: 0 var(--spacing-lg);
         }}
         
-        /* Navbar */
         .navbar {{
             position: fixed;
             top: 0;
@@ -385,7 +297,6 @@ def generate_html(item_data: Dict) -> str:
             color: var(--color-text);
         }}
         
-        /* Hero */
         .hero {{
             padding: 120px 0 var(--spacing-xl);
             margin-top: 56px;
@@ -444,7 +355,6 @@ def generate_html(item_data: Dict) -> str:
             text-decoration: underline;
         }}
         
-        /* Properties */
         .properties-section {{
             padding: var(--spacing-xl) 0;
         }}
@@ -542,7 +452,6 @@ def generate_html(item_data: Dict) -> str:
             padding: var(--spacing-xl) 0;
         }}
         
-        /* Navigation */
         .nav-links {{
             margin: var(--spacing-lg) 0;
             display: flex;
@@ -560,7 +469,6 @@ def generate_html(item_data: Dict) -> str:
             text-decoration: underline;
         }}
         
-        /* Footer */
         .footer {{
             padding: var(--spacing-xl) 0 var(--spacing-lg);
             border-top: 1px solid var(--color-border);
@@ -641,7 +549,6 @@ def generate_html(item_data: Dict) -> str:
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
             <a href="/" class="navbar-brand">
@@ -655,7 +562,6 @@ def generate_html(item_data: Dict) -> str:
         </div>
     </nav>
 
-    <!-- Hero -->
     <section class="hero">
         <div class="container">
             <div class="badge">📦 Item do WikiSales</div>
@@ -667,7 +573,6 @@ def generate_html(item_data: Dict) -> str:
         </div>
     </section>
 
-    <!-- Propriedades -->
     <section class="properties-section">
         <div class="container">
             <div class="nav-links">
@@ -681,7 +586,6 @@ def generate_html(item_data: Dict) -> str:
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -721,7 +625,7 @@ def generate_index_html(items: List[Dict]) -> str:
     items_html = ""
     for item in items:
         items_html += f'''
-        <div class="item-card" onclick="window.location.href='/item/{item.get("id")}'" style="cursor:pointer;">
+        <div class="item-card" onclick="window.location.href='/item/{item.get("id").lower()}'" style="cursor:pointer;">
             <div class="item-header">
                 <div>
                     <span class="item-id">{item.get("id")}</span>
@@ -741,7 +645,6 @@ def generate_index_html(items: List[Dict]) -> str:
     <title>WikiSales - Itens</title>
     <meta name="description" content="Lista de itens disponíveis no WikiSales com propriedades e descrições." />
     <link rel="canonical" href="https://wikivendas.com.br/items" />
-    
     <style>
         :root {{
             --color-bg: #0a0a0a;
@@ -1070,8 +973,6 @@ def generate_index_html(items: List[Dict]) -> str:
 </html>
 '''
 
-# ==================== BUILD ====================
-
 def build_site(limit: int = 50):
     """Constrói o site estático completo"""
     logger.info("🚀 Iniciando build do site estático...")
@@ -1115,38 +1016,26 @@ def build_site(limit: int = 50):
     with open(output_path / "index.html", "w", encoding="utf-8") as f:
         f.write(index_html)
     
-    # Gera página de itens
-    logger.info("📋 Gerando página de itens...")
-    items_html = generate_index_html(items_data)
+    # Gera página de itens (alias para index)
     with open(output_path / "items.html", "w", encoding="utf-8") as f:
-        f.write(items_html)
+        f.write(index_html)
     
-    # Copia arquivos estáticos (CSS, JS, imagens)
-    copy_static_assets()
+    # Gera sitemap
+    generate_sitemap(items_data)
+    
+    # Gera robots.txt
+    with open(output_path / "robots.txt", "w", encoding="utf-8") as f:
+        f.write("""User-agent: *
+Allow: /
+Sitemap: https://wikivendas.com.br/sitemap.xml
+""")
+    
+    # Cria .nojekyll para GitHub Pages
+    with open(output_path / ".nojekyll", "w") as f:
+        f.write("")
     
     logger.info(f"✅ Build concluído! {len(items_data)} páginas geradas em '{OUTPUT_DIR}/'")
     return len(items_data)
-
-def copy_static_assets():
-    """Copia arquivos estáticos para o diretório de saída"""
-    static_files = [
-        # CSS
-        ("styles.css", ""),
-        # JS
-        ("script.js", ""),
-    ]
-    
-    # Cria diretório para assets
-    assets_path = Path(OUTPUT_DIR) / "assets"
-    assets_path.mkdir(exist_ok=True)
-    
-    # Cria CSS básico se não existir
-    css_path = assets_path / "styles.css"
-    if not css_path.exists():
-        css_path.write_text("""
-/* Estilos adicionais para o site estático */
-/* Estilos principais já estão no HTML */
-""", encoding="utf-8")
 
 def generate_sitemap(items: List[Dict]):
     """Gera sitemap.xml para SEO"""
@@ -1181,8 +1070,6 @@ def generate_sitemap(items: List[Dict]):
     
     logger.info("🗺️ Sitemap gerado")
 
-# ==================== MAIN ====================
-
 if __name__ == "__main__":
     import sys
     
@@ -1194,10 +1081,5 @@ if __name__ == "__main__":
             pass
     
     count = build_site(limit)
-    
-    # Gera sitemap (precisa dos dados)
-    # Como já temos items_data, poderíamos passar para a função
-    # mas vamos ler do arquivo se necessário
-    
     logger.info(f"✨ Pronto! {count} páginas geradas.")
     logger.info("📂 Pasta 'docs' pronta para deploy no GitHub Pages")
