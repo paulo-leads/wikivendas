@@ -1179,6 +1179,109 @@
         }
         .footer-bottom a { color: var(--text-muted); }
         .footer-bottom a:hover { color: var(--text); }
+
+        /* ============================================================== */
+        /* LOGOTIPOS - ELEGANTE NO RODAPÉ                                 */
+        /* ============================================================== */
+        .logotipos-footer {
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border);
+        }
+
+        .logotipos-footer .logotipos {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem 3.5rem;
+        }
+
+        .logotipos-footer .item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: opacity var(--transition), transform var(--transition);
+        }
+
+        .logotipos-footer .item:hover {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+
+        .logotipos-footer .item img {
+            display: block;
+            max-height: 38px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0.7) saturate(0.6);
+            transition: filter var(--transition);
+        }
+
+        .logotipos-footer .item:hover img {
+            filter: brightness(1) saturate(1);
+        }
+
+        .logotipos-footer .item img.limit-Height {
+            max-height: 28px;
+        }
+
+        .logotipos-footer .item img.limit-Height-2 {
+            max-height: 32px;
+        }
+
+        .logotipos-footer .item img.limit-Height-3 {
+            max-height: 32px;
+        }
+
+        .logotipos-footer .logotipos-label {
+            text-align: center;
+            font-size: var(--fs-xs);
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.6;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .logotipos-footer .logotipos {
+                gap: 1.5rem 2rem;
+            }
+            .logotipos-footer .item img {
+                max-height: 30px;
+            }
+            .logotipos-footer .item img.limit-Height {
+                max-height: 22px;
+            }
+            .logotipos-footer .item img.limit-Height-2 {
+                max-height: 26px;
+            }
+            .logotipos-footer .item img.limit-Height-3 {
+                max-height: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logotipos-footer .logotipos {
+                gap: 1.2rem 1.5rem;
+            }
+            .logotipos-footer .item img {
+                max-height: 24px;
+            }
+            .logotipos-footer .item img.limit-Height {
+                max-height: 18px;
+            }
+            .logotipos-footer .item img.limit-Height-2 {
+                max-height: 22px;
+            }
+            .logotipos-footer .item img.limit-Height-3 {
+                max-height: 22px;
+            }
+        }
+
         @media (max-width: 768px) {
             .footer-grid { grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); }
         }
@@ -2416,12 +2519,45 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- ========================================================== -->
+            <!-- LOGOTIPOS ELEGANTE NO RODAPÉ                               -->
+            <!-- ========================================================== -->
+            <div class="logotipos-footer">
+                <div class="logotipos-label">Fornecedores de Tecnologia</div>
+                <div class="logotipos" id="logotipos">
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/Selo_Cubo.webp" alt="Selo Cubo" class="limit-Height-2">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/inovabra.png" alt="Inovabra">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/scaleup-sebrae.png" alt="Scaleup Sebrae">
+                    </div>
+                    <div class="item">
+                        <a href="#faq" rel="noopener">
+                            <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/certificado.png" alt="Certificado ISO 27001" class="limit-Height-3">
+                        </a>
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/intel.png" alt="Intel" class="limit-Height">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/aws.png" alt="AWS">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/tnw.png" alt="TNW" class="limit-Height-3">
+                    </div>
+                </div>
+            </div>
+
             <div class="footer-bottom">
                 <span>&copy; 2026 WikiVendas. Todos os direitos reservados.</span>
                 <span>
-                    Construido com <a href="https://schema.org" target="_blank" rel="noopener">Schema.org</a>,
-                    <a href="https://wikibase.cloud" target="_blank" rel="noopener">Wikibase</a> e
-                    <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>.
+                    Construído com <a href="https://schema.org" target="_blank" rel="noopener">Schema.org</a>,
+                    <a href="https://www.wikimedia.org/" target="_blank" rel="noopener">Wikibase</a> e
+                    <a href="https://docs.github.com/en" target="_blank" rel="noopener">GitHub</a>.
                 </span>
             </div>
         </div>
