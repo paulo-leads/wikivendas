@@ -1,0 +1,751 @@
+[
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "itemLabel": "Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Cyrela S.A.",
+    "valueLabel": "Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "itemLabel": "Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Empresa brasileira de incorporação imobiliária.",
+    "valueLabel": "Empresa brasileira de incorporação imobiliária."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "itemLabel": "Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:external:organization:cyrela",
+    "valueLabel": "urn:wikivendas:external:organization:cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "itemLabel": "Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wvext:CYRELA",
+    "valueLabel": "wvext:CYRELA"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Empreendimento Imobiliário",
+    "valueLabel": "Empreendimento Imobiliário"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Real Estate Development",
+    "valueLabel": "Real Estate Development"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P17",
+    "value": "imobiliário",
+    "valueLabel": "imobiliário"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P17",
+    "value": "incorporação",
+    "valueLabel": "incorporação"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P17",
+    "value": "real estate",
+    "valueLabel": "real estate"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P17",
+    "value": "asset management",
+    "valueLabel": "asset management"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P17",
+    "value": "development",
+    "valueLabel": "development"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Conceito estrutural que define um projeto imobiliário",
+    "valueLabel": "Conceito estrutural que define um projeto imobiliário"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Conceito estrutural que define um ativo imobiliário governado",
+    "valueLabel": "Conceito estrutural que define um ativo imobiliário governado"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Class concept modeling the root entity of a real estate development project in the graph.",
+    "valueLabel": "Class concept modeling the root entity of a real estate development project in the graph."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Conceito de classe que modela a entidade raiz de um projeto imobiliário no grafo.",
+    "valueLabel": "Conceito de classe que modela a entidade raiz de um projeto imobiliário no grafo."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:model:empreendimentoimobiliario",
+    "valueLabel": "urn:wikivendas:model:empreendimentoimobiliario"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wv:RealEstateDevelopment",
+    "valueLabel": "wv:RealEstateDevelopment"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wv:Empreendimentoimob",
+    "valueLabel": "wv:Empreendimentoimob"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P3",
+    "value": "Conceito de negócio",
+    "valueLabel": "Conceito de negócio"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P3",
+    "value": "Conceito de estrutura imobiliária",
+    "valueLabel": "Conceito de estrutura imobiliária"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P95",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P95"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P96",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P96"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P97",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P97"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P98",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P98"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P100",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P100"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P99",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P99"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P101",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P101"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P102",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P102"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P103",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P103"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P104",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P104"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P105",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P105"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P106",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P106"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P107",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P107"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P108",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P108"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P109",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P109"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "itemLabel": "Empreendimento Imobiliário",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P110",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P110"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Namespace Cyrela",
+    "valueLabel": "Namespace Cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Espaço de nomes exclusivo destinado ao registro de conceitos e ativos da Cyrela S.A.",
+    "valueLabel": "Espaço de nomes exclusivo destinado ao registro de conceitos e ativos da Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:namespace:cyrela",
+    "valueLabel": "urn:wikivendas:namespace:cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wvns:cyrela",
+    "valueLabel": "wvns:cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P26",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "valueLabel": "Tenant Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "itemLabel": "Namespace Cyrela",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P3",
+    "value": "Namespace corporativo",
+    "valueLabel": "Namespace corporativo"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Nova Olaria Studios",
+    "valueLabel": "Nova Olaria Studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P100",
+    "value": "Cidade Baixa",
+    "valueLabel": "Cidade Baixa"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P101",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "valueLabel": "Studio — Nova Olaria Studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P102",
+    "value": "Em obras",
+    "valueLabel": "Em obras"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P107",
+    "value": "https://www.cyrela.com.br/empreendimentos/nova-olaria-studios",
+    "valueLabel": "https://www.cyrela.com.br/empreendimentos/nova-olaria-studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P108",
+    "value": "2026-07-16T00:00:00Z",
+    "valueLabel": "2026-07-16T00:00:00Z"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P109",
+    "value": "Em Revisão",
+    "valueLabel": "Em Revisão"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P125",
+    "value": "https://google.com/maps?cid=10150524753835408542",
+    "valueLabel": "https://google.com/maps?cid=10150524753835408542"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P125",
+    "value": "https://google.com/maps?cid=13450375243658243567",
+    "valueLabel": "https://google.com/maps?cid=13450375243658243567"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P125",
+    "value": "https://google.com/maps?cid=1858043509539125432",
+    "valueLabel": "https://google.com/maps?cid=1858043509539125432"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P125",
+    "value": "https://www.google.com/maps/@-30.038418,-51.2200823,13a,42.9y,124.45h,105.49t/data=!3m7!1e1!3m5!1s_2ZSt0iTo4ebmhhqV1XEZA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D-15.489326079789691%26panoid%3D_2ZSt0iTo4ebmhhqV1XEZA%26yaw%3D124.44628108290122!7i16384!8i8192",
+    "valueLabel": "https://www.google.com/maps/@-30.038418,-51.2200823,13a,42.9y,124.45h,105.49t/data=!3m7!1e1!3m5!1s_2ZSt0iTo4ebmhhqV1XEZA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D-15.489326079789691%26panoid%3D_2ZSt0iTo4ebmhhqV1XEZA%26yaw%3D124.44628108290122!7i16384!8i8192"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Empreendimento residencial de studios da Cyrela, localizado no bairro Cidade Baixa, Porto Alegre - RS.",
+    "valueLabel": "Empreendimento residencial de studios da Cyrela, localizado no bairro Cidade Baixa, Porto Alegre - RS."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:tenant:cyrela:empreendimento:nova-olaria-studios",
+    "valueLabel": "urn:wikivendas:tenant:cyrela:empreendimento:nova-olaria-studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wv:NovaOlariaStudios",
+    "valueLabel": "wv:NovaOlariaStudios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P23",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "valueLabel": "Namespace Cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P24",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q177",
+    "valueLabel": "Empreendimento Imobiliário"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P26",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "valueLabel": "Tenant Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P95",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "valueLabel": "Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P97",
+    "value": "Rua Luiz Afonso, 106",
+    "valueLabel": "Rua Luiz Afonso, 106"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "itemLabel": "Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P98",
+    "value": "Porto Alegre - RS",
+    "valueLabel": "Porto Alegre - RS"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Registro REG-CYR-001",
+    "valueLabel": "Registro REG-CYR-001"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Registro oficial responsável por governar os ativos imobiliários da Cyrela.",
+    "valueLabel": "Registro oficial responsável por governar os ativos imobiliários da Cyrela."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:registro:REG-CYR-001",
+    "valueLabel": "urn:wikivendas:registro:REG-CYR-001"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wvreg:CYR-001",
+    "valueLabel": "wvreg:CYR-001"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P23",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "valueLabel": "Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P25",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "valueLabel": "Tenant Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P26",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q175",
+    "valueLabel": "Namespace Cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q176",
+    "itemLabel": "Registro REG-CYR-001",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P3",
+    "value": "Registro de conhecimento",
+    "valueLabel": "Registro de conhecimento"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Studio — Nova Olaria Studios",
+    "valueLabel": "Studio — Nova Olaria Studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P107",
+    "value": "https://www.cyrela.com.br/empreendimentos/nova-olaria-studios",
+    "valueLabel": "https://www.cyrela.com.br/empreendimentos/nova-olaria-studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P108",
+    "value": "2026-07-16T00:00:00Z",
+    "valueLabel": "2026-07-16T00:00:00Z"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P109",
+    "value": "Em Revisão",
+    "valueLabel": "Em Revisão"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P111",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q244",
+    "valueLabel": "Nova Olaria Studios"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Tipologia Studio do empreendimento Nova Olaria Studios, Cyrela, Porto Alegre - RS.",
+    "valueLabel": "Tipologia Studio do empreendimento Nova Olaria Studios, Cyrela, Porto Alegre - RS."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:tenant:cyrela:empreendimento:nova-olaria-studios:tipologia:studio",
+    "valueLabel": "urn:wikivendas:tenant:cyrela:empreendimento:nova-olaria-studios:tipologia:studio"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wv:NovaOlariaStudios-TipologiaStudio",
+    "valueLabel": "wv:NovaOlariaStudios-TipologiaStudio"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q246",
+    "itemLabel": "Studio — Nova Olaria Studios",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P24",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "valueLabel": "UnidadeTipologia"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "Tenant Cyrela S.A.",
+    "valueLabel": "Tenant Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Espaço administrativo responsável pela governança dos registros da Cyrela S.A.",
+    "valueLabel": "Espaço administrativo responsável pela governança dos registros da Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:tenant:cyrela",
+    "valueLabel": "urn:wikivendas:tenant:cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wvtenant:cyrela",
+    "valueLabel": "wvtenant:cyrela"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P25",
+    "value": "https://wikivendas.wikibase.cloud/entity/Q173",
+    "valueLabel": "Cyrela S.A."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q174",
+    "itemLabel": "Tenant Cyrela S.A.",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P3",
+    "value": "Tenant corporativo",
+    "valueLabel": "Tenant corporativo"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P1",
+    "value": "UnidadeTipologia",
+    "valueLabel": "UnidadeTipologia"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P2",
+    "value": "Conceito de classe que modela uma tipologia/planta de unidade dentro de um empreendimento imobiliário, sempre vinculada a um Item pai EmpreendimentoImobiliario.",
+    "valueLabel": "Conceito de classe que modela uma tipologia/planta de unidade dentro de um empreendimento imobiliário, sempre vinculada a um Item pai EmpreendimentoImobiliario."
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P21",
+    "value": "urn:wikivendas:model:unidadetipologia",
+    "valueLabel": "urn:wikivendas:model:unidadetipologia"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P22",
+    "value": "wv:UnidadeTipologia",
+    "valueLabel": "wv:UnidadeTipologia"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P20",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P20"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P107",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P107"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P108",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P108"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P109",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P109"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P111",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P111"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P112",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P112"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P113",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P113"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P114",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P114"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P115",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P115"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P116",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P116"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P117",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P117"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P118",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P118"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P119",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P119"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P120",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P120"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P121",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P121"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P122",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P122"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P123",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P123"
+  },
+  {
+    "item": "https://wikivendas.wikibase.cloud/entity/Q245",
+    "itemLabel": "UnidadeTipologia",
+    "propLabel": "https://wikivendas.wikibase.cloud/entity/P55",
+    "value": "https://wikivendas.wikibase.cloud/entity/P124",
+    "valueLabel": "https://wikivendas.wikibase.cloud/entity/P124"
+  }
+]
