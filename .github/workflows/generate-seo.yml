@@ -3,28 +3,57 @@ name: Generate SEO Files
 on:
   push:
     branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Executa todo dia à meia-noite
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   generate-seo:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Create Python script
-        run: |
-          mkdir -p scripts
-          cat > scripts/generate_seo.py << 'EOF'
-          # COLE O SCRIPT PYTHON COMPLETO AQUI
-          EOF
-      - name: Run script
-        run: python3 scripts/generate_seo.py
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
-          publish_branch: gh-pages
-          force_orphan: true
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Create directories
+      run: |
+        mkdir -p scripts
+        mkdir -p public
+        mkdir -p public/termos
+        
+    - name: Create Python script
+      run: |
+        cat > scripts/generate_seo.py << 'EOF'
+        # COLE AQUI O SCRIPT PYTHON COMPLETO
+        EOF
+        
+    - name: Run SEO generator
+      run: python3 scripts/generate_seo.py
+      
+    - name: List generated files
+      run: |
+        echo "📁 Arquivos gerados:"
+        ls -la *.xml *.txt *.html _redirects 2>/dev/null || echo "Verificando..."
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        commit_message: '📝 Atualizar arquivos SEO - WikiVendas'
