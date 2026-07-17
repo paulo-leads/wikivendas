@@ -6,15 +6,16 @@ from datetime import datetime
 
 class SEOGenerator:
     def __init__(self):
-        self.owner = os.environ.get('GITHUB_REPOSITORY_OWNER', 'seu-usuario')
-        self.base_url = f"https://{self.owner}.github.io"
+        # Domínio principal
+        self.base_url = "https://wikivendas.com.br"
         self.public_dir = "./public"
         
     def run(self):
-        print("🚀 Gerando arquivos SEO...\n")
+        print("🚀 Gerando arquivos SEO para wikivendas.com.br...")
+        print("=" * 50)
         
         # 1. GERAR SITEMAP
-        print("📝 Gerando sitemap.xml...")
+        print("\n📝 Gerando sitemap.xml...")
         try:
             pages = self.find_pages()
             self.create_sitemap(pages)
@@ -44,9 +45,9 @@ class SEOGenerator:
             self.create_fallback_404()
             print("✅ 404.html fallback criado")
         
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print("✅ Todos os arquivos gerados com sucesso!")
-        print("="*50)
+        print("=" * 50)
         self.list_files()
     
     def find_pages(self):
@@ -56,7 +57,7 @@ class SEOGenerator:
             os.makedirs(self.public_dir, exist_ok=True)
             if not os.path.exists(f"{self.public_dir}/index.html"):
                 with open(f"{self.public_dir}/index.html", "w") as f:
-                    f.write("<html><body><h1>Bem-vindo</h1></body></html>")
+                    f.write("<html><body><h1>WikiVendas</h1></body></html>")
             return pages
         
         for file in glob.glob(f"{self.public_dir}/**/index.html", recursive=True):
@@ -97,29 +98,43 @@ class SEOGenerator:
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>{self.base_url}/termos/</loc>
+    <lastmod>{datetime.now().strftime("%Y-%m-%d")}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>'''
         with open("./sitemap.xml", "w") as f:
             f.write(sitemap)
     
     def create_robots(self):
-        robots = f"""# robots.txt para GitHub Pages
+        robots = f"""# robots.txt para WikiVendas
+# Gerado automaticamente em {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
 User-agent: *
 Allow: /
 Disallow: /404.html
 Disallow: /assets/
 Disallow: /private/
 
+# Sitemap
 Sitemap: {self.base_url}/sitemap.xml
+
+# Configurações de crawler
 Crawl-delay: 1
 
+# Googlebot
 User-agent: Googlebot
 Allow: /
 Disallow: /private/
 
+# Bingbot
 User-agent: Bingbot
 Allow: /
 Disallow: /private/
 
+# GitHub
 User-agent: GitHub
 Disallow: /
 """
@@ -140,7 +155,7 @@ Crawl-delay: 1"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página não encontrada</title>
+    <title>Página não encontrada - WikiVendas</title>
     <meta http-equiv="refresh" content="3;url=/" />
     <style>
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -183,7 +198,7 @@ Crawl-delay: 1"""
         <span class="emoji">🔍</span>
         <h1>404</h1>
         <h2>Página não encontrada</h2>
-        <p>O conteúdo que você procura não está disponível.</p>
+        <p>O conteúdo que você procura não está disponível em <strong>WikiVendas</strong>.</p>
         <div class="redirect">
             <p>⏳ Redirecionando para a página inicial...</p>
         </div>
@@ -196,7 +211,7 @@ Crawl-delay: 1"""
         if (window.navigator.userAgent.includes('Bot') || window.navigator.userAgent.includes('Crawler')) {{
             window.location.href = '/';
         }}
-        console.log('404 Error:', window.location.pathname);
+        console.log('404 Error - WikiVendas:', window.location.pathname);
     </script>
 </body>
 </html>'''
@@ -213,11 +228,11 @@ Crawl-delay: 1"""
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="0;url=/">
-    <title>Redirecionando...</title>
+    <title>Redirecionando para WikiVendas...</title>
 </head>
 <body>
     <script>window.location.href = "/";</script>
-    <p><a href="/">Clique aqui para voltar</a></p>
+    <p><a href="/">Clique aqui para voltar ao WikiVendas</a></p>
 </body>
 </html>"""
         with open("./404.html", "w") as f:
