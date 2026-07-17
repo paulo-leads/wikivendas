@@ -175,54 +175,146 @@
         }
     </style>
 
-    <script type="application/ld+json">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-        "@context":"https://schema.org",
-        "@type":"RealEstateListing",
-        "@id":"https://wikivendas.com.br/nova-olaria#listing",
-        "name":"Nova Olaria — Studios e Residences",
-        "description":"Complexo residencial na Cidade Baixa, Porto Alegre, com studios de 23 a 43 m² e apartamentos de 63 a 90 m².",
-        "url":"https://wikivendas.com.br/nova-olaria",
-        "image":"https://www.cyrela.com.br/sites/default/files/2026-07/Nova-Olaria-Desk.jpg",
-        "address":{"@type":"PostalAddress","streetAddress":"R. Gen. Lima e Silva, 736-776","addressLocality":"Porto Alegre","addressRegion":"RS","addressCountry":"BR"},
-        "geo":{"@type":"GeoCoordinates","latitude":-30.0390549,"longitude":-51.2196089},
-        "offers":[
-            {"@type":"Offer","name":"Studio 23-43 m²","description":"Studio e 1 dormitório","price":349346,"priceCurrency":"BRL","availability":"https://schema.org/InStock"},
-            {"@type":"Offer","name":"2 Dormitórios 63 m²","description":"2 dormitórios, 1 suíte, 1 vaga","price":786091,"priceCurrency":"BRL","availability":"https://schema.org/InStock"},
-            {"@type":"Offer","name":"3 Dormitórios 90 m²","description":"3 suítes, 2 vagas","price":1151531,"priceCurrency":"BRL","availability":"https://schema.org/InStock"}
-        ],
-        "numberOfBedrooms":{"@type":"QuantitativeValue","minValue":1,"maxValue":3},
-        "numberOfBathrooms":{"@type":"QuantitativeValue","minValue":1,"maxValue":3},
-        "parking":{"@type":"QuantitativeValue","minValue":0,"maxValue":2}
-    }
-    </script>
-    <script type="application/ld+json">
+      "@type": "RealEstateListing",
+      "@id": "https://wikivendas.com.br/nova-olaria#listing",
+      "name": "Nova Olaria — Studios e Residences",
+      "description": "Complexo residencial na Cidade Baixa, Porto Alegre. Studios de 23 a 43 m² e apartamentos de 63 a 90 m², ao lado do Parque da Redenção.",
+      "url": "https://wikivendas.com.br/nova-olaria",
+      "image": "https://www.cyrela.com.br/sites/default/files/2026-07/Nova-Olaria-Desk.jpg",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "R. Gen. Lima e Silva, 736-776",
+        "addressLocality": "Porto Alegre",
+        "addressRegion": "RS",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": -30.0390549,
+        "longitude": -51.2196089
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Studio 23 a 43 m²",
+          "description": "Studio e 1 dormitório",
+          "price": 349346,
+          "priceCurrency": "BRL",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "name": "2 Dormitórios 63 m²",
+          "description": "2 dormitórios, 1 suíte, 1 vaga",
+          "price": 786091,
+          "priceCurrency": "BRL",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "name": "3 Dormitórios 90 m²",
+          "description": "3 suítes, 2 vagas",
+          "price": 1151531,
+          "priceCurrency": "BRL",
+          "availability": "https://schema.org/InStock"
+        }
+      ],
+      "floorSize": [
+        { "@type": "QuantitativeValue", "name": "Studio", "value": 33, "unitText": "m²", "minValue": 23, "maxValue": 43 },
+        { "@type": "QuantitativeValue", "name": "2 Dormitórios", "value": 63, "unitText": "m²" },
+        { "@type": "QuantitativeValue", "name": "3 Dormitórios", "value": 90, "unitText": "m²" }
+      ],
+      "numberOfBedrooms": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 3 },
+      "additionalProperty": [
+        { "@type": "PropertyValue", "name": "Número de Banheiros", "value": "1 a 3" },
+        { "@type": "PropertyValue", "name": "Vagas de Garagem", "value": "0 a 2" },
+        { "@type": "PropertyValue", "name": "Bairro", "value": "Cidade Baixa" },
+        { "@type": "PropertyValue", "name": "Estado", "value": "Rio Grande do Sul" }
+      ],
+      "amenityFeature": [
+        { "@type": "LocationFeatureSpecification", "name": "Piscina", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Academia/Fitness", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Salão de Festas", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Bicicletário", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Coworking", "value": true }
+      ]
+    },
     {
-        "@context":"https://schema.org",
-        "@type":"Dataset",
-        "@id":"https://wikivendas.com.br/nova-olaria#dataset",
-        "name":"Nova Olaria — Knowledge Ledger (Wikivendas)",
-        "description":"Registro auditável de entidades, propriedades e proveniência do empreendimento Nova Olaria.",
-        "url":"https://wikivendas.com.br/nova-olaria",
-        "version":"2026-07-17",
-        "dateModified":"2026-07-17T17:58:00-03:00",
-        "creator":{"@type":"Organization","name":"Wikivendas","url":"https://wikivendas.wikibase.cloud"}
-    }
-    </script>
-    <script type="application/ld+json">
+      "@type": "WebPage",
+      "@id": "https://wikivendas.com.br/nova-olaria#webpage",
+      "name": "Nova Olaria — Página Oficial com Cartório de Dados",
+      "description": "Página híbrida com vitrine comercial e cartório de dados estruturados (Knowledge Ledger) do empreendimento Nova Olaria.",
+      "url": "https://wikivendas.com.br/nova-olaria",
+      "datePublished": "2026-07-17",
+      "about": { "@id": "https://wikivendas.com.br/nova-olaria#listing" },
+      "mainEntity": { "@id": "https://wikivendas.com.br/nova-olaria#listing" },
+      "significantLink": [
+        "https://wikivendas.wikibase.cloud",
+        "https://wikivendas.com.br/nova-olaria"
+      ]
+    },
     {
-        "@context":"https://schema.org",
-        "@type":"WebPage",
-        "@id":"https://wikivendas.com.br/nova-olaria#webpage",
-        "name":"Nova Olaria — Página Oficial + Cartório Wikivendas",
-        "description":"Página híbrida com vitrine comercial e cartório de dados estruturados do empreendimento Nova Olaria.",
-        "url":"https://wikivendas.com.br/nova-olaria",
-        "datePublished":"2026-07-17",
-        "about":{"@id":"https://wikivendas.com.br/nova-olaria#listing"},
-        "mainEntity":{"@id":"https://wikivendas.com.br/nova-olaria#listing"},
-        "significantLink":["https://wikivendas.wikibase.cloud","https://wikivendas.com.br/nova-olaria"]
+      "@type": "Dataset",
+      "@id": "https://wikivendas.com.br/nova-olaria#dataset",
+      "name": "Nova Olaria — Knowledge Ledger Wikivendas",
+      "description": "Registro auditável de entidades, propriedades e proveniência do empreendimento Nova Olaria no Knowledge Ledger Wikivendas.",
+      "url": "https://wikivendas.com.br/nova-olaria",
+      "version": "2026-07-17",
+      "dateModified": "2026-07-17T17:58:00-03:00",
+      "creator": {
+        "@type": "Organization",
+        "name": "Wikivendas",
+        "url": "https://wikivendas.wikibase.cloud"
+      },
+      "about": { "@id": "https://wikivendas.com.br/nova-olaria#listing" },
+      "disambiguatingDescription": "Contém definições e tipologias do empreendimento Nova Olaria registradas no grafo de conhecimento Wikivendas."
+    },
+    {
+      "@type": "DefinedTermSet",
+      "@id": "https://wikivendas.wikibase.cloud",
+      "name": "Wikivendas — Knowledge Ledger",
+      "description": "Base de conhecimento imobiliário governada com modelos declarativos e proveniência.",
+      "url": "https://wikivendas.wikibase.cloud",
+      "identifier": "urn:wikivendas:core:organization",
+      "hasDefinedTerm": [
+        {
+          "@type": "DefinedTerm",
+          "@id": "https://wikivendas.wikibase.cloud/entity/Q244",
+          "name": "Nova Olaria",
+          "identifier": "wv:NovaOlaria",
+          "description": "Complexo residencial na Cidade Baixa, Porto Alegre. Studios e apartamentos de 1 a 3 suítes.",
+          "sameAs": "urn:wikivendas:tenant:empreendimento:nova-olaria",
+          "inDefinedTermSet": "https://wikivendas.wikibase.cloud",
+          "additionalProperty": [
+            { "@type": "PropertyValue", "name": "Bairro/Região", "value": "Cidade Baixa" },
+            { "@type": "PropertyValue", "name": "Cidade/UF", "value": "Porto Alegre - RS" },
+            { "@type": "PropertyValue", "name": "Tipologias", "value": "Studio · 2 Dormitórios · 3 Dormitórios" },
+            { "@type": "PropertyValue", "name": "Status da Obra", "value": "Pronto para Morar / Em obras" }
+          ]
+        },
+        {
+          "@type": "DefinedTerm",
+          "@id": "https://wikivendas.wikibase.cloud/entity/Q246",
+          "name": "Studio — Nova Olaria",
+          "identifier": "wv:NovaOlaria-TipologiaStudio",
+          "description": "Tipologia Studio do empreendimento Nova Olaria. Área de 23 a 43 m².",
+          "sameAs": "urn:wikivendas:tenant:empreendimento:nova-olaria:tipologia:studio",
+          "inDefinedTermSet": "https://wikivendas.wikibase.cloud",
+          "additionalProperty": [
+            { "@type": "PropertyValue", "name": "Empreendimento", "value": "Nova Olaria" },
+            { "@type": "PropertyValue", "name": "Área", "value": "23 a 43 m²" }
+          ]
+        }
+      ]
     }
-    </script>
+  ]
+}
+</script>
 </head>
 <body>
 
