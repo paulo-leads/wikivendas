@@ -3,9 +3,7 @@ name: Generate SEO Files
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: '0 0 * * *' # Executa todo dia à meia-noite
-  workflow_dispatch: # Permite execução manual
+  workflow_dispatch:
 
 jobs:
   generate-seo:
@@ -20,22 +18,49 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install dependencies
+    - name: Create directories
       run: |
-        npm install -g sitemap
-        npm install -g xmlbuilder
+        mkdir -p scripts
+        mkdir -p public
         
     - name: Generate sitemap.xml
       run: |
-        node scripts/generate-sitemap.js
+        echo '<?xml version="1.0" encoding="UTF-8"?>
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          <url>
+            <loc>https://${{ github.repository_owner }}.github.io/</loc>
+            <lastmod>'$(date +%Y-%m-%d)'</lastmod>
+            <changefreq>weekly</changefreq>
+            <priority>1.0</priority>
+          </url>
+        </urlset>' > sitemap.xml
         
     - name: Generate robots.txt
       run: |
-        node scripts/generate-robots.js
+        echo 'User-agent: *
+        Allow: /
+        Sitemap: https://${{ github.repository_owner }}.github.io/sitemap.xml
+        Crawl-delay: 1' > robots.txt
         
-    - name: Create 404 handling
+    - name: Create 404 page
       run: |
-        node scripts/handle-404.js
+        echo '<!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="refresh" content="0;url=/" />
+          <title>Redirecionando...</title>
+        </head>
+        <body>
+          <script>window.location.href = "/";</script>
+          <p><a href="/">Clique aqui se não for redirecionado</a></p>
+        </body>
+        </html>' > 404.html
+        
+    - name: List generated files
+      run: |
+        echo "📁 Arquivos gerados:"
+        ls -la *.xml *.txt *.html 2>/dev/null || echo "Alguns arquivos podem não existir"
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
