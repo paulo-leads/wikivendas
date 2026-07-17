@@ -1,0 +1,7 @@
+# Configuração para GitHub Pages
+include:
+  - _redirects
+  - .htaccess
+
+# Personalizar página 404
+404: /404.html
