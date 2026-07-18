@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)</title>
+    <meta name="description" content="Entenda o que a WikiVendas não é, quais problemas não resolve e para quem não é indicada" />
+    <link rel="canonical" href="https://wikivendas.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)" />
+    <meta property="og:description" content="Entenda o que a WikiVendas não é, quais problemas não resolve e para quem não é indicada" />
+    <meta property="og:url" content="https://wikivendas.com.br/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://wikivendas.com.br/og-image.jpg" />
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+
+    {
+      "@type":"WebPage",
+      "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#webpage",
+      "url":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/",
+      "name":"WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)",
+      "headline":"O que a WikiVendas NÃO é, quais problemas não resolve e para quem não é indicada",
+      "description":"Guia explicando o escopo da WikiVendas, suas limitações e os cenários em que uma DKI não é a solução adequada.",
+      "inLanguage":"pt-BR",
+      "isPartOf":{
+         "@id":"https://wikivendas.com.br/#website"
+      },
+      "about":{
+         "@id":"https://wikivendas.com.br/#organization"
+      },
+      "author":{
+         "@id":"https://wikisales.wikibase.cloud/wiki/Item:Q1"
+      },
+      "publisher":{
+         "@id":"https://wikivendas.com.br/#organization"
+      },
+      "primaryImageOfPage":"https://wikivendas.com.br/og-image.jpg",
+      "breadcrumb":{
+         "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#breadcrumb"
+      },
+      "mainEntity":{
+         "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#article"
+      }
+    },
+
+    {
+      "@type":"Article",
+      "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#article",
+      "headline":"O que a WikiVendas NÃO é",
+      "alternativeHeadline":"Limites, escopo e aplicabilidade da Infraestrutura de Conhecimento de Domínio",
+      "description":"Documento explicando quais problemas a WikiVendas resolve, quais não resolve e em quais cenários ela não é recomendada.",
+      "author":{
+         "@id":"https://wikisales.wikibase.cloud/wiki/Item:Q1"
+      },
+      "publisher":{
+         "@id":"https://wikivendas.com.br/#organization"
+      },
+      "mainEntityOfPage":{
+         "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#webpage"
+      },
+      "about":[
+         {
+            "@id":"https://wikivendas.com.br/#organization"
+         },
+         {
+            "@id":"https://wikivendas.com.br/#dataset"
+         },
+         {
+            "@id":"https://wikivendas.com.br/glossario.json#set"
+         },
+         {
+            "@id":"https://wikivendas.com.br/term/zerotrustsales"
+         },
+         {
+            "@id":"https://wikivendas.com.br/term/forensic-revops"
+         },
+         {
+            "@id":"https://wikivendas.com.br/term/compilador-declarativo"
+         }
+      ],
+      "mentions":[
+         {
+            "@type":"Thing",
+            "name":"CRM"
+         },
+         {
+            "@type":"Thing",
+            "name":"LLM"
+         },
+         {
+            "@type":"Thing",
+            "name":"RAG"
+         },
+         {
+            "@type":"Thing",
+            "name":"Governança Semântica"
+         },
+         {
+            "@type":"Thing",
+            "name":"Knowledge Graph"
+         }
+      ]
+    },
+
+    {
+      "@type":"FAQPage",
+      "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#faq",
+      "mainEntity":[
+
+        {
+          "@type":"Question",
+          "name":"A WikiVendas substitui meu CRM?",
+          "acceptedAnswer":{
+             "@type":"Answer",
+             "text":"Não. Ela funciona como camada de governança semântica que complementa CRMs e demais plataformas."
+          }
+        },
+
+        {
+          "@type":"Question",
+          "name":"A WikiVendas serve para pequenas empresas?",
+          "acceptedAnswer":{
+             "@type":"Answer",
+             "text":"Depende da complexidade do conhecimento. Empresas com baixa complexidade podem não obter retorno suficiente."
+          }
+        },
+
+        {
+          "@type":"Question",
+          "name":"A WikiVendas é útil para corretores e equipes comerciais?",
+          "acceptedAnswer":{
+             "@type":"Answer",
+             "text":"Sim. Principalmente quando há necessidade de padronização de conceitos e suporte para agentes de IA."
+          }
+        },
+
+        {
+          "@type":"Question",
+          "name":"A WikiVendas é útil para empresas B2C?",
+          "acceptedAnswer":{
+             "@type":"Answer",
+             "text":"Pode ser, especialmente quando produtos complexos dependem de conhecimento governado para atendimento por IA."
+          }
+        },
+
+        {
+          "@type":"Question",
+          "name":"Como a WikiVendas reduz alucinações em LLMs?",
+          "acceptedAnswer":{
+             "@type":"Answer",
+             "text":"Disponibilizando uma fonte de verdade governada para consulta antes da geração das respostas."
+          }
+        }
+
+      ]
+    },
+
+    {
+      "@type":"BreadcrumbList",
+      "@id":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/#breadcrumb",
+      "itemListElement":[
+         {
+            "@type":"ListItem",
+            "position":1,
+            "name":"Home",
+            "item":"https://wikivendas.com.br/"
+         },
+         {
+            "@type":"ListItem",
+            "position":2,
+            "name":"O que a WikiVendas não é",
+            "item":"https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/"
+         }
+      ]
+    }
+
+  ]
+}
+</script>
+
+    <style>
+        /* ====================================================================== */
+        /* CSS Variables (from pasted_content.txt)                                */
+        /* ====================================================================== */
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --surface-light: #1a1a1a;
+            --surface-hover: #222;
+            --border: #2a2a2a;
+            --border-light: #3a3a3a;
+            --text: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6a6a6a;
+            --accent: #2d7aff;
+            --accent-hover: #5a9aff;
+            --accent-glow: rgba(45, 122, 255, 0.12);
+            --success: #4caf50;
+            --warning: #ffb74d;
+            --danger: #ef5350;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --fs-base: 16px;
+            --fs-sm: 0.875rem;
+            --fs-xs: 0.75rem;
+            --fs-lg: 1.125rem;
+            --fs-xl: 1.25rem;
+            --fs-2xl: 1.5rem;
+            --fs-3xl: 2rem;
+            --fs-4xl: 2.5rem;
+            --fs-5xl: 3.2rem;
+            --lh: 1.6;
+            --lh-tight: 1.2;
+            --max-w: 1200px;
+            --max-w-narrow: 800px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 5rem;
+            --spacing-3xl: 7rem;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --transition: 0.25s ease;
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ====================================================================== */
+        /* Base Styles (from pasted_content.txt)                                  */
+        /* ====================================================================== */
+        *,
+        *::before,
+        *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font);
+            font-size: var(--fs-base);
+            line-height: var(--lh);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color var(--transition), border-color var(--transition);
+        }
+        a:hover { color: var(--accent-hover); }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: var(--lh-tight);
+            letter-spacing: -0.02em;
+        }
+
+        h1 { font-size: var(--fs-5xl); font-weight: 700; letter-spacing: -0.03em; }
+        h2 { font-size: var(--fs-4xl); }
+        h3 { font-size: var(--fs-2xl); }
+        h4 { font-size: var(--fs-xl); }
+
+        .text-muted { color: var(--text-secondary); }
+        .text-sm { font-size: var(--fs-sm); }
+        .text-xs { font-size: var(--fs-xs); }
+        .mono { font-family: var(--mono); }
+        .text-center { text-align: center; }
+        .accent { color: var(--accent); }
+        .accent-glow { color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
+
+        .container {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .container-narrow {
+            max-width: var(--max-w-narrow);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .section {
+            padding: var(--spacing-2xl) 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-of-type { border-bottom: none; }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-header h2 { margin-bottom: var(--spacing-md); }
+        .section-header p { color: var(--text-secondary); max-width: 700px; margin: 0 auto; }
+        .section-label {
+            display: inline-block;
+            color: var(--accent);
+            font-size: var(--fs-sm);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: var(--fs-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-outline:hover {
+            background: var(--accent-glow);
+            color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Header */
+        .hero {
+            background: var(--bg);
+            padding: var(--spacing-3xl) 0;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .hero h1 {
+            max-width: 900px;
+            margin: 0 auto var(--spacing-md);
+            line-height: 1.1;
+        }
+        .hero p {
+            max-width: 700px;
+            margin: 0 auto var(--spacing-lg);
+            color: var(--text-secondary);
+            font-size: var(--fs-lg);
+        }
+        .hero .hero-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Navigation */
+        .main-nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .main-nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+        }
+        .main-nav .logo {
+            font-weight: 700;
+            font-size: var(--fs-xl);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .main-nav .logo .dot {
+            display: inline-block;
+            width: 10px; height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        .main-nav ul {
+            list-style: none;
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+        .main-nav a {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .main-nav a:hover { color: var(--text); }
+        @media (max-width: 768px) {
+            .main-nav .container { flex-direction: column; gap: var(--spacing-md); }
+            .main-nav ul { flex-direction: column; text-align: center; gap: var(--spacing-sm); }
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .card {
+            background: var(--surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: border-color var(--transition), transform var(--transition);
+        }
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-card);
+        }
+        .card h4 { margin-bottom: var(--spacing-xs); }
+        .card p { color: var(--text-secondary); font-size: var(--fs-sm); line-height: var(--lh); }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: var(--surface-light);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--accent);
+            margin: var(--spacing-lg) 0;
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(239, 83, 80, 0.1);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--danger);
+            margin: var(--spacing-lg) 0;
+            font-family: var(--mono);
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        /* FAQ */
+        .faq-list { max-width: var(--max-w-narrow); margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); padding: var(--spacing-md) 0; }
+        .faq-item:first-child { border-top: 1px solid var(--border); }
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--fs-lg);
+            padding: var(--spacing-sm) 0;
+            user-select: none;
+            gap: var(--spacing-md);
+            transition: color var(--transition);
+        }
+        .faq-question:hover { color: var(--accent); }
+        .faq-question .q-text { flex: 1; }
+        .faq-toggle { font-size: 1.6rem; line-height: 1; color: var(--text-muted); transition: transform var(--transition); flex-shrink: 0; }
+        .faq-toggle.open { transform: rotate(45deg); color: var(--accent); }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s ease;
+            opacity: 0;
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            line-height: var(--lh);
+            padding-left: 0;
+        }
+        .faq-answer.open {
+            max-height: 1200px; /* Arbitrary large value */
+            padding: var(--spacing-sm) 0 var(--spacing-md);
+            opacity: 1;
+        }
+        .faq-answer p { margin-bottom: var(--spacing-sm); }
+        .faq-answer p:last-child { margin-bottom: 0; }
+        .faq-answer ul, .faq-answer ol {
+            padding-left: var(--spacing-lg);
+            margin: var(--spacing-sm) 0;
+            line-height: var(--lh);
+        }
+        .faq-answer li { margin-bottom: var(--spacing-xs); }
+
+        /* CTA */
+        .cta-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            text-align: center;
+            margin: var(--spacing-2xl) 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -20%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section .cta-content { position: relative; z-index: 1; }
+        .cta-section h3 { font-size: var(--fs-3xl); margin-bottom: var(--spacing-sm); }
+        .cta-section p {
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto var(--spacing-lg);
+            font-size: var(--fs-lg);
+        }
+        .cta-section .cta-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Footer */
+        .footer {
+            padding: var(--spacing-xl) 0 var(--spacing-lg);
+            border-top: 1px solid var(--border);
+            margin-top: var(--spacing-2xl);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        .footer-brand .brand {
+            font-weight: 700;
+            font-size: var(--fs-lg);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .footer-brand .brand .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        .footer-brand p {
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            max-width: 280px;
+            line-height: var(--lh);
+        }
+        .footer-col h5 {
+            font-size: var(--fs-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: var(--spacing-xs); }
+        .footer-col a { color: var(--text-secondary); font-size: var(--fs-sm); }
+        .footer-col a:hover { color: var(--text); }
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+        }
+        .footer-bottom a { color: var(--text-muted); }
+        .footer-bottom a:hover { color: var(--text); }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 { font-size: var(--fs-4xl); }
+            h2 { font-size: var(--fs-3xl); }
+            .hero { padding: var(--spacing-xl) 0; }
+            .section { padding: var(--spacing-xl) 0; }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; }
+            .footer-brand p { margin-left: auto; margin-right: auto; }
+            .footer-col ul { padding-left: 0; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: var(--fs-3xl); }
+            h2 { font-size: var(--fs-2xl); }
+            .btn { padding: 0.6rem 1.2rem; font-size: var(--fs-xs); }
+        }
+
+        /* Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="hero">
+        <div class="container">
+            <h1 class="reveal">WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)</h1>
+            <p class="reveal">Compreender o que a WikiVendas não é, quais problemas não resolve e para quem não é indicada é crucial para identificar o verdadeiro valor da solução.</p>
+            <div class="hero-buttons reveal">
+                <a href="#nao-e" class="btn btn-primary">O que Não É</a>
+                <a href="#nao-indicada" class="btn btn-outline">Para Quem Não É</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="main-nav">
+        <div class="container">
+            <a href="#" class="logo"><span class="dot"></span> WikiVendas</a>
+            <ul>
+                <li><a href="#nao-e">O que Não É</a></li>
+                <li><a href="#nao-resolve">Problemas Não Resolvidos</a></li>
+                <li><a href="#nao-indicada">Não Indicada Para</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#conclusao">Conclusão</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Section 1: O que Não É -->
+        <section id="nao-e" class="section">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-label">Esclarecendo o Escopo</span>
+                    <h2>O que a WikiVendas NÃO É</h2>
+                    <p>A WikiVendas se posiciona como uma camada fundamental para a governança semântica do conhecimento, distinguindo-se claramente de ferramentas de software mais comuns. Ela não é uma ferramenta genérica de vendas ou marketing.</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card reveal">
+                        <h4>❌ Um CRM</h4>
+                        <p>Não gerencia interações com clientes ou pipeline de vendas. Garante que os termos e conceitos usados no CRM tenham uma definição canônica e auditável.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Um Playbook Estático</h4>
+                        <p>Não é um manual passivo. Transforma metodologias em ativos de conhecimento dinâmicos e operacionais, consultáveis por sistemas e IAs.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Um Chatbot por si só</h4>
+                        <p>Não é uma interface conversacional. É a "fonte da verdade" que alimenta chatbots e agentes de IA para respostas precisas e sem "alucinações".</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Um Curso ou Treinamento</h4>
+                        <p>Não oferece educação ou capacitação. Seu valor reside na estruturação do conhecimento que pode subsidiar treinamentos mais eficazes.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Automação de Marketing/Vendas</h4>
+                        <p>Não executa campanhas ou automatiza tarefas. Garante a consistência semântica dos dados que as ferramentas de automação utilizam.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Enriquecimento de Leads</h4>
+                        <p>Não coleta ou aprimora dados de leads. Define o que um "lead qualificado" significa para a sua empresa, para maior precisão nas ferramentas.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Um SaaS Genérico</h4>
+                        <p>É uma solução altamente especializada para governança semântica, não uma plataforma de software como serviço de uso geral.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ Um Glossário Simples</h4>
+                        <p>Vai muito além de uma lista de termos. Cada conceito possui autoria, versão, evidência e rastreabilidade, garantindo definições confiáveis.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>❌ RAG por Similaridade</h4>
+                        <p>Não busca textos parecidos. Fornece definições autorizadas e governadas, distinguindo fato de opinião para LLMs, evitando "alucinações".</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box reveal">
+                    <strong>Ponto-chave:</strong> A WikiVendas é uma camada de governança semântica que define o que as palavras significam antes de virarem dados no CRM, prompts para IA ou métricas no dashboard. Ela cria a fonte de verdade do seu domínio comercial.
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Problemas Não Resolvidos -->
+        <section id="nao-resolve" class="section">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-label">Onde a Ação Humana é Insubistituível</span>
+                    <h2>Problemas que a WikiVendas NÃO Resolve Diretamente</h2>
+                    <p>A WikiVendas é uma ferramenta de governança do conhecimento, não de execução comercial ou estratégica. Ela otimiza a base de informação, mas não substitui a inteligência humana em diversas frentes.</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card reveal">
+                        <h4>Geração de Leads e Oportunidades</h4>
+                        <p>Não prospecta clientes, não gera demanda e não cria oportunidades. Aprimora a qualidade do conhecimento que embasa essas atividades.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Baixo Desempenho Individual</h4>
+                        <p>Não substitui treinamento, motivação ou habilidades de negociação. É um suporte, não um substituto para a competência humana.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Estratégia de Precificação/Produto</h4>
+                        <p>Não define preços, desenvolve produtos ou formula estratégias de mercado. Garante que o conhecimento sobre esses elementos seja claro e consistente.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Deficiências em Outras Ferramentas</h4>
+                        <p>Não corrige bugs ou falhas de usabilidade em CRMs ou ERPs. Complementa, fornecendo dados de alta qualidade, mas não substitui a qualidade das plataformas.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Cultura Organizacional Resistente</h4>
+                        <p>Não resolve problemas de resistência cultural ou falta de engajamento. Fornece a estrutura, mas a adoção depende da cultura da empresa.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Ausência de Metodologia de Vendas</h4>
+                        <p>Operacionaliza metodologias existentes, mas não as cria do zero. Empresas sem processos bem definidos precisarão desenvolvê-los.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box reveal">
+                    <strong>Atenção:</strong> A WikiVendas é uma ferramenta de governança, não de execução. Ela melhora a qualidade e a consistência do conhecimento, mas não substitui ações comerciais, estratégia de negócio ou habilidades humanas.
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Não Indicada Para -->
+        <section id="nao-indicada" class="section">
+            <div class="container">
+                <div class="section-header reveal">
+                    <span class="section-label">Onde a Simplicidade Supera a Complexidade</span>
+                    <h2>Para Quem a WikiVendas NÃO É Indicada</h2>
+                    <p>A WikiVendas é uma solução robusta para problemas de conhecimento. Sua aplicação é mais eficaz em cenários onde a ambiguidade e a inconsistência geram custos significativos.</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card reveal">
+                        <h4>Startups Muito Iniciais ou Microempresas</h4>
+                        <p>Com operações simples e pouco volume de conhecimento, se não tem um site por exemplo o investimento em uma DKI podem ser superdimensionados.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Empresas B2C de Baixo Ticket</h4>
+                        <p>Commodities que já tem definições intrínsecas Para produtos de consumo massivo, o ROI de uma DKI pode ser menor.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Negócios Individuais/Profissionais Liberais</h4>
+                        <p>Sem múltiplos sistemas ou grandes volumes de conhecimento divergente que não queiram se destacaar, a WikiVendas pode ser excessiva. Exceções para nichos técnicos.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Sem Problemas de Inconsistência Semântica</h4>
+                        <p>Se a empresa já possui linguagem unificada e termos bem definidos e tenha isso em um grafo para servir llms, o valor incremental da WikiVendas pode ser limitado.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Busca Apenas Ferramentas de Execução</h4>
+                        <p>Se o foco é apenas implementar ferramentas para executar tarefas sem governança da informação e não se importa do que IA fala do negócio, a WikiVendas não será a solução principal.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Sem Disposição para Governança</h4>
+                        <p>Exige compromisso organizacional e investimento para modelar e governar o conhecimento um exemplo é como manter um site. Sem isso, os benefícios podem não ser obtidos.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Não Vende B2B ou B2C Alto Ticket</h4>
+                        <p>Vendas simples sem processo. Modelos de negócio diferentes podem ter necessidades diferentes e outras soluções podem ser mais adequadas.</p>
+                    </div>
+
+                    <div class="card reveal">
+                        <h4>Sem Integração com Sistemas Existentes</h4>
+                        <p>Funciona melhor integrada com Sites, CRMs, BI, APIs. Empresas sem esses sistemas ou que não desejam integrá-los podem não aproveitar todo o potencial.</p>
+                    </div>
+                </div>
+
+                <div class="highlight-box reveal">
+                    <strong>Resumo:</strong> A WikiVendas é ideal para empresas B2B ou B2C consolidadas ou em formação que desejam começar da maneira certa, com equipes distribuídas ou até mesmo solo, com conhecimento e que enfrentam problemas reais de inconsistência semântica. Se sua empresa não se encaixa nesse perfil, outras soluções podem ser mais apropriadas.
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: FAQ -->
+        <section id="faq" class="section">
+            <div class="container-narrow">
+                <div class="section-header reveal">
+                    <span class="section-label">Perguntas Frequentes</span>
+                    <h2>Sua Dúvida Pode Estar Aqui</h2>
+                    <p>Respostas para as perguntas mais comuns sobre o escopo e aplicabilidade da WikiVendas.</p>
+                </div>
+
+                <div class="faq-list">
+                    <div class="faq-item reveal">
+                        <div class="faq-question">
+                            <span class="q-text">A WikiVendas substitui meu CRM ou outras ferramentas de vendas?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Não, a WikiVendas não substitui seu CRM, ferramentas de automação de marketing ou outras plataformas de vendas. Ela atua como uma camada fundamental de governança do conhecimento, garantindo que os dados que alimentam essas ferramentas sejam consistentes, precisos e auditáveis. Ela melhora a eficácia das suas ferramentas existentes, fornecendo uma "fonte da verdade" para o seu domínio comercial.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item reveal">
+                        <div class="faq-question">
+                            <span class="q-text">Minha PME é muito pequena para precisar da WikiVendas?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Para PMEs com operações muito simples e pouca complexidade de conhecimento, a WikiVendas pode ser superdimensionada. No entanto, se sua PME lida com vendas B2B, produtos de alto valor, equipes de vendas distribuídas, ou precisa garantir que seus agentes de IA (LLMs) respondam com informações precisas e específicas do seu negócio, a WikiVendas pode ser extremamente valiosa. Ela ajuda a escalar o conhecimento, mesmo em equipes menores, evitando a perda de informações quando funcionários saem.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item reveal">
+                        <div class="faq-question">
+                            <span class="q-text">Corretores de imóveis e gestores de equipes de vendas podem se beneficiar?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Sim, especialmente em mercados como o imobiliário de alto padrão ou em equipes de vendas com grande volume de informações. Corretores que precisam desambiguar termos como "empreendimento", "unidade", "disponibilidade", "fase comercial" ou "perfil de comprador" se beneficiarão enormemente. Gestores de equipes de vendas podem usar a WikiVendas para padronizar a linguagem, as objeções e as melhores práticas, garantindo que todos os vendedores operem com a mesma "verdade" e que os LLMs internos forneçam suporte consistente.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item reveal">
+                        <div class="faq-question">
+                            <span class="q-text">A WikiVendas é útil para empresas B2C?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Embora o foco principal da WikiVendas seja B2B e vendas de alto ticket, empresas B2C com produtos que dependem fortemente de LLMs para atendimento ao cliente podem se beneficiar. Por exemplo, uma loja com um item de catálogo com características muito específicas e que precisa garantir que a IA de atendimento ao cliente responda com a "verdade" sobre esse produto, pode usar a WikiVendas para governar essa informação. A clareza semântica é valiosa em qualquer contexto onde a ambiguidade gera custos ou má experiência.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item reveal">
+                        <div class="faq-question">
+                            <span class="q-text">Como a WikiVendas ajuda a gerir a "verdade" para LLMs?</span>
+                            <span class="faq-toggle">+</span>
+                        </div>
+                        <div class="faq-answer">
+                            <p>LLMs são treinados em dados genéricos da internet e podem "alucinar" ou fornecer informações imprecisas sobre o seu negócio. A WikiVendas fornece um grafo de conhecimento com as definições canônicas, regras e exceções da sua empresa. Isso permite que os LLMs consultem essa "fonte da verdade" antes de gerar respostas, garantindo que a IA opere com a realidade do seu negócio, e não com o consenso público ou informações desatualizadas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Conclusão -->
+        <section id="conclusao" class="section">
+            <div class="container-narrow">
+                <div class="section-header reveal">
+                    <span class="section-label">Perspectiva Estratégica</span>
+                    <h2>Conhecer os Limites é Essencial para o Sucesso</h2>
+                    <p>Compreender o que a WikiVendas não é, quais problemas ela não resolve e para quem não é indicada é tão importante quanto compreender sua proposta de valor. A solução é especializada, não genérica, e seu sucesso depende de um alinhamento claro entre os problemas da empresa e as capacidades da plataforma.</p>
+                </div>
+
+                <div class="cta-section reveal">
+                    <div class="cta-content">
+                        <h3>Sua Empresa Precisa de uma Fonte de Verdade Governada?</h3>
+                        <p>Se você enfrenta desafios com definições conflitantes, conhecimento disperso, ou IAs que "alucinam" informações sobre seu negócio, a WikiVendas pode ser a solução.</p>
+                        <div class="cta-buttons">
+                            <a href="https://wikivendas.com.br" target="_blank" rel="noopener" class="btn btn-primary">Falar com Especialista</a>
+                            <a href="https://wikivendas.com.br/README.md" target="_blank" rel="noopener" class="btn btn-outline">Conhecer Mais</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="brand"><span class="dot"></span> WikiVendas</a>
+                    <p>Infraestrutura de Conhecimento de Domínio para Vendas B2B. Transformando conhecimento disperso em registros governados.</p>
+                </div>
+                <div class="footer-col">
+                    <h5>Navegação</h5>
+                    <ul>
+                        <li><a href="#nao-e">O que Não É</a></li>
+                        <li><a href="#nao-resolve">Problemas Não Resolvidos</a></li>
+                        <li><a href="#nao-indicada">Não Indicada Para</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Recursos</h5>
+                    <ul>
+                        <li><a href="https://wikivendas.com.br/#solucao" target="_blank" rel="noopener">A Solução</a></li>
+                        <li><a href="https://wikivendas.com.br/#problema" target="_blank" rel="noopener">O Problema</a></li>
+                        <li><a href="https://wikivendas.com.br/README.md" target="_blank" rel="noopener">Documentação</a></li>
+                        <li><a href="https://wikivendas.com.br/sobre/" target="_blank" rel="noopener">Sobre Nós</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Contato</h5>
+                    <ul>
+                        <li><a href="mailto:contato@pauloleads.com.br">Email</a></li>
+                        <li><a href="https://wa.me/5519982642481" target="_blank" rel="noopener">WhatsApp</a></li>
+                        <li><a href="https://wikivendas.com.br" target="_blank" rel="noopener">Site Oficial</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 WikiVendas. Todos os direitos reservados.</p>
+                <p>Desenvolvido com <span style="color: var(--accent);">❤️</span> por Manus AI</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // FAQ Accordion
+            document.querySelectorAll('.faq-question').forEach(item => {
+                item.addEventListener('click', event => {
+                    const faqItem = item.closest('.faq-item');
+                    const answer = faqItem.querySelector('.faq-answer');
+                    const toggle = faqItem.querySelector('.faq-toggle');
+
+                    const isOpen = answer.classList.contains('open');
+
+                    // Close all other open answers
+                    document.querySelectorAll('.faq-answer.open').forEach(openAnswer => {
+                        if (openAnswer !== answer) {
+                            openAnswer.classList.remove('open');
+                            openAnswer.closest('.faq-item').querySelector('.faq-toggle').classList.remove('open');
+                        }
+                    });
+
+                    // Toggle current answer
+                    if (isOpen) {
+                        answer.classList.remove('open');
+                        toggle.classList.remove('open');
+                    } else {
+                        answer.classList.add('open');
+                        toggle.classList.add('open');
+                    }
+                });
+            });
+
+            // Reveal on scroll animation
+            const revealElements = document.querySelectorAll('.reveal');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    } else {
+                        // Optional: remove 'active' class when out of view
+                        // entry.target.classList.remove('active');
+                    }
+                });
+            }, { threshold: 0.1 }); // Trigger when 10% of the element is visible
+
+            revealElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>
