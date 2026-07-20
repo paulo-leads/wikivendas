@@ -2,113 +2,133 @@
 """
 gerar.py — WikiVendas Sitemap & Knowledge Graph Generator
 ==========================================================
-Gera sitemap.xml e graph.json automaticamente varrendo os HTMLs do repositório.
+Gera sitemap.xml e graph.json varrendo HTMLs e extraindo:
+  - Título, descrição, prioridade (por padrão do caminho)
+  - Relações internas (links para outras páginas do domínio)
+  - DOIs, Wikibase IDs, URNs (detectados no HTML)
 
 Uso:
-    python scripts/gerar.py                    # usa diretório atual como raiz
-    python scripts/gerar.py --repo-dir /caminho/wikivendas  # caminho customizado
-
-Executa localmente ou via GitHub Actions (workflow incluso).
+    python scripts/gerar.py
+    python scripts/gerar.py --repo-dir . --output-dir .
 """
 
 import argparse
-import hashlib
+import json
 import os
 import re
 import sys
-from datetime import date, datetime
-from xml.etree.ElementTree import Element, SubElement, tostring
+from datetime import date
+from urllib.parse import urlparse, urlunparse
 from xml.dom import minidom
+from xml.etree.ElementTree import Element, SubElement, tostring
 
 # ── Config ────────────────────────────────────────────────────────────
 BASE_URL = "https://wikivendas.com.br"
 DOMAIN = "wikivendas.com.br"
 TODAY = date.today().isoformat()
 
-# Prioridades por padrão de caminho (regex -> priority, changefreq)
+# Prioridades por regex no caminho relativo
 PRIORITY_RULES = [
-    (r"^index\.html$",                              1.0, "weekly"),
-    (r"^sobre/index\.html$",                        0.9, "monthly"),
-    (r"^termos/(intencionar|mio)/index\.html$",     0.9, "monthly"),
-    (r"^termos/[^/]+/index\.html$",                 0.8, "monthly"),
-    (r"^sobre/.+/index\.html$",                     0.7, "monthly"),
-    (r"^mio\.html$",                                0.8, "monthly"),
-    (r"^nova-olaria\.html$",                        0.7, "monthly"),
-    (r".+\.html$",                                  0.6, "monthly"),
+    (r"^index\.html$",                                          1.0, "weekly"),
+    (r"^sobre/index\.html$",                                    0.9, "monthly"),
+    (r"^termos/(intencionar|mio)/index\.html$",                 0.9, "monthly"),
+    (r"^termos/[^/]+/index\.html$",                             0.8, "monthly"),
+    (r"^sobre/.+/index\.html$",                                 0.7, "monthly"),
+    (r"^mio\.html$",                                            0.8, "monthly"),
+    (r"^nova-olaria\.html$",                                    0.7, "monthly"),
+    (r".+\.html$",                                              0.6, "monthly"),
 ]
 
-# Relações semânticas manuais (origem -> [destinos])
-KNOWN_RELATIONS = {
-    "":                    ["sobre/", "termos/", "mio.html", "nova-olaria.html"],
-    "sobre/":              ["sobre/o-que-a-wikivendas-nao-e/"],
-    "sobre/o-que-a-wikivendas-nao-e/": [],
-    "termos/":             [
-        "termos/compra-de-leads-qualificados/",
-        "termos/fornecedor-de-leads/",
-        "termos/generative-lead-spoofing/",
-        "termos/intencionar/",
-        "termos/lead-b2b/",
-        "termos/mio/",
-    ],
-    "termos/intencionar/": ["termos/mio/"],
-    "termos/mio/":         ["termos/intencionar/"],
-    "termos/compra-de-leads-qualificados/": ["termos/fornecedor-de-leads/", "termos/lead-b2b/"],
-    "termos/fornecedor-de-leads/": ["termos/compra-de-leads-qualificados/"],
-    "termos/lead-b2b/":    ["termos/compra-de-leads-qualificados/"],
-    "termos/generative-lead-spoofing/": [],
-    "mio.html":            ["termos/mio/", "termos/intencionar/"],
-    "nova-olaria.html":    [],
-}
 
-# DOIs conhecidas
-KNOWN_DOIS = {
-    "termos/intencionar/": "https://doi.org/10.5281/zenodo.20860586",
-    "sobre/":              "https://doi.org/10.5281/zenodo.21272104",
-}
-
-# Wikibase IDs
-KNOWN_WIKIBASE = {
-    "termos/intencionar/": "Q21",
-    "termos/mio/":         "Q92",
-    "mio.html":            "Q92",
-}
-
-SAME_AS = {
-    "termos/intencionar/": "https://doi.org/10.5281/zenodo.20860586",
-    "termos/mio/":         "https://wikivendas.wikibase.cloud/entity/Q92",
-    "mio.html":            "https://wikivendas.wikibase.cloud/entity/Q92",
-    "sobre/":              "https://doi.org/10.5281/zenodo.21272104",
-}
-
-
-# ── Parsers ───────────────────────────────────────────────────────────
+# ── Parsers de HTML ──────────────────────────────────────────────────
 
 def extract_title(html: str) -> str:
-    """Extrai o <title> de um HTML."""
     m = re.search(r"<title[^>]*>([^<]+)</title>", html, re.IGNORECASE | re.DOTALL)
     return m.group(1).strip() if m else ""
 
 
 def extract_description(html: str) -> str:
-    """Extrai meta description."""
-    m = re.search(
+    for pattern in [
         r'<meta\s+name=["\']description["\']\s+content=["\']([^"\']+)["\']',
-        html, re.IGNORECASE,
-    )
-    if not m:
-        m = re.search(
-            r'<meta\s+content=["\']([^"\']+)["\']\s+name=["\']description["\']',
-            html, re.IGNORECASE,
-        )
-    return m.group(1).strip() if m else ""
+        r'<meta\s+content=["\']([^"\']+)["\']\s+name=["\']description["\']',
+    ]:
+        m = re.search(pattern, html, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+    return ""
 
+
+def extract_internal_links(html: str, current_rel_dir: str) -> set:
+    """
+    Extrai links internos (<a href="...">) que apontam para outras
+    páginas do próprio domínio. Retorna CONJUNTO de caminhos relativos
+    (ex: {'termos/intencionar/', 'sobre/'}).
+    """
+    links = set()
+    # Pega todos os hrefs
+    for m in re.finditer(r'href=["\']([^"\']+)["\']', html, re.IGNORECASE):
+        href = m.group(1).strip()
+        # Ignora âncoras, vazios, externos absolutos
+        if not href or href.startswith("#") or href.startswith("mailto:") or href.startswith("tel:"):
+            continue
+        if href.startswith("http"):
+            # Se for URL externa, ignora (não é link interno do site)
+            if DOMAIN not in href and BASE_URL not in href:
+                continue
+            # Extrai o path da URL absoluta
+            parsed = urlparse(href)
+            href = parsed.path.lstrip("/")
+        else:
+            # Limpa âncora no final
+            href = href.split("#")[0].rstrip("/")
+            # Resolve relativo ao diretório da página atual
+            if not href.startswith("/"):
+                # Se não tem index.html no final, assume que é diretório
+                if current_rel_dir:
+                    href = current_rel_dir.rstrip("/") + "/" + href
+            else:
+                href = href.lstrip("/")
+
+        # Normaliza: se termina sem .html e não termina em /, assume /
+        if not href.endswith(".html") and not href.endswith("/"):
+            href += "/"
+        # Se termina com index.html, remove
+        if href.endswith("/index.html"):
+            href = href[:-10]  # remove 'index.html'
+        if href.endswith(".html"):
+            # arquivo .html solto na raiz
+            pass
+        elif href and not href.endswith("/"):
+            href += "/"
+
+        if href:
+            links.add(href)
+
+    return links
+
+
+def extract_dois(html: str) -> list:
+    """Extrai DOIs do HTML."""
+    return re.findall(r'https://doi\.org/10\.\d{4,}/[^\s"\'<>]+', html)
+
+
+def extract_wikibase_ids(html: str) -> list:
+    """Extrai IDs Wikibase (Q números)."""
+    return re.findall(r'\bQ\d{2,}\b', html)
+
+
+def extract_urns(html: str) -> list:
+    """Extrai URNs do padrão wikivendas."""
+    return re.findall(r'urn:wikivendas:[^\s"\'<>]+', html)
+
+
+# ── Scanner ──────────────────────────────────────────────────────────
 
 def find_html_files(repo_dir: str):
-    """Varre o diretório e retorna lista de caminhos relativos de arquivos HTML."""
+    """Varre recursivamente ignorando diretórios ocultos e scripts."""
     htmls = []
     repo_dir = os.path.abspath(repo_dir)
     for root, dirs, files in os.walk(repo_dir):
-        # Pula diretórios ocultos e scripts
         dirs[:] = [d for d in dirs if not d.startswith(".") and d not in ("scripts", "node_modules", "__pycache__")]
         for f in files:
             if f.endswith(".html"):
@@ -119,70 +139,82 @@ def find_html_files(repo_dir: str):
 
 
 def classify(rel_path: str):
-    """Retorna (priority, changefreq) para um caminho relativo."""
     for pattern, prio, freq in PRIORITY_RULES:
         if re.match(pattern, rel_path):
             return prio, freq
     return 0.5, "monthly"
 
 
-def url_path(rel_path: str) -> str:
-    """Converte caminho relativo para URL amigável."""
+def rel_to_url_path(rel_path: str) -> str:
+    """Converte 'termos/intencionar/index.html' -> 'termos/intencionar/'"""
     if rel_path == "index.html":
         return ""
     if rel_path.endswith("/index.html"):
-        return rel_path[:-10]  # remove 'index.html'
+        return rel_path[:-10]  # remove '/index.html'
+    if rel_path.endswith(".html"):
+        return rel_path
     return rel_path
 
 
-def page_id(rel_path: str) -> str:
+def url_path_to_rel_dir(url_path: str) -> str:
+    """Converte URL path para diretório relativo para resolução de links."""
+    if not url_path:
+        return ""
+    if url_path.endswith(".html"):
+        return "/".join(url_path.split("/")[:-1]) if "/" in url_path else ""
+    return url_path
+
+
+def page_id(url_path: str) -> str:
     """Gera ID canônico para o grafo."""
-    up = url_path(rel_path)
-    return f"wikivendas:{up.replace('/', '-').strip('-') or 'root'}"
+    clean = url_path.rstrip("/").replace("/", "-").replace(".html", "")
+    return f"wikivendas:{clean or 'root'}"
 
 
 # ── Sitemap Generator ─────────────────────────────────────────────────
 
 def generate_sitemap(pages: list) -> str:
-    """Gera sitemap.xml como string formatada."""
     xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
-
     urlset = Element("urlset", xmlns=xmlns)
 
-    for rel_path, title, desc, priority, changefreq in sorted(pages, key=lambda p: -p[3]):
-        loc = f"{BASE_URL}/{url_path(rel_path)}"
-
+    for rel_path, meta in sorted(pages, key=lambda p: -p[1]["priority"]):
+        loc = f"{BASE_URL}/{rel_to_url_path(rel_path)}"
         url = SubElement(urlset, "url")
-        loc_el = SubElement(url, "loc")
-        loc_el.text = loc
-
-        lastmod = SubElement(url, "lastmod")
-        lastmod.text = TODAY
-
-        cf = SubElement(url, "changefreq")
-        cf.text = changefreq
-
-        pr = SubElement(url, "priority")
-        pr.text = f"{priority:.1f}"
+        SubElement(url, "loc").text = loc
+        SubElement(url, "lastmod").text = TODAY
+        SubElement(url, "changefreq").text = meta["changefreq"]
+        SubElement(url, "priority").text = f"{meta['priority']:.1f}"
 
     raw = tostring(urlset, encoding="unicode")
     dom = minidom.parseString(raw.encode())
     return dom.toprettyxml(indent="  ")
 
 
-# ── Graph Generator ───────────────────────────────────────────────────
+# ── Graph Generator ──────────────────────────────────────────────────
 
-def generate_graph(pages: list) -> str:
-    """Gera graph.json (JSON-LD) do grafo de conhecimento."""
-    graph = []
+def generate_graph(pages: dict, rel_path_to_links: dict) -> str:
+    """
+    Gera JSON-LD do grafo de conhecimento.
+    `pages`: dict[rel_path] -> meta dict
+    `rel_path_to_links`: dict[rel_path] -> set de URL paths (destinos)
+    """
+    graph_nodes = []
+    id_map = {}  # url_path -> node id
 
-    for rel_path, title, desc, priority, changefreq in pages:
-        pid = page_id(rel_path)
-        up = url_path(rel_path)
+    # Primeiro, cria índice de url_path -> id
+    for rel_path in pages:
+        up = rel_to_url_path(rel_path)
+        pid = page_id(up)
+        id_map[up] = pid
+
+    # Cria nós para cada página
+    for rel_path, meta in pages.items():
+        up = rel_to_url_path(rel_path)
+        pid = page_id(up)
         url = f"{BASE_URL}/{up}"
         is_root = up == ""
 
-        # Determina o tipo Schema.org
+        # Determina tipo Schema.org
         if "sobre" in rel_path:
             stype = "schema:AboutPage"
         elif up.startswith("termos/"):
@@ -191,103 +223,95 @@ def generate_graph(pages: list) -> str:
             stype = "schema:WebPage"
 
         node = {
-            "id": pid,
-            "type": stype,
-            "name": title or "WikiVendas",
-            "description": desc or title or "WikiVendas — Domain Knowledge Infrastructure",
+            "@id": pid,
+            "@type": stype,
+            "name": meta["title"] or "WikiVendas",
+            "description": meta["description"] or meta["title"] or "WikiVendas — Domain Knowledge Infrastructure",
             "url": url,
-            "priority": priority,
+            "priority": meta["priority"],
         }
 
-        # Hierarquia
+        # Hierarquia (isPartOf)
         if is_root:
-            pass  # root não tem isPartOf
+            pass
         elif up.startswith("termos/"):
-            node["isPartOf"] = "wikivendas:glossario"
+            node["isPartOf"] = {"@id": "wikivendas:glossario"}
         elif up.startswith("sobre/"):
             if rel_path == "sobre/index.html":
-                node["isPartOf"] = "wikivendas:root"
+                node["isPartOf"] = {"@id": "wikivendas:root"}
             else:
-                node["isPartOf"] = "wikivendas:sobre"
+                node["isPartOf"] = {"@id": "wikivendas:sobre"}
         else:
-            node["isPartOf"] = "wikivendas:root"
+            node["isPartOf"] = {"@id": "wikivendas:root"}
 
-        # Relações
-        rel_key = up + "/" if up and not up.endswith("/") else up
-        if not rel_key:
-            rel_key = ""  # root
-
-        children = KNOWN_RELATIONS.get(rel_key, [])
-        if children:
-            child_ids = [page_id(c + "index.html") if c.endswith("/") else page_id(c) for c in children]
-            node["hasPart"] = child_ids
+        # Relações (hasPart) — links internos que SÃO páginas conhecidas
+        internal_links = rel_path_to_links.get(rel_path, set())
+        known_links = [l for l in internal_links if l in id_map or l.rstrip("/") in id_map]
+        # Normaliza: tenta match exato, se não acha, tenta com /
+        resolved_links = []
+        for link in known_links:
+            target_id = id_map.get(link) or id_map.get(link.rstrip("/"))
+            if target_id:
+                resolved_links.append({"@id": target_id})
+        if resolved_links:
+            node["hasPart"] = resolved_links
 
         # DOIs
-        doi = KNOWN_DOIS.get(rel_key)
-        if doi:
-            node["sameAs"] = doi
+        dois = meta.get("dois", [])
+        if dois:
+            node["sameAs"] = dois[0] if len(dois) == 1 else dois
 
         # Wikibase
-        wb = KNOWN_WIKIBASE.get(rel_key)
-        if wb:
-            node["wikibaseId"] = wb
+        wb_ids = meta.get("wikibase_ids", [])
+        if wb_ids:
+            node["wikibaseId"] = wb_ids[0]
 
-        # sameAs
-        sa = SAME_AS.get(rel_key)
-        if sa and sa != doi:
-            existing = node.get("sameAs", [])
-            if isinstance(existing, str):
-                existing = [existing]
-            if sa not in existing:
-                existing.append(sa)
-            node["sameAs"] = existing if len(existing) > 1 else existing[0]
+        # URNs
+        urns = meta.get("urns", [])
+        if urns:
+            node["urn"] = urns[0]
 
-        graph.append(node)
+        graph_nodes.append(node)
 
     # Glossário (coleção)
-    glossary_terms = [n for n in graph if n.get("isPartOf") == "wikivendas:glossario"]
-    glossary = {
-        "id": "wikivendas:glossario",
-        "type": "schema:CollectionPage",
+    glossary_terms = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:glossario"]
+    graph_nodes.append({
+        "@id": "wikivendas:glossario",
+        "@type": "schema:CollectionPage",
         "name": "Glossário de Termos WikiVendas",
-        "description": "Registro canônico de termos do domínio de vendas B2B, leads qualificados e ontologia comercial.",
+        "description": "Registro canônico de termos do domínio de vendas B2B e ontologia comercial.",
         "url": f"{BASE_URL}/termos/",
-        "isPartOf": "wikivendas:root",
+        "isPartOf": {"@id": "wikivendas:root"},
         "priority": 0.9,
-        "hasPart": [n["id"] for n in glossary_terms],
-    }
-    graph.append(glossary)
+        "hasPart": [{"@id": n["@id"]} for n in glossary_terms],
+    })
 
     # Sobre (pai)
-    about_pages = [n for n in graph if n.get("isPartOf") == "wikivendas:sobre"]
-    about = {
-        "id": "wikivendas:sobre",
-        "type": "schema:AboutPage",
+    about_pages = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:sobre"]
+    graph_nodes.append({
+        "@id": "wikivendas:sobre",
+        "@type": "schema:AboutPage",
         "name": "Sobre a WikiVendas",
-        "description": "Propósito, hipótese de trabalho, perguntas de pesquisa e arquitetura experimental do projeto WikiVendas.",
+        "description": "Propósito, hipótese de trabalho e arquitetura experimental do projeto WikiVendas.",
         "url": f"{BASE_URL}/sobre/",
-        "isPartOf": "wikivendas:root",
+        "isPartOf": {"@id": "wikivendas:root"},
         "priority": 0.9,
-        "hasPart": [n["id"] for n in about_pages],
-        "sameAs": KNOWN_DOIS.get("sobre/", ""),
-    }
-    graph.append(about)
+        "hasPart": [{"@id": n["@id"]} for n in about_pages],
+    })
 
     # Root
-    children_root = [n["id"] for n in graph if n.get("isPartOf") == "wikivendas:root"]
-    root = {
-        "id": "wikivendas:root",
-        "type": "schema:WebPage",
+    root_children = [n["@id"] for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:root"]
+    root_node = {
+        "@id": "wikivendas:root",
+        "@type": "schema:WebPage",
         "name": "WikiVendas — Infraestrutura de Conhecimento de Domínio",
         "description": "Infraestrutura de Conhecimento de Domínio para vendas B2B e mercados de alto ticket.",
-        "url": BASE_URL + "/",
+        "url": f"{BASE_URL}/",
         "priority": 1.0,
-        "hasPart": children_root,
+        "hasPart": [{"@id": n} for n in root_children],
     }
-    graph.append(root)
+    graph_nodes.append(root_node)
 
-    # Monta JSON-LD final
-    import json
     output = {
         "@context": {
             "@version": 1.1,
@@ -296,21 +320,18 @@ def generate_graph(pages: list) -> str:
             "wikivendas": f"{BASE_URL}/",
             "name": "schema:name",
             "description": "schema:description",
-            "about": "schema:about",
-            "isPartOf": "dct:isPartOf",
-            "hasPart": "dct:hasPart",
-            "references": "dct:references",
-            "isReferencedBy": "dct:isReferencedBy",
-            "relation": "dct:relation",
-            "type": "@type",
-            "id": "@id",
+            "isPartOf": {"@id": "dct:isPartOf", "@type": "@id"},
+            "hasPart": {"@id": "dct:hasPart", "@type": "@id"},
+            "sameAs": "schema:sameAs",
+            "url": "schema:url",
+            "priority": "schema:priority",
         },
-        "@graph": graph,
+        "@graph": graph_nodes,
         "totalPages": len(pages),
-        "totalNodes": len(graph),
+        "totalNodes": len(graph_nodes),
         "generated": TODAY,
         "domain": DOMAIN,
-        "description": f"Grafo completo do WikiVendas. {len(pages)} páginas, {len(graph)} nós, relacionamentos semânticos entre todas as entidades.",
+        "description": f"Grafo completo do WikiVendas. {len(pages)} páginas, {len(graph_nodes)} nós, relacionamentos extraídos automaticamente dos links internos.",
     }
 
     return json.dumps(output, indent=2, ensure_ascii=False)
@@ -320,12 +341,12 @@ def generate_graph(pages: list) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Gera sitemap.xml e graph.json para WikiVendas")
-    parser.add_argument("--repo-dir", default=".", help="Diretório raiz do repositório (default: .)")
-    parser.add_argument("--output-dir", default=".", help="Diretório de saída (default: repo-dir)")
+    parser.add_argument("--repo-dir", default=".", help="Diretório raiz do repositório")
+    parser.add_argument("--output-dir", default=None, help="Diretório de saída (default = repo-dir)")
     args = parser.parse_args()
 
     repo_dir = os.path.abspath(args.repo_dir)
-    output_dir = os.path.abspath(args.output_dir)
+    output_dir = os.path.abspath(args.output_dir) if args.output_dir else repo_dir
 
     if not os.path.isdir(repo_dir):
         print(f"❌ Diretório não encontrado: {repo_dir}")
@@ -335,8 +356,10 @@ def main():
     html_files = find_html_files(repo_dir)
     print(f"   Encontrados {len(html_files)} arquivos HTML")
 
-    # Extrai metadados de cada página
-    pages = []
+    # Fase 1: ler todos os HTMLs e extrair metadados + links
+    pages = {}
+    rel_path_to_links = {}
+
     for rel_path in html_files:
         full_path = os.path.join(repo_dir, rel_path)
         try:
@@ -349,38 +372,58 @@ def main():
         title = extract_title(html)
         desc = extract_description(html)
         priority, changefreq = classify(rel_path)
-        pages.append((rel_path, title, desc, priority, changefreq))
+        dois = extract_dois(html)
+        wb_ids = extract_wikibase_ids(html)
+        urns = extract_urns(html)
+
+        pages[rel_path] = {
+            "title": title,
+            "description": desc,
+            "priority": priority,
+            "changefreq": changefreq,
+            "dois": dois,
+            "wikibase_ids": wb_ids,
+            "urns": urns,
+        }
+
+        # Extrai links internos
+        current_rel_dir = os.path.dirname(rel_path)
+        internal_links = extract_internal_links(html, current_rel_dir)
+        rel_path_to_links[rel_path] = internal_links
 
     if not pages:
         print("❌ Nenhuma página HTML encontrada. Nada a gerar.")
         sys.exit(1)
 
-    # ── Gera sitemap.xml ──
+    # Fase 2: gerar sitemap.xml
     os.makedirs(output_dir, exist_ok=True)
-    sitemap_xml = generate_sitemap(pages)
+    sitemap_xml = generate_sitemap(list(pages.items()))
     sitemap_path = os.path.join(output_dir, "sitemap.xml")
     with open(sitemap_path, "w", encoding="utf-8") as f:
         f.write(sitemap_xml)
     url_count = sitemap_xml.count("<url>")
     print(f"✅ sitemap.xml gerado: {sitemap_path} ({url_count} URLs)")
 
-    # ── Gera graph.json ──
-    graph_json = generate_graph(pages)
+    # Fase 3: gerar graph.json
+    graph_json = generate_graph(pages, rel_path_to_links)
     graph_path = os.path.join(output_dir, "graph.json")
     with open(graph_path, "w", encoding="utf-8") as f:
         f.write(graph_json)
-    node_count = len(json.loads(graph_json)["@graph"])
-    print(f"✅ graph.json gerado: {graph_path} ({node_count} nós)")
 
-    # ── Validação rápida ──
-    import json as json_lib
+    # Valida JSON
     try:
-        json_lib.loads(graph_json)
-        print("   ✅ JSON-LD válido")
-    except json_lib.JSONDecodeError as e:
-        print(f"   ❌ JSON inválido: {e}")
+        parsed = json.loads(graph_json)
+        node_count = len(parsed["@graph"])
+        print(f"✅ graph.json gerado: {graph_path} ({node_count} nós)")
+        # Mostra algumas relações descobertas
+        for node in parsed["@graph"]:
+            if "hasPart" in node and "@id" in node:
+                targets = [h["@id"] for h in node["hasPart"]]
+                print(f"   🔗 {node['@id']} -> {targets}")
+    except json.JSONDecodeError as e:
+        print(f"❌ graph.json inválido: {e}")
 
-    print("\n🎯 Pronto! Commit e push para publicar.")
+    print(f"\n🎯 Pronto! Commit e push para publicar.")
 
 
 if __name__ == "__main__":
