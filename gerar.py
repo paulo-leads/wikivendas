@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-"""
-gerar.py — WikiVendas Sitemap & Knowledge Graph Generator
-Gera sitemap.xml e graph.json varrendo HTMLs e extraindo
-título, descrição, links internos, DOIs, Wikibase IDs e URNs.
-Uso: python gerar.py
-"""
-
 import json
 import os
 import re
