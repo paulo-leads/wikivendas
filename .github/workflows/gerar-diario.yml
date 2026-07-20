@@ -2,31 +2,29 @@ name: Gerar sitemap.xml e graph.json (diário)
 
 on:
   schedule:
-    # Roda todo dia às 06:00 UTC (03:00 BRT)
     - cron: "0 6 * * *"
-  workflow_dispatch:    # permite rodar manualmente pelo GitHub
+  workflow_dispatch:
   push:
-    branches: [main]    # roda também quando der push na main
+    branches: [main]
 
 permissions:
-  contents: write       # precisa para commitar de volta
+  contents: write
 
 jobs:
   gerar:
     runs-on: ubuntu-latest
     steps:
-      - name: ⬇️ Checkout do repositório
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: 🐍 Setup Python 3.11
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: 🏗️ Gerar sitemap.xml e graph.json
+      - name: Gerar artefatos
         run: python scripts/gerar.py --repo-dir . --output-dir .
 
-      - name: 👀 Verificar se houve mudanças
+      - name: Verificar mudanças
         id: diff
         run: |
           if git diff --quiet sitemap.xml graph.json; then
@@ -35,11 +33,11 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 📦 Commitar e push (se mudou)
+      - name: Commit e push
         if: steps.diff.outputs.changed == 'true'
         run: |
           git config user.name "wikivendas-bot"
           git config user.email "bot@wikivendas.com.br"
           git add sitemap.xml graph.json
-          git commit -m "🤖 Atualização automática: sitemap.xml + graph.json ($(date +%Y-%m-%d))"
+          git commit -m "🤖 Atualização automática: sitemap + graph ($(date +%Y-%m-%d))"
           git push
