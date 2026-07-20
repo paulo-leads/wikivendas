@@ -15,14 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Gerar artefatos
-        run: python scripts/gerar.py --repo-dir . --output-dir .
+        run: python gerar.py
 
       - name: Verificar mudanças
         id: diff
