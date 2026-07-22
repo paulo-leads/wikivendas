@@ -20,54 +20,6 @@
       "urn": "urn:wikivendas:property:note"
     },
     {
-      "@id": "wikivendas:root",
-      "@type": "schema:WebPage",
-      "name": "WikiVendas — Infraestrutura de Conhecimento de Dominio para Vendas B2B",
-      "description": "WikiVendas estrutura a fonte de verdade do seu dominio comercial. Registra, desambigua, versiona, protege e operacionaliza o conhecimento que torna sua empresa diferente.",
-      "url": "https://wikivendas.com.br/",
-      "priority": 1.0,
-      "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20475915",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
-      ],
-      "wikibaseId": "Q140427962",
-      "urn": "urn:wikivendas:method:mio"
-    },
-    {
       "@id": "wikivendas:mio",
       "@type": "schema:WebPage",
       "name": "DKI Registry Knowledge Graph — Domain Knowledge Infrastructure",
@@ -92,17 +44,6 @@
       "urn": "urn:wikivendas:core:organization"
     },
     {
-      "@id": "wikivendas:sobre",
-      "@type": "schema:AboutPage",
-      "name": "Sobre — WikiVendas DKI | Infraestrutura de Conhecimento de Domínio",
-      "description": "A WikiVendas DKI não é um CRM, uma wiki ou uma plataforma de conteúdo. É uma Infraestrutura de Conhecimento de Domínio: uma camada semântica que organiza pessoas, empresas, conceitos, metodologias e ontologias em um grafo executável.",
-      "url": "https://wikivendas.com.br/sobre/",
-      "priority": 0.9,
-      "isPartOf": {
-        "@id": "wikivendas:root"
-      }
-    },
-    {
       "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e",
       "@type": "schema:AboutPage",
       "name": "WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)",
@@ -125,14 +66,8 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "wikibaseId": "Q20",
       "urn": "urn:wikivendas:def:comprar-leads-qualificados"
@@ -149,14 +84,8 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "wikibaseId": "Q19",
       "urn": "urn:wikivendas:def:fornecedor-de-leads"
@@ -198,15 +127,8 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "wikibaseId": "Q20",
       "urn": "urn:wikivendas:def:lead-b2b"
@@ -289,9 +211,6 @@
           "@id": "wikivendas:nova-olaria"
         },
         {
-          "@id": "wikivendas:sobre"
-        },
-        {
           "@id": "wikivendas:glossario"
         },
         {
@@ -301,7 +220,7 @@
     }
   ],
   "totalPages": 12,
-  "totalNodes": 15,
+  "totalNodes": 13,
   "generated": "2026-07-22",
   "domain": "wikivendas.com.br"
 }
