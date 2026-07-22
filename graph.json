@@ -1,0 +1,307 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "dct": "http://purl.org/dc/terms/",
+    "schema": "https://schema.org/",
+    "wikivendas": "https://wikivendas.com.br/"
+  },
+  "@graph": [
+    {
+      "@id": "wikivendas:docs-mio",
+      "@type": "schema:WebPage",
+      "name": "Wikivendas Data Hub",
+      "description": "Wikivendas Enterprise - 91 entities with structured data",
+      "url": "https://wikivendas.com.br/docs/mio/",
+      "priority": 0.6,
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      },
+      "wikibaseId": "Q170",
+      "urn": "urn:wikivendas:property:note"
+    },
+    {
+      "@id": "wikivendas:root",
+      "@type": "schema:WebPage",
+      "name": "WikiVendas — Infraestrutura de Conhecimento de Dominio para Vendas B2B",
+      "description": "WikiVendas estrutura a fonte de verdade do seu dominio comercial. Registra, desambigua, versiona, protege e operacionaliza o conhecimento que torna sua empresa diferente.",
+      "url": "https://wikivendas.com.br/",
+      "priority": 1.0,
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20475915",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104"
+      ],
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:method:mio"
+    },
+    {
+      "@id": "wikivendas:mio",
+      "@type": "schema:WebPage",
+      "name": "DKI Registry Knowledge Graph — Domain Knowledge Infrastructure",
+      "description": "Registro oficial do DKI Registry Knowledge Graph. Define a correlação entre a Domain Knowledge Infrastructure (DKI), o Método da Imutabilidade Ontológica (MIO) e a presença digital, com referência ao Portal da Transparência.",
+      "url": "https://wikivendas.com.br/mio.html",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      }
+    },
+    {
+      "@id": "wikivendas:nova-olaria",
+      "@type": "schema:WebPage",
+      "name": "Nova Olaria | Cidade Baixa - Porto Alegre | Página Oficial + Cartório",
+      "description": "Conheça o Nova Olaria na Cidade Baixa, Porto Alegre. Studios de 23 a 43 m² e apartamentos de 63 a 90 m² ao lado do Parque da Redenção. Página oficial com cartório Wikivendas.",
+      "url": "https://wikivendas.com.br/nova-olaria.html",
+      "priority": 0.7,
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      },
+      "wikibaseId": "Q244",
+      "urn": "urn:wikivendas:core:organization"
+    },
+    {
+      "@id": "wikivendas:sobre",
+      "@type": "schema:AboutPage",
+      "name": "Sobre — WikiVendas DKI | Infraestrutura de Conhecimento de Domínio",
+      "description": "A WikiVendas DKI não é um CRM, uma wiki ou uma plataforma de conteúdo. É uma Infraestrutura de Conhecimento de Domínio: uma camada semântica que organiza pessoas, empresas, conceitos, metodologias e ontologias em um grafo executável.",
+      "url": "https://wikivendas.com.br/sobre/",
+      "priority": 0.9,
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      }
+    },
+    {
+      "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e",
+      "@type": "schema:AboutPage",
+      "name": "WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)",
+      "description": "Entenda o que a WikiVendas não é, quais problemas não resolve e para quem não é indicada",
+      "url": "https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/",
+      "priority": 0.7,
+      "isPartOf": {
+        "@id": "wikivendas:sobre"
+      }
+    },
+    {
+      "@id": "wikivendas:termos-compra-de-leads-qualificados",
+      "@type": "schema:DefinedTerm",
+      "name": "Comprar Leads Qualificados — WikiVendas DKI",
+      "description": "Definição ontológica de Compra de Leads Qualificados na WikiVendas DKI. Conceito, escopo, exclusões, proveniência e contexto na Domain Knowledge Infrastructure para Inteligência Comercial, RevOps e Agentes de IA.",
+      "url": "https://wikivendas.com.br/termos/compra-de-leads-qualificados/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586"
+      ],
+      "wikibaseId": "Q20",
+      "urn": "urn:wikivendas:def:comprar-leads-qualificados"
+    },
+    {
+      "@id": "wikivendas:termos-fornecedor-de-leads",
+      "@type": "schema:DefinedTerm",
+      "name": "Fornecedor de Leads — WikiVendas DKI",
+      "description": "Definição ontológica de Fornecedor de Leads na WikiVendas DKI. Conceito, escopo, exclusões, proveniência e contexto na Domain Knowledge Infrastructure para Inteligência Comercial, RevOps e Agentes de IA.",
+      "url": "https://wikivendas.com.br/termos/fornecedor-de-leads/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586"
+      ],
+      "wikibaseId": "Q19",
+      "urn": "urn:wikivendas:def:fornecedor-de-leads"
+    },
+    {
+      "@id": "wikivendas:termos-generative-lead-spoofing",
+      "@type": "schema:DefinedTerm",
+      "name": "Generative Lead Spoofing | WikiVendas DKI",
+      "description": "Generative Lead Spoofing é a infiltração de leads sintéticos que contamina CRMs, infla o topo do funil e induz desperdício operacional. Entenda o mecanismo e a resposta da WikiVendas DKI.",
+      "url": "https://wikivendas.com.br/termos/generative-lead-spoofing/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "wikibaseId": "Q13"
+    },
+    {
+      "@id": "wikivendas:termos-intencionar",
+      "@type": "schema:DefinedTerm",
+      "name": "Intencionar · Wikivendas Knowledge Graph",
+      "description": "Intencionar · Wikivendas Knowledge Graph",
+      "url": "https://wikivendas.com.br/termos/intencionar/",
+      "priority": 0.9,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "wikibaseId": "Q21",
+      "urn": "urn:wikivendas:def:intencionar"
+    },
+    {
+      "@id": "wikivendas:termos-lead-b2b",
+      "@type": "schema:DefinedTerm",
+      "name": "Lead B2B — WikiVendas DKI",
+      "description": "Definição ontológica de Lead B2B na WikiVendas DKI. Contato ou organização no mercado business-to-business, com ciclo de decisão estendido, múltiplos decisores e ticket médio elevado.",
+      "url": "https://wikivendas.com.br/termos/lead-b2b/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586"
+      ],
+      "wikibaseId": "Q20",
+      "urn": "urn:wikivendas:def:lead-b2b"
+    },
+    {
+      "@id": "wikivendas:termos-mio",
+      "@type": "schema:DefinedTerm",
+      "name": "Wikivendas · Conceitos Knowledge Ledger",
+      "description": "Wikivendas — Conceitos Knowledge Ledger: 16 entidades governadas.",
+      "url": "https://wikivendas.com.br/termos/mio/",
+      "priority": 0.9,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "wikibaseId": "Q170",
+      "urn": "urn:wikivendas:asset:arquitetura-dki-svg"
+    },
+    {
+      "@id": "wikivendas:glossario",
+      "@type": "schema:CollectionPage",
+      "name": "Glossário de Termos WikiVendas",
+      "description": "Registro canônico de termos do domínio de vendas B2B.",
+      "url": "https://wikivendas.com.br/termos/",
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      },
+      "priority": 0.9,
+      "hasPart": [
+        {
+          "@id": "wikivendas:termos-compra-de-leads-qualificados"
+        },
+        {
+          "@id": "wikivendas:termos-fornecedor-de-leads"
+        },
+        {
+          "@id": "wikivendas:termos-generative-lead-spoofing"
+        },
+        {
+          "@id": "wikivendas:termos-intencionar"
+        },
+        {
+          "@id": "wikivendas:termos-lead-b2b"
+        },
+        {
+          "@id": "wikivendas:termos-mio"
+        }
+      ]
+    },
+    {
+      "@id": "wikivendas:sobre",
+      "@type": "schema:AboutPage",
+      "name": "Sobre a WikiVendas",
+      "description": "Propósito e arquitetura experimental do projeto WikiVendas.",
+      "url": "https://wikivendas.com.br/sobre/",
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      },
+      "priority": 0.9,
+      "hasPart": [
+        {
+          "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e"
+        }
+      ]
+    },
+    {
+      "@id": "wikivendas:root",
+      "@type": "schema:WebPage",
+      "name": "WikiVendas — Infraestrutura de Conhecimento de Domínio",
+      "description": "Infraestrutura de Conhecimento de Domínio para vendas B2B.",
+      "url": "https://wikivendas.com.br/",
+      "priority": 1.0,
+      "hasPart": [
+        {
+          "@id": "wikivendas:docs-mio"
+        },
+        {
+          "@id": "wikivendas:mio"
+        },
+        {
+          "@id": "wikivendas:nova-olaria"
+        },
+        {
+          "@id": "wikivendas:sobre"
+        },
+        {
+          "@id": "wikivendas:glossario"
+        },
+        {
+          "@id": "wikivendas:sobre"
+        }
+      ]
+    }
+  ],
+  "totalPages": 12,
+  "totalNodes": 15,
+  "generated": "2026-07-22",
+  "domain": "wikivendas.com.br"
+}
