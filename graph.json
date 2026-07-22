@@ -3,7 +3,9 @@
     "@version": 1.1,
     "dct": "http://purl.org/dc/terms/",
     "schema": "https://schema.org/",
-    "wikivendas": "https://wikivendas.com.br/"
+    "wikivendas": "https://wikivendas.com.br/",
+    "wd": "https://wikivendas.com.br/entity/",
+    "urn": "urn:wikivendas:"
   },
   "@graph": [
     {
@@ -15,6 +17,9 @@
       "priority": 0.6,
       "isPartOf": {
         "@id": "wikivendas:root"
+      },
+      "identifier": {
+        "@id": "wd:Q170"
       },
       "wikibaseId": "Q170",
       "urn": "urn:wikivendas:property:note"
@@ -39,6 +44,9 @@
       "priority": 0.7,
       "isPartOf": {
         "@id": "wikivendas:root"
+      },
+      "identifier": {
+        "@id": "wd:Q244"
       },
       "wikibaseId": "Q244",
       "urn": "urn:wikivendas:core:organization"
@@ -65,10 +73,13 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.21272104"
       ],
+      "identifier": {
+        "@id": "wd:Q20"
+      },
       "wikibaseId": "Q20",
       "urn": "urn:wikivendas:def:comprar-leads-qualificados"
     },
@@ -83,10 +94,13 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.21272104"
       ],
+      "identifier": {
+        "@id": "wd:Q19"
+      },
       "wikibaseId": "Q19",
       "urn": "urn:wikivendas:def:fornecedor-de-leads"
     },
@@ -100,6 +114,9 @@
       "isPartOf": {
         "@id": "wikivendas:glossario"
       },
+      "identifier": {
+        "@id": "wd:Q13"
+      },
       "wikibaseId": "Q13"
     },
     {
@@ -111,6 +128,9 @@
       "priority": 0.9,
       "isPartOf": {
         "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q21"
       },
       "wikibaseId": "Q21",
       "urn": "urn:wikivendas:def:intencionar"
@@ -126,10 +146,13 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586",
         "https://doi.org/10.5281/zenodo.21272104"
       ],
+      "identifier": {
+        "@id": "wd:Q20"
+      },
       "wikibaseId": "Q20",
       "urn": "urn:wikivendas:def:lead-b2b"
     },
@@ -142,6 +165,9 @@
       "priority": 0.9,
       "isPartOf": {
         "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q170"
       },
       "wikibaseId": "Q170",
       "urn": "urn:wikivendas:asset:arquitetura-dki-svg"
