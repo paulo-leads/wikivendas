@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gera sitemap.xml + graph.json para WikiVendas."""
+"""Gera sitemap.xml + graph.json para WikiVendas — versão semântica."""
 
 import json
 import os
@@ -24,11 +24,27 @@ PRIORITY_RULES = [
     (r".+\.html$",                                 0.6, "monthly"),
 ]
 
+# ── Relações semânticas manuais ──
+SEMANTIC_RELATIONS = {
+    "termos/compra-de-leads-qualificados": {
+        "broader": ["wikivendas:termos-lead-b2b"],
+        "relatedTo": ["wikivendas:termos-fornecedor-de-leads"],
+    },
+    "termos/fornecedor-de-leads": {
+        "broader": ["wikivendas:termos-lead-b2b"],
+        "relatedTo": ["wikivendas:termos-compra-de-leads-qualificados"],
+    },
+    "termos/generative-lead-spoofing": {
+        "broader": ["wikivendas:termos-lead-b2b"],
+    },
+    "termos/intencionar": {
+        "relatedTo": ["wikivendas:termos-compra-de-leads-qualificados"],
+    },
+}
 
 def extract_title(html):
     m = re.search(r"<title[^>]*>([^<]+)</title>", html, re.IGNORECASE | re.DOTALL)
     return m.group(1).strip() if m else ""
-
 
 def extract_description(html):
     patterns = [
@@ -41,16 +57,12 @@ def extract_description(html):
             return m.group(1).strip()
     return ""
 
-
 def extract_internal_links(html, current_rel_dir):
-    """Extrai links internos e resolve caminhos relativos corretamente."""
     links = set()
     for m in re.finditer(r'href=["\']([^"\']+)["\']', html, re.IGNORECASE):
         href = m.group(1).strip()
         if not href or href.startswith("#") or href.startswith("mailto:") or href.startswith("tel:"):
             continue
-
-        # URLs absolutas externas — filtra pelo domínio
         if href.startswith("http"):
             if DOMAIN not in href and BASE_URL not in href:
                 continue
@@ -61,31 +73,23 @@ def extract_internal_links(html, current_rel_dir):
             if href.startswith("/"):
                 href = href.lstrip("/")
             elif current_rel_dir:
-                # Junta o diretório atual com o href relativo e normaliza (resolve ..)
                 href = os.path.normpath(os.path.join(current_rel_dir, href)).replace("\\", "/")
-
-        # Normaliza: remove /index.html e trailing slash
         if href.endswith("/index.html"):
             href = href[:-10] if href != "index.html" else ""
         elif href.endswith("/"):
             href = href.rstrip("/")
-
         if href:
             links.add(href)
     return links
 
-
 def extract_dois(html):
-    return re.findall(r'https://doi\.org/10\.\d{4,}/[^\s"\'<>]+', html)
-
+    return list(set(re.findall(r'https://doi\.org/10\.\d{4,}/[^\s"\'<>]+', html)))
 
 def extract_wikibase_ids(html):
     return re.findall(r'\bQ\d{2,}\b', html)
 
-
 def extract_urns(html):
     return re.findall(r'urn:wikivendas:[^\s"\'<>]+', html)
-
 
 def find_html_files(repo_dir):
     htmls = []
@@ -97,16 +101,13 @@ def find_html_files(repo_dir):
                 htmls.append(os.path.relpath(os.path.join(root, f), repo_dir))
     return sorted(htmls)
 
-
 def classify(rel_path):
     for pattern, prio, freq in PRIORITY_RULES:
         if re.match(pattern, rel_path):
             return prio, freq
     return 0.5, "monthly"
 
-
 def rel_to_url(rel_path):
-    """Converte caminho relativo do HTML para path de URL."""
     if rel_path == "index.html":
         return ""
     if rel_path.endswith("/index.html"):
@@ -115,11 +116,9 @@ def rel_to_url(rel_path):
         return rel_path
     return rel_path + "/"
 
-
 def page_id(url_path):
     clean = url_path.rstrip("/").replace("/", "-").replace(".html", "")
     return f"wikivendas:{clean or 'root'}"
-
 
 def generate_sitemap(pages, today):
     xmlns = "http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -134,7 +133,6 @@ def generate_sitemap(pages, today):
     raw = tostring(urlset, encoding="unicode")
     return minidom.parseString(raw.encode()).toprettyxml(indent="  ")
 
-
 def generate_graph(pages, rel_path_to_links, today):
     graph_nodes = []
     id_map = {}
@@ -145,6 +143,11 @@ def generate_graph(pages, rel_path_to_links, today):
 
     for rel_path, meta in pages.items():
         up = rel_to_url(rel_path)
+
+        # ⛔ EVITA DUPLICAÇÃO: root e sobre/index.html são nós agregadores
+        if up == "" or rel_path == "sobre/index.html":
+            continue
+
         pid = page_id(up)
         url = f"{BASE_URL}/{up}"
 
@@ -167,11 +170,11 @@ def generate_graph(pages, rel_path_to_links, today):
         if up.startswith("termos/"):
             node["isPartOf"] = {"@id": "wikivendas:glossario"}
         elif up.startswith("sobre/"):
-            node["isPartOf"] = {"@id": "wikivendas:sobre" if rel_path != "sobre/index.html" else "wikivendas:root"}
-        elif up != "":
+            node["isPartOf"] = {"@id": "wikivendas:sobre"}
+        else:
             node["isPartOf"] = {"@id": "wikivendas:root"}
 
-        # Resolve links internos usando o id_map
+        # Relações estruturais (links internos)
         internal_links = rel_path_to_links.get(rel_path, set())
         resolved = []
         for link in internal_links:
@@ -182,21 +185,33 @@ def generate_graph(pages, rel_path_to_links, today):
         if resolved:
             node["hasPart"] = resolved
 
+        # Relações semânticas manuais
+        if rel_path in SEMANTIC_RELATIONS:
+            for rel_type, targets in SEMANTIC_RELATIONS[rel_path].items():
+                node[rel_type] = [{"@id": t} for t in targets]
+
+        # DOIs (deduplicados)
         dois = meta.get("dois", [])
         if dois:
             node["sameAs"] = dois[0] if len(dois) == 1 else dois
+
+        # Wikibase ID
         wb = meta.get("wikibase_ids", [])
         if wb:
             node["wikibaseId"] = wb[0]
+
+        # URN
         urns = meta.get("urns", [])
         if urns:
             node["urn"] = urns[0]
 
         graph_nodes.append(node)
 
+    # ── Nós agregadores ───────────────────────────────────────
+
     # Glossário
     gt = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:glossario"]
-    graph_nodes.append({
+    glossario_node = {
         "@id": "wikivendas:glossario",
         "@type": "schema:CollectionPage",
         "name": "Glossário de Termos WikiVendas",
@@ -205,11 +220,12 @@ def generate_graph(pages, rel_path_to_links, today):
         "isPartOf": {"@id": "wikivendas:root"},
         "priority": 0.9,
         "hasPart": [{"@id": n["@id"]} for n in gt],
-    })
+    }
+    graph_nodes.append(glossario_node)
 
     # Sobre
     ap = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:sobre"]
-    graph_nodes.append({
+    sobre_node = {
         "@id": "wikivendas:sobre",
         "@type": "schema:AboutPage",
         "name": "Sobre a WikiVendas",
@@ -218,11 +234,12 @@ def generate_graph(pages, rel_path_to_links, today):
         "isPartOf": {"@id": "wikivendas:root"},
         "priority": 0.9,
         "hasPart": [{"@id": n["@id"]} for n in ap],
-    })
+    }
+    graph_nodes.append(sobre_node)
 
     # Root
     rc = [n["@id"] for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:root"]
-    graph_nodes.append({
+    root_node = {
         "@id": "wikivendas:root",
         "@type": "schema:WebPage",
         "name": "WikiVendas — Infraestrutura de Conhecimento de Domínio",
@@ -230,7 +247,11 @@ def generate_graph(pages, rel_path_to_links, today):
         "url": f"{BASE_URL}/",
         "priority": 1.0,
         "hasPart": [{"@id": n} for n in rc],
-    })
+    }
+    graph_nodes.append(root_node)
+
+    # Métricas reais (distinct @id)
+    unique_ids = set(n["@id"] for n in graph_nodes)
 
     output = {
         "@context": {
@@ -241,12 +262,11 @@ def generate_graph(pages, rel_path_to_links, today):
         },
         "@graph": graph_nodes,
         "totalPages": len(pages),
-        "totalNodes": len(graph_nodes),
+        "totalNodes": len(unique_ids),
         "generated": today,
         "domain": DOMAIN,
     }
     return json.dumps(output, indent=2, ensure_ascii=False)
-
 
 def main():
     today = date.today().isoformat()
@@ -284,6 +304,17 @@ def main():
         print("❌ Nenhuma página HTML encontrada.")
         sys.exit(1)
 
+    # ⚠️ Validação de conflitos wikibaseId
+    wikibase_check = {}
+    for rel_path, meta in pages.items():
+        wb = meta.get("wikibase_ids", [])
+        if wb:
+            qid = wb[0]
+            if qid in wikibase_check:
+                print(f"   ⚠️  Conflito wikibaseId: {qid} em '{rel_path}' e '{wikibase_check[qid]}'")
+            else:
+                wikibase_check[qid] = rel_path
+
     # Sitemap
     with open("sitemap.xml", "w", encoding="utf-8") as f:
         f.write(generate_sitemap(list(pages.items()), today))
@@ -297,9 +328,8 @@ def main():
     # Validação
     with open("graph.json", "r") as f:
         g = json.load(f)
-    print(f"   {g['totalNodes']} nós no grafo")
+    print(f"   {g['totalNodes']} nós únicos no grafo")
     print(f"[{today}] 🎯 Pronto!")
-
 
 if __name__ == "__main__":
     main()
