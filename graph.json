@@ -73,9 +73,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q25"
@@ -94,14 +94,14 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
-        "@id": "wd:Q19"
+        "@id": "wd:Q26"
       },
-      "wikibaseId": "Q19",
+      "wikibaseId": "Q26",
       "urn": "urn:wikivendas:def:fornecedor-de-leads"
     },
     {
@@ -146,9 +146,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q20"
