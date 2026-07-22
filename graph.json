@@ -73,14 +73,14 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
-        "@id": "wd:Q20"
+        "@id": "wd:Q25"
       },
-      "wikibaseId": "Q20",
+      "wikibaseId": "Q25",
       "urn": "urn:wikivendas:def:comprar-leads-qualificados"
     },
     {
@@ -94,9 +94,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q19"
@@ -146,9 +146,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q20"
