@@ -25,6 +25,22 @@
       "urn": "urn:wikivendas:property:note"
     },
     {
+      "@id": "wikivendas:glossario",
+      "@type": "schema:WebPage",
+      "name": "Glossário Wikivendas de RevOps e Inteligência Comercial | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Glossário Wikivendas de RevOps e Inteligência Comercial",
+      "url": "https://wikivendas.com.br/glossario.html",
+      "priority": 0.6,
+      "isPartOf": {
+        "@id": "wikivendas:root"
+      },
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:term:forensic-revops),"
+    },
+    {
       "@id": "wikivendas:mio",
       "@type": "schema:WebPage",
       "name": "DKI Registry Knowledge Graph — Domain Knowledge Infrastructure",
@@ -63,6 +79,23 @@
       }
     },
     {
+      "@id": "wikivendas:termos-asset-hoarding-latency",
+      "@type": "schema:DefinedTerm",
+      "name": "AssetHoardingLatency | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: AssetHoardingLatency",
+      "url": "https://wikivendas.com.br/termos/asset-hoarding-latency/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": "https://doi.org/10.5281/zenodo.20860586",
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:def:asset-hoarding-latency"
+    },
+    {
       "@id": "wikivendas:termos-compra-de-leads-qualificados",
       "@type": "schema:DefinedTerm",
       "name": "Comprar Leads Qualificados — WikiVendas DKI",
@@ -73,15 +106,47 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q25"
       },
       "wikibaseId": "Q25",
       "urn": "urn:wikivendas:def:comprar-leads-qualificados"
+    },
+    {
+      "@id": "wikivendas:termos-comprar-leads-qualificados",
+      "@type": "schema:DefinedTerm",
+      "name": "Compra de Leads Qualificados | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Compra de Leads Qualificados",
+      "url": "https://wikivendas.com.br/termos/comprar-leads-qualificados/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:def:comprar-leads-qualificados"
+    },
+    {
+      "@id": "wikivendas:termos-dki",
+      "@type": "schema:DefinedTerm",
+      "name": "Infraestrutura de Conhecimento de Domínio DKI | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Infraestrutura de Conhecimento de Domínio DKI",
+      "url": "https://wikivendas.com.br/termos/dki/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": "https://doi.org/10.5281/zenodo.21272104",
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962"
     },
     {
       "@id": "wikivendas:termos-fornecedor-de-leads",
@@ -94,9 +159,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q26"
@@ -118,6 +183,38 @@
         "@id": "wd:Q13"
       },
       "wikibaseId": "Q13"
+    },
+    {
+      "@id": "wikivendas:termos-gerar-leads",
+      "@type": "schema:DefinedTerm",
+      "name": "Gerar Leads | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Gerar Leads",
+      "url": "https://wikivendas.com.br/termos/gerar-leads/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:def:gerar-leads"
+    },
+    {
+      "@id": "wikivendas:termos-glossario",
+      "@type": "schema:DefinedTerm",
+      "name": "Glossário Wikivendas de RevOps e Inteligência Comercial | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Glossário Wikivendas de RevOps e Inteligência Comercial",
+      "url": "https://wikivendas.com.br/termos/glossario/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:term:forensic-revops),"
     },
     {
       "@id": "wikivendas:termos-intencionar",
@@ -146,15 +243,30 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q20"
       },
       "wikibaseId": "Q20",
       "urn": "urn:wikivendas:def:lead-b2b"
+    },
+    {
+      "@id": "wikivendas:termos-livro-protocolo-hidra",
+      "@type": "schema:DefinedTerm",
+      "name": "O Protocolo Hidra: Vendas Exigem Múltiplas Cabeças | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: O Protocolo Hidra: Vendas Exigem Múltiplas Cabeças",
+      "url": "https://wikivendas.com.br/termos/livro-protocolo-hidra/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962"
     },
     {
       "@id": "wikivendas:termos-mio",
@@ -173,6 +285,40 @@
       "urn": "urn:wikivendas:asset:arquitetura-dki-svg"
     },
     {
+      "@id": "wikivendas:termos-ontologicgeo",
+      "@type": "schema:DefinedTerm",
+      "name": "OntologicGEO-ForensicSEO | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: OntologicGEO-ForensicSEO",
+      "url": "https://wikivendas.com.br/termos/ontologicgeo/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": "https://doi.org/10.5281/zenodo.21272104",
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:def:ontologicgeo"
+    },
+    {
+      "@id": "wikivendas:termos-protocolo-hidra",
+      "@type": "schema:DefinedTerm",
+      "name": "Protocolo Hidra | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: Protocolo Hidra",
+      "url": "https://wikivendas.com.br/termos/protocolo-hidra/",
+      "priority": 0.8,
+      "isPartOf": {
+        "@id": "wikivendas:glossario"
+      },
+      "sameAs": "https://doi.org/10.5281/zenodo.20320049",
+      "identifier": {
+        "@id": "wd:Q140427962"
+      },
+      "wikibaseId": "Q140427962",
+      "urn": "urn:wikivendas:def:protocolo-hidra"
+    },
+    {
       "@id": "wikivendas:glossario",
       "@type": "schema:CollectionPage",
       "name": "Glossário de Termos WikiVendas",
@@ -184,7 +330,16 @@
       "priority": 0.9,
       "hasPart": [
         {
+          "@id": "wikivendas:termos-asset-hoarding-latency"
+        },
+        {
           "@id": "wikivendas:termos-compra-de-leads-qualificados"
+        },
+        {
+          "@id": "wikivendas:termos-comprar-leads-qualificados"
+        },
+        {
+          "@id": "wikivendas:termos-dki"
         },
         {
           "@id": "wikivendas:termos-fornecedor-de-leads"
@@ -193,13 +348,28 @@
           "@id": "wikivendas:termos-generative-lead-spoofing"
         },
         {
+          "@id": "wikivendas:termos-gerar-leads"
+        },
+        {
+          "@id": "wikivendas:termos-glossario"
+        },
+        {
           "@id": "wikivendas:termos-intencionar"
         },
         {
           "@id": "wikivendas:termos-lead-b2b"
         },
         {
+          "@id": "wikivendas:termos-livro-protocolo-hidra"
+        },
+        {
           "@id": "wikivendas:termos-mio"
+        },
+        {
+          "@id": "wikivendas:termos-ontologicgeo"
+        },
+        {
+          "@id": "wikivendas:termos-protocolo-hidra"
         }
       ]
     },
@@ -231,6 +401,9 @@
           "@id": "wikivendas:docs-mio"
         },
         {
+          "@id": "wikivendas:glossario"
+        },
+        {
           "@id": "wikivendas:mio"
         },
         {
@@ -245,8 +418,8 @@
       ]
     }
   ],
-  "totalPages": 12,
-  "totalNodes": 13,
+  "totalPages": 21,
+  "totalNodes": 21,
   "generated": "2026-07-22",
   "domain": "wikivendas.com.br"
 }

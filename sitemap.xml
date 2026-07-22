@@ -31,7 +31,25 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://wikivendas.com.br/termos/asset-hoarding-latency/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://wikivendas.com.br/termos/compra-de-leads-qualificados/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/comprar-leads-qualificados/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/dki/</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -49,7 +67,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://wikivendas.com.br/termos/gerar-leads/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/glossario/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://wikivendas.com.br/termos/lead-b2b/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/livro-protocolo-hidra/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/ontologicgeo/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/termos/protocolo-hidra/</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -68,6 +116,12 @@
   </url>
   <url>
     <loc>https://wikivendas.com.br/docs/mio/</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/glossario.html</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
