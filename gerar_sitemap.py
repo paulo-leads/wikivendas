@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Gera sitemap.xml + graph.json — Knowledge Graph JSON-LD para WikiVendas."""
+"""Gera sitemap.xml + graph.json — Knowledge Graph JSON-LD para WikiVendas.
+   Agora com extração de blocos <script type="application/ld+json"> embutidos
+   nas páginas HTML (Escudo Semântico, Matriz Ontológica SKOS/OWL/RDF, etc.)
+   e merge automático no grafo final."""
 
-import json
+import json as json_lib
 import os
 import re
 import sys
@@ -42,6 +45,107 @@ SEMANTIC_RELATIONS = {
     },
 }
 
+
+# ═══════════════════════════════════════════════════════════════════════
+# NOVAS FUNÇÕES: Extração e Merge de JSON-LD
+# ═══════════════════════════════════════════════════════════════════════
+
+def extract_jsonld_blocks(html, current_url_path):
+    """Extrai todos os blocos <script type='application/ld+json'> do HTML.
+    
+    Retorna uma lista de dicionários (nós individuais).
+    Para blocos com @graph, desmembra em nós individuais.
+    Preserva o @context original dentro de cada nó como _context
+    para uso posterior no merge.
+    """
+    blocks = []
+    pattern = r'<script\s+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>'
+    
+    for m in re.finditer(pattern, html, re.IGNORECASE | re.DOTALL):
+        raw = m.group(1).strip()
+        try:
+            data = json_lib.loads(raw)
+        except json_lib.JSONDecodeError as e:
+            print(f"   ⚠️  JSON-LD mal formatado em {current_url_path}: {e}")
+            continue
+        
+        if isinstance(data, dict):
+            # Bloco com @graph (ex: Matriz Ontológica SKOS)
+            if "@graph" in data:
+                ctx = data.get("@context", {})
+                for node in data["@graph"]:
+                    if isinstance(node, dict):
+                        node["_context"] = ctx
+                        blocks.append(node)
+            else:
+                # Bloco único (ex: Escudo Semântico)
+                data["_context"] = data.get("@context", {})
+                blocks.append(data)
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, dict):
+                    item["_context"] = item.get("@context", {})
+                    blocks.append(item)
+    
+    return blocks
+
+
+def merge_jsonld_into_graph(graph_nodes, jsonld_nodes):
+    """Mescla nós extraídos de JSON-LD no grafo, deduplicando por @id.
+    
+    Se um nó com o mesmo @id já existe no grafo, faz merge dos campos
+    que ainda não estão presentes (para listas como sameAs/identifier,
+    faz união deduplicada).
+    
+    Retorna (graph_nodes_modificados, quantidade_de_novos_nos).
+    """
+    existing_ids = set()
+    for n in graph_nodes:
+        nid = n.get("@id")
+        if nid:
+            existing_ids.add(nid)
+    
+    added = 0
+    for node in jsonld_nodes:
+        node_id = node.get("@id")
+        if not node_id:
+            continue
+        
+        # Remove campos auxiliares internos
+        clean = {k: v for k, v in node.items() if not k.startswith("_")}
+        
+        if node_id in existing_ids:
+            # Merge em nó existente
+            existing = next(n for n in graph_nodes if n.get("@id") == node_id)
+            for key, value in clean.items():
+                if key not in existing:
+                    existing[key] = value
+                elif key in ("sameAs", "identifier") and isinstance(value, list):
+                    # Para listas, união deduplicada
+                    existing_val = existing.get(key, [])
+                    if not isinstance(existing_val, list):
+                        existing[key] = [existing_val]
+                        existing_val = existing[key]
+                    existing_strs = {json_lib.dumps(i, sort_keys=True) for i in existing_val}
+                    for item in value:
+                        if json_lib.dumps(item, sort_keys=True) not in existing_strs:
+                            existing_val.append(item)
+                            existing_strs.add(json_lib.dumps(item, sort_keys=True))
+            # Se o nó existente não tinha @type e o JSON-LD traz, adiciona
+            if existing.get("@type") is None and clean.get("@type"):
+                existing["@type"] = clean["@type"]
+        else:
+            # Novo nó
+            graph_nodes.append(clean)
+            existing_ids.add(node_id)
+            added += 1
+    
+    return graph_nodes, added
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# FUNÇÕES ORIGINAIS (mantidas)
+# ═══════════════════════════════════════════════════════════════════════
 
 def extract_title(html):
     m = re.search(r"<title[^>]*>([^<]+)</title>", html, re.IGNORECASE | re.DOTALL)
@@ -145,21 +249,32 @@ def generate_sitemap(pages, today):
     return minidom.parseString(raw.encode()).toprettyxml(indent="  ")
 
 
+# ═══════════════════════════════════════════════════════════════════════
+# generate_graph MODIFICADO — agora com merge de JSON-LD
+# ═══════════════════════════════════════════════════════════════════════
+
 def generate_graph(pages, rel_path_to_links, today):
     graph_nodes = []
     id_map = {}
+    all_jsonld_nodes = []  # acumula nós de JSON-LD de todas as páginas
 
     # Mapeia todos os caminhos para @id (inclusive os que serão agregadores)
     for rel_path in pages:
         up = rel_to_url(rel_path)
         id_map[up] = page_id(up)
 
+    # ── ACUMULA NÓS JSON-LD DE TODAS AS PÁGINAS ──
+    for rel_path, meta in pages.items():
+        jsonld_nodes = meta.get("jsonld_nodes", [])
+        all_jsonld_nodes.extend(jsonld_nodes)
+        if jsonld_nodes:
+            print(f"   📦 {rel_path}: {len(jsonld_nodes)} nós JSON-LD extraídos")
+
+    # ── GERA NÓS DE PÁGINA (mesma lógica original, com duplicação evitada) ──
     for rel_path, meta in pages.items():
         up = rel_to_url(rel_path)
 
-        # ── EVITA DUPLICAÇÃO ──────────────────────────────────
-        # index.html vira wikivendas:root (nó agregador no final)
-        # sobre/index.html vira wikivendas:sobre (nó agregador no final)
+        # EVITA DUPLICAÇÃO: index.html vira root, sobre/index.html vira sobre
         if up == "" or rel_path == "sobre/index.html":
             continue
 
@@ -214,7 +329,7 @@ def generate_graph(pages, rel_path_to_links, today):
         wb = meta.get("wikibase_ids", [])
         if wb:
             node["identifier"] = {"@id": f"wd:{wb[0]}"}
-            node["wikibaseId"] = wb[0]  # mantém string para compatibilidade
+            node["wikibaseId"] = wb[0]
 
         # URN → CURIE urn:wikivendas:...
         urns = meta.get("urns", [])
@@ -223,7 +338,14 @@ def generate_graph(pages, rel_path_to_links, today):
 
         graph_nodes.append(node)
 
-    # ── NÓS AGREGADORES (criados uma única vez) ──────────────
+    # ── MERGE DOS NÓS JSON-LD EMBUTIDOS ──
+    if all_jsonld_nodes:
+        graph_nodes, added = merge_jsonld_into_graph(graph_nodes, all_jsonld_nodes)
+        print(f"   🔗 Mesclados {added} novos nós de JSON-LD embutido no grafo")
+    else:
+        print("   ℹ️  Nenhum bloco JSON-LD encontrado nas páginas")
+
+    # ── NÓS AGREGADORES ──
 
     # Glossário
     gt = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:glossario"]
@@ -269,6 +391,7 @@ def generate_graph(pages, rel_path_to_links, today):
     # ── Métricas: distinct @id ──
     unique_ids = set(n["@id"] for n in graph_nodes)
 
+    # ── @CONTEXT ENRIQUECIDO (agora com namespaces SKOS/OWL/RDF) ──
     output = {
         "@context": {
             "@version": 1.1,
@@ -277,6 +400,13 @@ def generate_graph(pages, rel_path_to_links, today):
             "wikivendas": f"{BASE_URL}/",
             "wd": f"{BASE_URL}/entity/",
             "urn": "urn:wikivendas:",
+            # Namespaces para Matriz Ontológica SKOS/OWL/RDF
+            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+            "owl": "http://www.w3.org/2002/07/owl#",
+            "skos": "http://www.w3.org/2004/02/skos/core#",
+            "xsd": "http://www.w3.org/2001/XMLSchema#",
+            "ws": "https://wikivendas.com.br/ontology#",
         },
         "@graph": graph_nodes,
         "totalPages": len(pages),
@@ -284,8 +414,12 @@ def generate_graph(pages, rel_path_to_links, today):
         "generated": today,
         "domain": DOMAIN,
     }
-    return json.dumps(output, indent=2, ensure_ascii=False)
+    return json_lib.dumps(output, indent=2, ensure_ascii=False)
 
+
+# ═══════════════════════════════════════════════════════════════════════
+# MAIN — modificado para extrair JSON-LD
+# ═══════════════════════════════════════════════════════════════════════
 
 def main():
     today = date.today().isoformat()
@@ -316,6 +450,8 @@ def main():
             "dois": extract_dois(html),
             "wikibase_ids": extract_wikibase_ids(html),
             "urns": extract_urns(html),
+            # ── NOVO: extrai blocos JSON-LD embutidos ──
+            "jsonld_nodes": extract_jsonld_blocks(html, rel_to_url(rel_path)),
         }
         rel_path_to_links[rel_path] = extract_internal_links(html, os.path.dirname(rel_path))
 
@@ -344,7 +480,7 @@ def main():
 
     # Validação
     with open("graph.json", "r") as f:
-        g = json.load(f)
+        g = json_lib.load(f)
     print(f"   {g['totalNodes']} nós únicos no grafo (distinct @id)")
     print(f"[{today}] 🎯 Pronto!")
 
