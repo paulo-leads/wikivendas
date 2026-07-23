@@ -106,8 +106,8 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
@@ -159,8 +159,8 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
@@ -243,8 +243,8 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
@@ -420,6 +420,6 @@
   ],
   "totalPages": 21,
   "totalNodes": 21,
-  "generated": "2026-07-22",
+  "generated": "2026-07-23",
   "domain": "wikivendas.com.br"
 }
