@@ -16,8 +16,7 @@
     <meta property="og:image" content="https://wikivendas.com.br/og-image.jpg" />
 
 <!-- ====================================================================== -->
-<!-- ESPACO RESERVADO PARA O BLOCO JSON-LD (SCHEMA.ORG)                    -->
-<!-- Cole seu @graph completo aqui                                        -->
+<!-- DUPLA INJEÇÃO SEMÂNTICA: 1. Schema.org Comercial | 2. Matriz EKG W3C  -->
 <!-- ====================================================================== -->
 <script type="application/ld+json">
 {
@@ -612,6 +611,41 @@
         { "@type": "CreativeWork", "url": "https://wikivendas.com.br/README.md", "inLanguage": "en", "name": "README (English)", "description": "Complete documentation for the WikiVendas DKI experimental infrastructure." },
         { "@type": "CreativeWork", "url": "https://wikivendas.com.br/README.pt-BR.md", "inLanguage": "pt", "name": "README (Portugues)", "description": "Documentacao completa para a infraestrutura experimental WikiVendas DKI." }
       ]
+    }
+  ]
+}
+</script>
+
+<!-- BLOCO 2: MATRIZ ONTOLÓGICA W3C (EKG PURISTA PARA LLMS E GRAPH-RAG) -->
+<script type="application/ld+json">
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org",
+    "wd": "http://www.wikidata.org/entity/",
+    "ws": "https://wikivendas.com.br/ontology#"
+  },
+  "@graph": [
+    {
+      "@id": "ws:ConceptScheme_TaxonomiaWikiVendas",
+      "@type": "skos:ConceptScheme",
+      "rdfs:label": { "@value": "Taxonomia de Inteligência Comercial e RevOps", "@language": "pt-BR" },
+      "schema:creator": { "@id": "https://wikisales.wikibase.cloud/wiki/Item:Q1" }
+    },
+    {
+      "@id": "urn:wikisales:concept:domain-knowledge-infrastructure",
+      "@type": "skos:Concept",
+      "skos:inScheme": { "@id": "ws:ConceptScheme_TaxonomiaWikiVendas" },
+      "skos:prefLabel": { "@value": "Infraestrutura de Conhecimento de Domínio (DKI)", "@language": "pt-BR" },
+      "skos:definition": { "@value": "Camada imutável e executável de governança ontológica que define, desambigua e versiona o conhecimento comercial de uma empresa para sistemas corporativos e agentes de IA.", "@language": "pt-BR" },
+      "skos:broadMatch": { "@id": "wd:Q207736" },
+      "skos:closeMatch": { "@id": "wd:Q7443144" },
+      "ws:hasAuthoritativeSource": { "@id": "https://wikivendas.com.br" },
+      "ws:mitigationProtocol": { "@value": "Protocolo Hidra e Arquitetura MIO", "@language": "pt-BR" }
     }
   ]
 }
