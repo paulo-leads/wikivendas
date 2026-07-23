@@ -98,22 +98,17 @@
     {
       "@id": "wikivendas:termos-compra-de-leads-qualificados",
       "@type": "schema:DefinedTerm",
-      "name": "Comprar Leads Qualificados — WikiVendas DKI",
-      "description": "Definição ontológica de Compra de Leads Qualificados na WikiVendas DKI. Conceito, escopo, exclusões, proveniência e contexto na Domain Knowledge Infrastructure para Inteligência Comercial, RevOps e Agentes de IA.",
+      "name": "CompraDeLeadsQualificados | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: CompraDeLeadsQualificados",
       "url": "https://wikivendas.com.br/termos/compra-de-leads-qualificados/",
       "priority": 0.8,
       "isPartOf": {
         "@id": "wikivendas:glossario"
       },
-      "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049"
-      ],
       "identifier": {
-        "@id": "wd:Q25"
+        "@id": "wd:Q140427962"
       },
-      "wikibaseId": "Q25",
+      "wikibaseId": "Q140427962",
       "urn": "urn:wikivendas:def:comprar-leads-qualificados"
     },
     {
@@ -135,8 +130,8 @@
     {
       "@id": "wikivendas:termos-dki",
       "@type": "schema:DefinedTerm",
-      "name": "Infraestrutura de Conhecimento de Domínio DKI | WikiSales Knowledge Ledger",
-      "description": "Registro Oficial WikiSales: Infraestrutura de Conhecimento de Domínio DKI",
+      "name": "DomainKnowledgeInfrastructure | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: DomainKnowledgeInfrastructure",
       "url": "https://wikivendas.com.br/termos/dki/",
       "priority": 0.8,
       "isPartOf": {
@@ -160,8 +155,8 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q26"
@@ -244,8 +239,8 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q20"
@@ -287,8 +282,8 @@
     {
       "@id": "wikivendas:termos-ontologicgeo",
       "@type": "schema:DefinedTerm",
-      "name": "OntologicGEO-ForensicSEO | WikiSales Knowledge Ledger",
-      "description": "Registro Oficial WikiSales: OntologicGEO-ForensicSEO",
+      "name": "OntologicGEOForensicSEO | WikiSales Knowledge Ledger",
+      "description": "Registro Oficial WikiSales: OntologicGEOForensicSEO",
       "url": "https://wikivendas.com.br/termos/ontologicgeo/",
       "priority": 0.8,
       "isPartOf": {
