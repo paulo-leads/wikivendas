@@ -1,0 +1,54 @@
+{
+  "version": "2026.07.26",
+  "name": "WikiVendas DKI",
+  "description": "Official machine-readable index for the WikiVendas Domain Knowledge Infrastructure ecosystem.",
+  "canonical": "https://wikivendas.com.br/",
+  "language": "pt-BR",
+
+  "organization": "https://wikivendas.com.br/#organization",
+  "brand": "https://wikivendas.com.br/#brand",
+  "product": "https://wikivendas.com.br/#product",
+  "software": "https://wikivendas.com.br/#software",
+
+  "resources": {
+    "runtime": "https://wikivendas.com.br/runtime.json",
+    "schema": "https://wikivendas.com.br/schema.jsonld",
+    "ontology": "https://wikivendas.com.br/ontology.jsonld",
+    "glossary": "https://wikivendas.com.br/glossary.json",
+    "graph": "https://wikivendas.com.br/graph.json",
+    "llms": "https://wikivendas.com.br/llms.txt",
+    "sitemap": "https://wikivendas.com.br/sitemap.xml",
+    "robots": "https://wikivendas.com.br/robots.txt"
+  },
+
+  "pages": [
+    {
+      "title": "Home",
+      "url": "https://wikivendas.com.br/",
+      "priority": 1.0,
+      "type": "WebPage"
+    },
+    {
+      "title": "Sobre",
+      "url": "https://wikivendas.com.br/sobre/",
+      "priority": 0.9,
+      "type": "AboutPage"
+    },
+    {
+      "title": "Glossário",
+      "url": "https://wikivendas.com.br/termos/",
+      "priority": 0.9,
+      "type": "CollectionPage"
+    }
+  ],
+
+  "discovery": {
+    "knowledgeGraph": true,
+    "ontology": true,
+    "wikibase": true,
+    "structuredData": true,
+    "semanticSearch": true,
+    "ragReady": true,
+    "llmReady": true
+  }
+}
