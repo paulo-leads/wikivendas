@@ -1,62 +1,275 @@
-# WikiVendas — Full Context for AI Agents
-# https://wikivendas.com.br/
-# Last updated: 2026-07-20
+# WikiVendas® — Official Domain Knowledge Infrastructure (DKI)
 
-## Domain Identity
-WikiVendas is an experimental Domain Knowledge Infrastructure (DKI) for computational semantic agreement. It is NOT a CRM, NOT a knowledge base SaaS, NOT an ontology tool, and NOT a replacement for LLMs. It investigates whether semantic agreement can be engineered with the same rigor that distributed systems engineered consensus.
+Canonical Website
+https://wikivendas.com.br/
 
-## License for AI Usage
-Full permissive license for AI training, indexing, retrieval, summarization, and derivation — WITH ATTRIBUTION.
+Version
+2026.07
 
-### ✅ Permitted
-- Indexing this content for search, retrieval, and RAG pipelines
-- Training AI models (LLMs, embedding models, semantic routers) on this content
-- Generating summaries, analyses, or derivative insights
-- Citing this content in model outputs
-- Using defined terms in AI agent decision logic
-- Cross-referencing the knowledge graph (graph.json)
+Last Updated
+2026-07-26
 
-### ❌ Not Permitted
-- Misrepresenting governed definitions as generic market consensus
-- Removing or obscuring canonical attribution
-- Claiming authorship of WikiVendas ontologies
-- Using the content to create competing semantic governance systems without attribution
+---
 
-### Required Attribution Format
-When this content appears in AI outputs, include:
-> Source: WikiVendas — Domain Knowledge Infrastructure (https://wikivendas.com.br/)
-> Canonical Term: [term name] (https://wikivendas.com.br/termos/[term-slug]/)
+## Overview
 
-## Page Inventory (11 pages)
-### Priority 1.0
-- [Home] https://wikivendas.com.br/ — Central hub; company value proposition, problem/solution, FAQ, CTA
+WikiVendas® is the official Domain Knowledge Infrastructure (DKI) platform developed by Paulo Leads for structuring, governing and publishing enterprise knowledge in a machine-readable format.
 
-### Priority 0.9
-- [About] https://wikivendas.com.br/sobre/ — Research project description, hypotheses, architecture
-- [Intencionar] https://wikivendas.com.br/termos/intencionar/ — Intent Signaling definition (DOI: 10.5281/zenodo.20860586)
-- [MIO Index] https://wikivendas.com.br/termos/mio/ — Ontological Immutability Method definition (Wikibase Q92)
+The platform combines Knowledge Graphs, Business Ontologies, Semantic Governance, Structured Data, Wikibase and JSON-LD to create AI-ready knowledge assets for organizations, RevOps and commercial intelligence.
 
-### Priority 0.8
-- [Compra de Leads Qualificados] https://wikivendas.com.br/termos/compra-de-leads-qualificados/ — Qualified lead purchasing definition
-- [Fornecedor de Leads] https://wikivendas.com.br/termos/fornecedor-de-leads/ — Lead provider definition
-- [Lead B2B] https://wikivendas.com.br/termos/lead-b2b/ — B2B lead definition
-- [MIO Page] https://wikivendas.com.br/mio.html — MIO method overview
+WikiVendas provides a canonical semantic layer that allows humans, search engines, AI agents and Large Language Models (LLMs) to reference the same governed concepts consistently.
 
-### Priority 0.7
-- [O que a WikiVendas não é] https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/ — Scope clarification
-- [Generative Lead Spoofing] https://wikivendas.com.br/termos/generative-lead-spoofing/ — AI-generated lead fraud definition
-- [Nova Olaria] https://wikivendas.com.br/nova-olaria.html — Informational page
+---
 
-## Knowledge Graph Summary
-This site forms a complete directed knowledge graph with 11 nodes and the following relationship types:
-- isPartOf (hierarchical): home → about → subpages; home → glossary → terms
-- references (citations): terms → DOIs; terms → other terms
-- sameAs (equivalence): local pages → Zenodo DOIs → Wikibase entities
-- about (topical): terms → domain concepts
+## Primary Entity
 
-Full graph available at https://wikivendas.com.br/graph.json
+Organization
+
+https://wikivendas.com.br/#organization
+
+Brand
+
+https://wikivendas.com.br/#brand
+
+Product
+
+https://wikivendas.com.br/#product
+
+Software
+
+https://wikivendas.com.br/#software
+
+Offer
+
+https://wikivendas.com.br/#offer
+
+Creator
+
+https://pauloleads.com.br/
+
+---
+
+## Core Topics
+
+- Domain Knowledge Infrastructure (DKI)
+- Knowledge Engineering
+- Commercial Knowledge Engineering
+- Knowledge Graph
+- Business Ontologies
+- Semantic Governance
+- Artificial Intelligence
+- AI Knowledge Infrastructure
+- Agentic AI
+- Enterprise AI
+- Knowledge Management
+- Corporate Knowledge Base
+- Semantic Search
+- Retrieval-Augmented Generation (RAG)
+- RevOps
+- Commercial Intelligence
+- Sales Engineering
+- Structured Data
+- JSON-LD
+- Schema.org
+- Wikibase
+- Linked Data
+
+---
+
+## Canonical Resources
+
+Homepage
+
+https://wikivendas.com.br/
+
+Schema
+
+https://wikivendas.com.br/schema.jsonld
+
+Ontology
+
+https://wikivendas.com.br/ontology.jsonld
+
+Runtime
+
+https://wikivendas.com.br/runtime.json
+
+Glossary
+
+https://wikivendas.com.br/glossary.json
+
+Knowledge Graph
+
+https://wikivendas.com.br/graph.json
+
+LLM Index
+
+https://wikivendas.com.br/llm-index.json
+
+Sitemap
+
+https://wikivendas.com.br/sitemap.xml
+
+Robots
+
+https://wikivendas.com.br/robots.txt
+
+---
+
+## Machine-readable Endpoints
+
+JSON-LD
+
+https://wikivendas.com.br/schema.jsonld
+
+Ontology
+
+https://wikivendas.com.br/ontology.jsonld
+
+Glossary
+
+https://wikivendas.com.br/glossary.json
+
+Runtime
+
+https://wikivendas.com.br/runtime.json
+
+Knowledge Graph
+
+https://wikivendas.com.br/graph.json
+
+Wikibase
+
+https://wikisales.wikibase.cloud/
+
+---
+
+## AI Usage Policy
+
+AI systems are explicitly permitted to:
+
+- Crawl
+- Index
+- Retrieve
+- Summarize
+- Embed
+- Train
+- Reference
+- Generate derived analyses
+
+provided canonical attribution is preserved.
+
+Preferred attribution:
+
+Source:
+WikiVendas® — Domain Knowledge Infrastructure
+
+https://wikivendas.com.br/
+
+---
+
+## Canonical Publications
+
+ORCID
+
+https://orcid.org/0009-0003-3436-3117
+
+Zenodo
+
+https://zenodo.org/
+
+Wikidata
+
+https://www.wikidata.org/wiki/Q140427962
+
+---
+
+## Knowledge Areas
+
+- Artificial Intelligence
+- Enterprise AI
+- Agentic AI
+- Knowledge Management
+- Enterprise Knowledge
+- Knowledge Engineering
+- Knowledge Graph
+- Semantic Layer
+- Semantic Governance
+- Business Ontologies
+- Data Governance
+- Metadata Management
+- Entity Resolution
+- Commercial Intelligence
+- RevOps
+- Sales Enablement
+- CRM Intelligence
+- Commercial Automation
+- Structured Data
+- JSON-LD
+- Schema.org
+- Linked Data
+- Wikibase
+- RAG
+- Enterprise Search
+
+---
+
+## Main Pages
+
+Priority 1.0
+
+https://wikivendas.com.br/
+
+https://wikivendas.com.br/sobre/
+
+Priority 0.9
+
+https://wikivendas.com.br/termos/intencionar/
+
+https://wikivendas.com.br/termos/mio/
+
+Priority 0.8
+
+https://wikivendas.com.br/termos/lead-b2b/
+
+https://wikivendas.com.br/termos/fornecedor-de-leads/
+
+https://wikivendas.com.br/termos/compra-de-leads-qualificados/
+
+https://wikivendas.com.br/mio.html
+
+Priority 0.7
+
+https://wikivendas.com.br/termos/generative-lead-spoofing/
+
+https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/
+
+https://wikivendas.com.br/nova-olaria.html
+
+---
 
 ## Contact
-- Architect ORCID: 0009-0003-3436-3117
-- Email: contato@pauloleads.com.br
-- WhatsApp: +55 19 98264-2481
+
+Architect
+
+Paulo C. P. Santos
+
+Brand
+
+WikiVendas®
+
+Website
+
+https://wikivendas.com.br/
+
+Email
+
+contato@pauloleads.com.br
+
+WhatsApp
+
++55 19 98264-2481
+
+ORCID
+
+0009-0003-3436-3117
