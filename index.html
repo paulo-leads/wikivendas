@@ -1,3 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="xdAfoACL4wT5d6nKNL0kO70jsf-j1yzvZtCRDA50ErI" />
+    <title>WikiVendas® - Plataforma Oficial de DKI (Domain Knowledge Infrastructure)</title>
+    <meta name="description" content="WikiVendas® registra termos, produtos, metodologias e regras da sua empresa para ser utilizada em IAS de forma organizada e consistente. Cria uma fonte única da verdade que equipes, CRMs e Inteligências Artificiais conseguem entender da mesma forma." />
+    <link rel="canonical" href="https://wikivendas.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="WikiVendas® - Plataforma Oficial de DKI (Domain Knowledge Infrastructure)" />
+    <meta property="og:description" content="WikiVendas® registra termos, produtos, metodologias e regras da sua empresa para ser utilizada em IAS de forma organizada e consistente. Cria uma fonte única da verdade que equipes, CRMs e Inteligências Artificiais conseguem entender da mesma forma." />
+    <meta property="og:url" content="https://wikivendas.com.br/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://wikivendas.com.br/og-image.jpg" />
+
+<!-- ====================================================================== -->
+<!-- DUPLA INJEÇÃO SEMÂNTICA: 1. Schema.org Comercial | 2. Matriz EKG W3C  -->
+<!-- ====================================================================== -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -555,6 +575,41 @@
         "@id": "https://wikivendas.com.br/#product"
       },
       "businessFunction": "https://purl.org/goodrelations/v1#Sell"
+    }
+  ]
+}
+</script>
+
+<!-- BLOCO 2: MATRIZ ONTOLÓGICA W3C (EKG PURISTA PARA LLMS E GRAPH-RAG) -->
+<script type="application/ld+json">
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "schema": "https://schema.org",
+    "wd": "http://www.wikidata.org/entity/",
+    "ws": "https://wikivendas.com.br/ontology#"
+  },
+  "@graph": [
+    {
+      "@id": "ws:ConceptScheme_TaxonomiaWikiVendas",
+      "@type": "skos:ConceptScheme",
+      "rdfs:label": { "@value": "Taxonomia de Inteligência Comercial e RevOps", "@language": "pt-BR" },
+      "schema:creator": { "@id": "https://wikisales.wikibase.cloud/wiki/Item:Q1" }
+    },
+    {
+      "@id": "urn:wikisales:concept:domain-knowledge-infrastructure",
+      "@type": "skos:Concept",
+      "skos:inScheme": { "@id": "ws:ConceptScheme_TaxonomiaWikiVendas" },
+      "skos:prefLabel": { "@value": "Infraestrutura de Conhecimento de Domínio (DKI)", "@language": "pt-BR" },
+      "skos:definition": { "@value": "Camada imutável e executável de governança ontológica que define, desambigua e versiona o conhecimento comercial de uma empresa para sistemas corporativos e agentes de IA.", "@language": "pt-BR" },
+      "skos:broadMatch": { "@id": "wd:Q207736" },
+      "skos:closeMatch": { "@id": "wd:Q7443144" },
+      "ws:hasAuthoritativeSource": { "@id": "https://wikivendas.com.br" },
+      "ws:mitigationProtocol": { "@value": "Protocolo Hidra e Arquitetura MIO", "@language": "pt-BR" }
     }
   ]
 }
