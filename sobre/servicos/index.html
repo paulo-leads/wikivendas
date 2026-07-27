@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="xdAfoACL4wT5d6nKNL0kO70jsf-j1yzvZtCRDA50ErI" />
+    <title>WikiVendas® - A Infraestrutura de Conhecimento que Torna a IA e o RevOps Possíveis</title>
+    <meta name="description" content="WikiVendas® é a camada de governança semântica que antecede CRMs, RevOps e IAs. Enquanto a Zenia Graph conecta dados, a WikiVendas define o que os dados significam. DKI para empresas que levam conhecimento a sério." />
+    <link rel="canonical" href="https://wikivendas.com.br/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="WikiVendas® - A Infraestrutura de Conhecimento que Torna a IA e o RevOps Possíveis" />
+    <meta property="og:description" content="WikiVendas® é a camada de governança semântica que antecede CRMs, RevOps e IAs. Enquanto a Zenia Graph conecta dados, a WikiVendas define o que os dados significam." />
+    <meta property="og:url" content="https://wikivendas.com.br/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://wikivendas.com.br/og-image.jpg" />
+
+    <!-- ============================================================ -->
+    <!-- SEU JSON-LD SCHEMA.ORG E SKOS RDF VÃO AQUI                   -->
+    <!-- ============================================================ -->
+    <!-- 
+        INSTRUÇÕES:
+        1. Cole seu bloco <script type="application/ld+json"> com o Schema.org
+        2. Cole seu bloco <script type="application/ld+json"> com a Matriz SKOS
+        3. Eles devem vir ANTES do fechamento da tag </head>
+    -->
+    <!-- ============================================================ -->
+
+    <style>
+        /* ====================================================================== */
+        /* CSS Variables                                                         */
+        /* ====================================================================== */
+        :root {
+            --bg: #0a0a0a;
+            --surface: #111111;
+            --surface-light: #1a1a1a;
+            --surface-hover: #222;
+            --border: #2a2a2a;
+            --border-light: #3a3a3a;
+            --text: #e8e8e8;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6a6a6a;
+            --accent: #2d7aff;
+            --accent-hover: #5a9aff;
+            --accent-glow: rgba(45, 122, 255, 0.12);
+            --success: #4caf50;
+            --warning: #ffb74d;
+            --danger: #ef5350;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --fs-base: 16px;
+            --fs-sm: 0.875rem;
+            --fs-xs: 0.75rem;
+            --fs-lg: 1.125rem;
+            --fs-xl: 1.25rem;
+            --fs-2xl: 1.5rem;
+            --fs-3xl: 2rem;
+            --fs-4xl: 2.5rem;
+            --fs-5xl: 3.2rem;
+            --lh: 1.6;
+            --lh-tight: 1.2;
+            --max-w: 1200px;
+            --max-w-narrow: 800px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --spacing-2xl: 5rem;
+            --spacing-3xl: 7rem;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --transition: 0.25s ease;
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        *,
+        *::before,
+        *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font);
+            font-size: var(--fs-base);
+            line-height: var(--lh);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color var(--transition), border-color var(--transition);
+        }
+        a:hover { color: var(--accent-hover); }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            line-height: var(--lh-tight);
+            letter-spacing: -0.02em;
+        }
+
+        h1 { font-size: var(--fs-5xl); font-weight: 700; letter-spacing: -0.03em; }
+        h2 { font-size: var(--fs-4xl); }
+        h3 { font-size: var(--fs-2xl); }
+        h4 { font-size: var(--fs-xl); }
+
+        .text-muted { color: var(--text-secondary); }
+        .text-sm { font-size: var(--fs-sm); }
+        .text-xs { font-size: var(--fs-xs); }
+        .mono { font-family: var(--mono); }
+        .text-center { text-align: center; }
+        .accent { color: var(--accent); }
+        .accent-glow { color: var(--accent); text-shadow: 0 0 40px var(--accent-glow); }
+
+        .container {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .container-narrow {
+            max-width: var(--max-w-narrow);
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .section {
+            padding: var(--spacing-2xl) 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-of-type { border-bottom: none; }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-header h2 { margin-bottom: var(--spacing-sm); }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: var(--fs-lg);
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: var(--fs-xs);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--spacing-sm);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            background: var(--surface);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: 0.65rem 1.8rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: var(--fs-sm);
+            border: 1px solid var(--border);
+            background: var(--surface-light);
+            color: var(--text);
+            transition: all var(--transition);
+            cursor: pointer;
+            text-decoration: none;
+            font-family: inherit;
+            line-height: 1;
+            min-height: 48px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(45, 122, 255, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--border);
+        }
+        .btn-outline:hover {
+            background: var(--surface-light);
+            border-color: var(--text-secondary);
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+            border-color: #25d366;
+        }
+        .btn-whatsapp:hover {
+            background: #20b85a;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-lg {
+            padding: 0.8rem 2.4rem;
+            font-size: var(--fs-lg);
+            min-height: 56px;
+        }
+
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            background: rgba(10,10,10,0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid transparent;
+            padding: 0.6rem 0;
+            transition: background var(--transition), border-color var(--transition);
+        }
+
+        .navbar.scrolled {
+            background: rgba(10,10,10,0.95);
+            border-bottom-color: var(--border);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 700;
+            font-size: var(--fs-lg);
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .navbar-brand .logo-dot {
+            display: inline-block;
+            width: 10px; height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            list-style: none;
+        }
+
+        .navbar-links a {
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            font-weight: 500;
+            transition: color var(--transition);
+        }
+        .navbar-links a:hover { color: var(--text); }
+
+        .navbar-cta {
+            background: var(--accent);
+            color: #fff !important;
+            padding: 0.4rem 1.2rem;
+            border-radius: 100px;
+            font-weight: 600;
+        }
+        .navbar-cta:hover { background: var(--accent-hover) !important; }
+
+        .navbar-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .navbar-toggle span {
+            display: block;
+            width: 26px; height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all var(--transition);
+        }
+
+        @media (max-width: 768px) {
+            .navbar-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%; left: 0; right: 0;
+                background: var(--bg);
+                padding: var(--spacing-lg);
+                border-bottom: 1px solid var(--border);
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+            .navbar-links.open { display: flex; }
+            .navbar-toggle { display: flex; }
+            .navbar-cta { text-align: center; }
+        }
+
+        /* Hero */
+        .hero {
+            padding: calc(var(--spacing-2xl) * 1.8) 0 var(--spacing-2xl);
+            margin-top: 64px;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(ellipse at 30% 20%, var(--accent-glow), transparent 70%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -50%; right: -20%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(45,122,255,0.04), transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+
+        .hero h1 {
+            max-width: 820px;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.08;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: var(--fs-xs);
+            color: var(--accent);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            margin-bottom: var(--spacing-md);
+            letter-spacing: 0.05em;
+        }
+
+        .hero p {
+            font-size: var(--fs-xl);
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border);
+        }
+        .hero-meta span { display: flex; align-items: center; gap: var(--spacing-xs); }
+        .hero-meta .dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: var(--fs-4xl); }
+            .hero p { font-size: var(--fs-lg); }
+            .hero { padding: var(--spacing-xl) 0; margin-top: 56px; }
+        }
+
+        /* Trust Bar */
+        .trust-bar {
+            padding: var(--spacing-lg) 0;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+        .trust-bar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        .trust-item {
+            color: var(--text-muted);
+            font-size: var(--fs-sm);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            .trust-bar .container { justify-content: center; gap: var(--spacing-sm); }
+            .trust-item { font-size: 0.7rem; }
+        }
+
+        /* Comparison Matrix */
+        .comparison-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+        }
+        .comparison-col {
+            background: var(--surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+        .comparison-col h4 {
+            text-align: center;
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: var(--spacing-md);
+        }
+        .comparison-col ul { list-style: none; }
+        .comparison-col li {
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--border);
+            font-size: var(--fs-sm);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .comparison-col li:last-child { border-bottom: none; }
+        .comparison-col .icon-check { color: var(--success); font-weight: 700; }
+        .comparison-col .icon-cross { color: var(--danger); font-weight: 700; }
+        .comparison-col.wikivendas { border-color: var(--accent); }
+        .comparison-col.wikivendas h4 { color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .comparison-matrix { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .card {
+            background: var(--surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: border-color var(--transition), transform var(--transition);
+        }
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-card);
+        }
+        .card h4 { margin-bottom: var(--spacing-xs); }
+        .card p { color: var(--text-secondary); font-size: var(--fs-sm); line-height: var(--lh); }
+        .card .card-tag {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--accent);
+            background: var(--bg);
+            padding: 0.15rem 0.6rem;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            margin-top: var(--spacing-sm);
+        }
+
+        /* Pipeline / Flow */
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            padding: var(--spacing-lg) var(--spacing-md);
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+        .pipeline-step {
+            background: var(--bg);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: var(--fs-sm);
+            text-align: center;
+            min-width: 110px;
+            transition: border-color var(--transition);
+        }
+        .pipeline-step.active { border-color: var(--accent); background: var(--accent-glow); }
+        .pipeline-step .step-label {
+            display: block;
+            font-family: var(--font);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+        .pipeline-arrow { color: var(--text-muted); font-size: 1.4rem; font-weight: 300; }
+        @media (max-width: 700px) {
+            .pipeline { flex-direction: column; gap: var(--spacing-sm); padding: var(--spacing-md); }
+            .pipeline-arrow { transform: rotate(90deg); }
+            .pipeline-step { width: 100%; min-width: unset; }
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            text-align: center;
+        }
+        .stat-item {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            transition: border-color var(--transition);
+        }
+        .stat-item:hover { border-color: var(--accent); }
+        .stat-item .number {
+            font-size: var(--fs-4xl);
+            font-weight: 700;
+            color: var(--accent);
+            font-family: var(--mono);
+            line-height: 1.1;
+        }
+        .stat-item .label {
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            margin-top: var(--spacing-xs);
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: var(--spacing-md); }
+            .stat-item .number { font-size: var(--fs-3xl); }
+        }
+        @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+
+        /* FAQ */
+        .faq-list { max-width: 820px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); padding: var(--spacing-md) 0; }
+        .faq-item:first-child { border-top: 1px solid var(--border); }
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--fs-lg);
+            padding: var(--spacing-sm) 0;
+            user-select: none;
+            gap: var(--spacing-md);
+            transition: color var(--transition);
+        }
+        .faq-question:hover { color: var(--accent); }
+        .faq-question .q-text { flex: 1; }
+        .faq-toggle { font-size: 1.6rem; line-height: 1; color: var(--text-muted); transition: transform var(--transition); flex-shrink: 0; }
+        .faq-toggle.open { transform: rotate(45deg); color: var(--accent); }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.25s ease;
+            opacity: 0;
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            line-height: var(--lh);
+            padding-left: 0;
+        }
+        .faq-answer.open {
+            max-height: 1200px;
+            padding: var(--spacing-sm) 0 var(--spacing-md);
+            opacity: 1;
+        }
+        .faq-answer p { margin-bottom: var(--spacing-sm); }
+        .faq-answer p:last-child { margin-bottom: 0; }
+        .faq-answer .highlight-box {
+            background: var(--surface-light);
+            padding: var(--spacing-md);
+            border-radius: var(--radius);
+            border-left: 3px solid var(--accent);
+            margin: var(--spacing-sm) 0;
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .faq-answer ul, .faq-answer ol {
+            padding-left: var(--spacing-lg);
+            margin: var(--spacing-sm) 0;
+            line-height: var(--lh);
+        }
+        .faq-answer li { margin-bottom: var(--spacing-xs); }
+
+        /* CTA */
+        .cta-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            text-align: center;
+            margin: var(--spacing-2xl) 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -20%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+        }
+        .cta-section .cta-content { position: relative; z-index: 1; }
+        .cta-section h3 { font-size: var(--fs-3xl); margin-bottom: var(--spacing-sm); }
+        .cta-section p {
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto var(--spacing-lg);
+            font-size: var(--fs-lg);
+        }
+        .cta-section .cta-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Footer */
+        .footer {
+            padding: var(--spacing-xl) 0 var(--spacing-lg);
+            border-top: 1px solid var(--border);
+            margin-top: var(--spacing-2xl);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: var(--spacing-xl);
+        }
+        .footer-brand .brand {
+            font-weight: 700;
+            font-size: var(--fs-lg);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        .footer-brand .brand .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        .footer-brand p {
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            max-width: 280px;
+            line-height: var(--lh);
+        }
+        .footer-col h5 {
+            font-size: var(--fs-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: var(--spacing-sm);
+        }
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: var(--spacing-xs); }
+        .footer-col a { color: var(--text-secondary); font-size: var(--fs-sm); }
+        .footer-col a:hover { color: var(--text); }
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+        }
+        .footer-bottom a { color: var(--text-muted); }
+        .footer-bottom a:hover { color: var(--text); }
+
+        /* Logotipos */
+        .logotipos-footer {
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border);
+        }
+        .logotipos-footer .logotipos {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem 3.5rem;
+        }
+        .logotipos-footer .item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: opacity var(--transition), transform var(--transition);
+        }
+        .logotipos-footer .item:hover {
+            opacity: 0.85;
+            transform: scale(1.02);
+        }
+        .logotipos-footer .item img {
+            display: block;
+            max-height: 38px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0.7) saturate(0.6);
+            transition: filter var(--transition);
+        }
+        .logotipos-footer .item:hover img {
+            filter: brightness(1) saturate(1);
+        }
+        .logotipos-footer .logotipos-label {
+            text-align: center;
+            font-size: var(--fs-xs);
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.6;
+            font-weight: 500;
+        }
+
+        /* Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 100px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 var(--spacing-md); }
+            .section { padding: var(--spacing-xl) 0; }
+            .section-header h2 { font-size: var(--fs-3xl); }
+            .card-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr 1fr; gap: var(--spacing-lg); }
+        }
+        @media (max-width: 480px) {
+            .footer-grid { grid-template-columns: 1fr; }
+            .cta-section { padding: var(--spacing-lg); }
+            .cta-section h3 { font-size: var(--fs-2xl); }
+            .hero-actions .btn { width: 100%; justify-content: center; }
+            .cta-section .cta-buttons .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================================================================== -->
+    <!-- NAVBAR                                                            -->
+    <!-- ================================================================== -->
+    <nav class="navbar" id="navbar" role="navigation" aria-label="Navegacao principal">
+        <div class="container">
+            <a href="/" class="navbar-brand" aria-label="WikiVendas - Pagina inicial">
+                <span class="logo-dot"></span> WikiVendas
+            </a>
+            <button class="navbar-toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="navbar-links" id="navLinks" role="menubar">
+                <li role="none"><a href="#comparacao" role="menuitem">WikiVendas vs Zenia</a></li>
+                <li role="none"><a href="#solucao" role="menuitem">Solucao</a></li>
+                <li role="none"><a href="#faq" role="menuitem">FAQ</a></li>
+                <li role="none"><a href="https://wikivendas.com.br/sobre/" target="_blank" rel="noopener" role="menuitem">Sobre</a></li>
+                <li role="none"><a href="#cta" class="navbar-cta" role="menuitem">Falar com especialista</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ================================================================== -->
+    <!-- HERO                                                              -->
+    <!-- ================================================================== -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="badge">Infraestrutura de Conhecimento de Dominio (DKI)</div>
+                <h1>
+                    Antes de conectar os dados,<br />
+                    <span class="accent-glow">defina o que eles significam</span>.
+                </h1>
+                <p>
+                    A Zenia Graph conecta dados e cria camadas semânticas. A WikiVendas é a camada que define a semântica. Enquanto a Zenia organiza peças de Lego, a WikiVendas é o manual que diz o que cada peça é e como elas se encaixam — antes mesmo de você começar a construir.
+                </p>
+                <div class="hero-actions">
+                    <a href="https://wa.me/5519982642481" class="btn btn-primary btn-lg">Quero minha infraestrutura semântica</a>
+                    <a href="#comparacao" class="btn btn-outline btn-lg">Entenda a diferença</a>
+                </div>
+                <div class="hero-meta">
+                    <span><span class="dot"></span> Governança semântica</span>
+                    <span><span class="dot"></span> Ontologias proprietárias</span>
+                    <span><span class="dot"></span> Registro auditável</span>
+                    <span><span class="dot"></span> A base para qualquer IA</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- TRUST BAR                                                         -->
+    <!-- ================================================================== -->
+    <div class="trust-bar">
+        <div class="container">
+            <span class="trust-item">Diretores Comerciais</span>
+            <span class="trust-item">RevOps</span>
+            <span class="trust-item">CEOs de Holding</span>
+            <span class="trust-item">CIOs</span>
+            <span class="trust-item">Fundadores</span>
+            <span class="trust-item">Empresas com IA</span>
+        </div>
+    </div>
+
+    <!-- ================================================================== -->
+    <!-- WIKIVENDAS VS ZENIA GRAPH                                         -->
+    <!-- ================================================================== -->
+    <section class="section" id="comparacao">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Posicionamento</span>
+                <h2>WikiVendas vs. Zenia Graph: Camadas Diferentes</h2>
+                <p>
+                    A Zenia Graph é uma excelente consultoria de Semantic AI e Knowledge Graph. A WikiVendas é a infraestrutura de governança semântica que torna esse tipo de solução possível — e confiável.
+                </p>
+            </div>
+
+            <div class="comparison-matrix">
+                <div class="comparison-col zenia">
+                    <h4>🔷 Zenia Graph</h4>
+                    <ul>
+                        <li><span class="icon-check">✓</span> Conecta dados de silos</li>
+                        <li><span class="icon-check">✓</span> Cria camada de inteligência semântica</li>
+                        <li><span class="icon-check">✓</span> GraphRAG para IA confiável</li>
+                        <li><span class="icon-check">✓</span> Ontologias específicas por domínio</li>
+                        <li><span class="icon-cross">✗</span> Não define a terminologia fundamental da empresa</li>
+                        <li><span class="icon-cross">✗</span> Não registra autoria, versão e evidência</li>
+                        <li><span class="icon-cross">✗</span> Não isola conhecimento por tenant/namespace</li>
+                        <li><span class="icon-cross">✗</span> Não compila conhecimento para múltiplos sistemas</li>
+                    </ul>
+                </div>
+                <div class="comparison-col wikivendas">
+                    <h4>🔷 WikiVendas DKI</h4>
+                    <ul>
+                        <li><span class="icon-check">✓</span> Define a terminologia fundamental</li>
+                        <li><span class="icon-check">✓</span> Registra autoria, versão e evidência</li>
+                        <li><span class="icon-check">✓</span> Isolamento por tenant e namespace</li>
+                        <li><span class="icon-check">✓</span> Compila conhecimento para CRM, IA e APIs</li>
+                        <li><span class="icon-check">✓</span> É a camada <strong>antes</strong> da conexão de dados</li>
+                        <li><span class="icon-check">✓</span> Fonte única da verdade com governança</li>
+                        <li><span class="icon-check">✓</span> Pré-requisito para qualquer solução de IA</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:var(--spacing-lg);padding:var(--spacing-lg);background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);" class="reveal">
+                <p style="font-size:var(--fs-lg);color:var(--text);max-width:700px;margin:0 auto;">
+                    <strong>A Zenia Graph conecta os dados.</strong> A WikiVendas define o que os dados significam.<br />
+                    Uma não substitui a outra. A WikiVendas é a <strong>pré-condição</strong> para que soluções como a Zenia entreguem valor real.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- POR QUE A WIKIVENDAS PRECEDE A ZENIA                              -->
+    <!-- ================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">A hierarquia</span>
+                <h2>Por que a WikiVendas vem antes</h2>
+                <p>
+                    A Zenia Graph entrega valor ao conectar dados e criar camadas semânticas. Mas essa camada só é confiável se a terminologia fundamental da empresa já estiver definida, governada e auditada.
+                </p>
+            </div>
+
+            <div class="card-grid">
+                <div class="card reveal">
+                    <h4>1. Definição canônica</h4>
+                    <p>
+                        Antes de conectar dados, é preciso saber o que cada dado significa. A WikiVendas registra a definição oficial de cada termo, com autor, versão e evidência. A Zenia Graph usa essa definição para construir sua camada semântica.
+                    </p>
+                    <span class="card-tag">Pré-requisito</span>
+                </div>
+                <div class="card reveal">
+                    <h4>2. Governança e rastreabilidade</h4>
+                    <p>
+                        A Zenia Graph conecta sistemas. A WikiVendas garante que, ao conectar, você saiba quem definiu cada conceito, quando e com base em que. Sem isso, a "inteligência" é construída sobre areia movediça.
+                    </p>
+                    <span class="card-tag">Auditoria</span>
+                </div>
+                <div class="card reveal">
+                    <h4>3. Isolamento semântico</h4>
+                    <p>
+                        Holdings e empresas com múltiplos negócios precisam de linguagens separadas. A WikiVendas oferece namespaces e tenants isolados. A Zenia Graph conecta — mas a WikiVendas garante que cada conexão respeite o contexto certo.
+                    </p>
+                    <span class="card-tag">Multilocação</span>
+                </div>
+                <div class="card reveal">
+                    <h4>4. Compilação para múltiplos usos</h4>
+                    <p>
+                        A Zenia Graph é uma solução. A WikiVendas compila o conhecimento governado para CRM, APIs, dashboards e agentes de IA — incluindo a própria Zenia Graph, que pode consumir esse conhecimento como fonte de verdade.
+                    </p>
+                    <span class="card-tag">Interoperabilidade</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- O QUE É A WIKIVENDAS                                              -->
+    <!-- ================================================================== -->
+    <section class="section" id="solucao">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">A solução</span>
+                <h2>O que é a WikiVendas?</h2>
+                <p>
+                    Uma Infraestrutura de Conhecimento de Domínio (DKI) que registra, desambigua, versiona, protege e operacionaliza o conhecimento que torna sua empresa diferente — antes mesmo de ele virar dado em qualquer sistema.
+                </p>
+            </div>
+
+            <div class="pipeline reveal">
+                <div class="pipeline-step active">
+                    Registrar
+                    <span class="step-label">Conceitos e definições</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">
+                    Desambiguar
+                    <span class="step-label">Escopo e não-escopo</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">
+                    Governar
+                    <span class="step-label">Autor, versão, evidência</span>
+                </div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">
+                    Compilar
+                    <span class="step-label">Para CRM, IA, APIs</span>
+                </div>
+            </div>
+
+            <div class="card-grid" style="margin-top:var(--spacing-xl);">
+                <div class="card reveal">
+                    <h4>Ontologia proprietária</h4>
+                    <p>
+                        Modelamos as entidades, relações e regras do seu negócio em um grafo de conhecimento formal. Não é glossário. É um modelo executável que sistemas e IA consultam.
+                    </p>
+                    <span class="card-tag">OWL + JSON-LD</span>
+                </div>
+                <div class="card reveal">
+                    <h4>Registro governado</h4>
+                    <p>
+                        Cada conceito ganha autor, versão, data, evidência e responsável. Rastreabilidade completa de quem definiu o que e quando.
+                    </p>
+                    <span class="card-tag">Proveniência</span>
+                </div>
+                <div class="card reveal">
+                    <h4>Isolamento por cliente</h4>
+                    <p>
+                        Cada empresa tem seu tenant e namespace próprios. Holdings mantêm linguagens e regras distintas sem perder governança central.
+                    </p>
+                    <span class="card-tag">Multilocação semântica</span>
+                </div>
+                <div class="card reveal">
+                    <h4>Compilador declarativo</h4>
+                    <p>
+                        O conhecimento registrado é compilado para formatos que CRM, APIs, dashboards e agentes de IA consomem. Uma única fonte de verdade, múltiplas saídas.
+                    </p>
+                    <span class="card-tag">RDF / SPARQL / REST</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- POR QUE ISSO EXISTE                                               -->
+    <!-- ================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">A origem</span>
+                <h2>Por que a WikiVendas foi criada</h2>
+                <p>
+                    Porque empresas como a Zenia Graph resolvem o problema de <strong>conectar</strong> dados. Mas o problema de <strong>definir</strong> o que os dados significam permanece. A WikiVendas é a camada que falta.
+                </p>
+            </div>
+            <div class="card-grid">
+                <div class="card reveal">
+                    <h4>CRM armazena, não define</h4>
+                    <p>
+                        CRM é uma ferramenta de registro, não de definição. A Zenia Graph conecta CRMs. A WikiVendas define o que cada campo do CRM significa — antes mesmo de ele ser preenchido.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>Semântica sem governança é opinião</h4>
+                    <p>
+                        A Zenia Graph cria camadas semânticas. Mas sem governança — autoria, versão, evidência — a semântica é apenas mais uma interpretação. A WikiVendas garante que a semântica seja autorizada.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>IA precisa de verdade, não de similaridade</h4>
+                    <p>
+                        RAG e GraphRAG encontram textos parecidos. A WikiVendas fornece a definição autorizada. A IA da Zenia Graph consulta a WikiVendas para saber o que é verdade — não apenas o que é parecido.
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h4>Glossário descreve, não governa</h4>
+                    <p>
+                        Glossários listam termos. A WikiVendas governa cada termo com autor, versão, escopo, não-escopo e evidência. É a diferença entre um dicionário e uma constituição.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- O QUE FOI CONSTRUIDO                                              -->
+    <!-- ================================================================== -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">O que foi construído</span>
+                <h2>A infraestrutura que já existe</h2>
+                <p>
+                    Diferente de conceitos e apresentações, a WikiVendas DKI já está implantada em uma instância Wikibase com entidades, propriedades, registros e compilador prontos.
+                </p>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--spacing-lg);">
+                <div class="reveal" style="background:var(--surface);padding:var(--spacing-lg);border-radius:var(--radius-lg);border:1px solid var(--border);">
+                    <h4>Entidades do modelo</h4>
+                    <ul style="list-style:none;margin-top:var(--spacing-sm);">
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Organização (Q28)</span>
+                            <span style="color:var(--text-muted);">Cliente</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Tenant (Q30)</span>
+                            <span style="color:var(--text-muted);">Identidade administrativa</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Namespace (Q31)</span>
+                            <span style="color:var(--text-muted);">Espaço de nomes exclusivo</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Registro (Q32)</span>
+                            <span style="color:var(--text-muted);">Governança de ativos</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Modelo DefinedTerm (Q110)</span>
+                            <span style="color:var(--text-muted);">Contrato declarativo</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">Conceito de Negócio (Q103+)</span>
+                            <span style="color:var(--text-muted);">Instâncias governadas</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="reveal" style="background:var(--surface);padding:var(--spacing-lg);border-radius:var(--radius-lg);border:1px solid var(--border);">
+                    <h4>Propriedades de governança</h4>
+                    <ul style="list-style:none;margin-top:var(--spacing-sm);">
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P1 — Nome Canônico</span>
+                            <span style="color:var(--text-muted);">Identificador oficial</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P2 — Definição</span>
+                            <span style="color:var(--text-muted);">Significado desambiguado</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P11 — Registro Oficial</span>
+                            <span style="color:var(--text-muted);">Vínculo de governança</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P18 — Autor</span>
+                            <span style="color:var(--text-muted);">Responsável</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P20 — Versão</span>
+                            <span style="color:var(--text-muted);">Controle de mudanças</span>
+                        </li>
+                        <li style="padding:var(--spacing-xs) 0;display:flex;justify-content:space-between;font-size:var(--fs-sm);">
+                            <span class="mono">P50 — Não Escopo</span>
+                            <span style="color:var(--text-muted);">Desambiguação por negação</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- FAQ                                                               -->
+    <!-- ================================================================== -->
+    <section class="section" id="faq">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Perguntas frequentes</span>
+                <h2>O que a WikiVendas responde</h2>
+                <p>
+                    As perguntas que compradores reais fazem quando o problema já não é "qual ferramenta comprar", mas como recuperar o controle sobre o próprio conhecimento.
+                </p>
+            </div>
+
+            <div class="faq-list" id="faqContainer">
+
+                <!-- PERGUNTA 1 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr1" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">1. Qual a diferença entre WikiVendas e Zenia Graph?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr1">
+                        <p>
+                            A <strong>Zenia Graph</strong> é uma consultoria e desenvolvedora de software que conecta dados de silos, cria camadas de inteligência semântica e aplica GraphRAG para tornar a IA mais confiável. Ela atua no nível de <strong>conexão e integração</strong> de dados.
+                        </p>
+                        <p>
+                            A <strong>WikiVendas</strong> é uma Infraestrutura de Conhecimento de Domínio (DKI) que define a terminologia fundamental da empresa, registra autoria, versão e evidência, e compila esse conhecimento para múltiplos sistemas. Ela atua no nível de <strong>governança e definição</strong> do conhecimento.
+                        </p>
+                        <div class="highlight-box">
+                            Resumo: Zenia Graph conecta os dados. WikiVendas define o que os dados significam. Uma não substitui a outra — a WikiVendas é a pré-condição para que a Zenia entregue valor real.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 2 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr2" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">2. A WikiVendas concorre com a Zenia Graph?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr2">
+                        <p>
+                            <strong>Não.</strong> A WikiVendas e a Zenia Graph atuam em camadas diferentes. A Zenia Graph resolve o problema de <strong>conectar dados</strong> e criar camadas semânticas. A WikiVendas resolve o problema de <strong>definir e governar</strong> a terminologia que alimenta essas camadas.
+                        </p>
+                        <p>
+                            Na prática, a WikiVendas é a <strong>fonte de verdade</strong> que a Zenia Graph pode consumir para construir suas soluções. Elas são complementares, não concorrentes.
+                        </p>
+                        <div class="highlight-box">
+                            WikiVendas define. Zenia conecta. Juntas, entregam inteligência confiável.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 3 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr3" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">3. Por que a WikiVendas é necessária se a Zenia Graph já cria camadas semânticas?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr3">
+                        <p>
+                            A Zenia Graph cria camadas semânticas a partir dos dados existentes. Mas se os dados existentes são baseados em definições conflitantes, a camada semântica herda essas contradições.
+                        </p>
+                        <p>
+                            A WikiVendas garante que a <strong>terminologia fundamental</strong> da empresa seja definida, governada e auditada <strong>antes</strong> de qualquer conexão. Isso significa que a camada semântica da Zenia Graph será construída sobre uma base sólida — não sobre areia movediça.
+                        </p>
+                        <div class="highlight-box">
+                            Sem WikiVendas, a camada semântica da Zenia é tão confiável quanto os dados que a alimentam.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 4 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr4" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">4. Como a WikiVendas se integra com soluções como a Zenia Graph?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr4">
+                        <p>
+                            A WikiVendas compila seu conhecimento governado em formatos que qualquer sistema pode consumir: RDF, JSON-LD, SPARQL endpoints e APIs REST.
+                        </p>
+                        <p>
+                            A Zenia Graph pode consumir esse conhecimento como <strong>fonte de verdade</strong> para suas camadas semânticas, GraphRAG e soluções de IA. A integração é técnica e direta: a WikiVendas fornece os dados governados; a Zenia Graph os conecta e os operacionaliza.
+                        </p>
+                        <div class="highlight-box">
+                            WikiVendas é a fonte. Zenia Graph é o conector. Juntas, formam a espinha dorsal da inteligência empresarial.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 5 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr5" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">5. O que a WikiVendas tem que a Zenia Graph não tem?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr5">
+                        <p>
+                            A WikiVendas oferece <strong>governança semântica</strong> no nível mais fundamental:
+                        </p>
+                        <ul>
+                            <li><strong>Registro de autoria:</strong> quem definiu cada termo</li>
+                            <li><strong>Controle de versão:</strong> quando e como cada definição mudou</li>
+                            <li><strong>Evidência associada:</strong> com base em que cada definição foi estabelecida</li>
+                            <li><strong>Escopo e não-escopo:</strong> desambiguação por exclusão</li>
+                            <li><strong>Isolamento por tenant e namespace:</strong> linguagens separadas para cada negócio</li>
+                            <li><strong>Compilação declarativa:</strong> geração de artefatos para múltiplos sistemas</li>
+                        </ul>
+                        <p>
+                            A Zenia Graph pode até usar essas funcionalidades — mas como consumidora, não como fornecedora.
+                        </p>
+                        <div class="highlight-box">
+                            A Zenia Graph conecta. A WikiVendas governa. A governança vem antes da conexão.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 6 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr6" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">6. Como a WikiVendas torna a IA mais confiável que a Zenia Graph?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr6">
+                        <p>
+                            A Zenia Graph usa GraphRAG para fundamentar respostas da IA em dados verificados. Isso é excelente. Mas a qualidade da fundamentação depende da qualidade dos dados que alimentam o grafo.
+                        </p>
+                        <p>
+                            A WikiVendas garante que os dados que alimentam o grafo sejam <strong>definidos, governados e auditados</strong>. Quando a Zenia Graph consulta a WikiVendas, ela não está apenas buscando dados parecidos — está consultando a <strong>fonte de verdade</strong> da empresa.
+                        </p>
+                        <div class="highlight-box">
+                            A Zenia Graph reduz alucinações. A WikiVendas elimina contradições na origem.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 7 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr7" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">7. A WikiVendas é mais cara que a Zenia Graph?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr7">
+                        <p>
+                            A WikiVendas e a Zenia Graph têm propostas de valor diferentes, com modelos de precificação diferentes. A Zenia Graph cobra por consultoria e desenvolvimento de soluções de conectividade. A WikiVendas cobra pela infraestrutura de governança semântica.
+                        </p>
+                        <p>
+                            O valor da WikiVendas está em <strong>prevenir</strong> os custos de ambiguidade: retrabalho, decisões erradas, perda de conhecimento, conflitos entre áreas. O valor da Zenia Graph está em <strong>conectar</strong> e <strong>operacionalizar</strong> os dados.
+                        </p>
+                        <div class="highlight-box">
+                            São investimentos complementares. A WikiVendas protege o investimento em Zenia Graph.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERGUNTA 8 -->
+                <div class="faq-item reveal">
+                    <div class="faq-question" data-target="faqr8" role="button" tabindex="0" aria-expanded="false">
+                        <span class="q-text">8. Como começar com a WikiVendas na minha empresa?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faqr8">
+                        <p>
+                            O processo tem três etapas principais:
+                        </p>
+                        <ol>
+                            <li>
+                                <strong>Diagnóstico de ambiguidade:</strong> Mapeamos os termos críticos da sua operação e identificamos onde existem definições conflitantes, ausentes ou desatualizadas.
+                            </li>
+                            <li>
+                                <strong>Modelagem ontológica:</strong> Construímos o grafo de conhecimento com as entidades, relações e regras do seu negócio. Cada conceito ganha registro, autor, versão e namespace.
+                            </li>
+                            <li>
+                                <strong>Conexão operacional:</strong> O Compilador Declarativo gera os artefatos que seu CRM, suas automações e seus agentes de IA — incluindo soluções como a Zenia Graph — consomem.
+                            </li>
+                        </ol>
+                        <div class="highlight-box">
+                            O resultado é uma infraestrutura de conhecimento proprietária que sua empresa controla e que viabiliza qualquer solução de IA e RevOps.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- CTA                                                               -->
+    <!-- ================================================================== -->
+    <section class="section" id="cta">
+        <div class="container">
+            <div class="cta-section reveal">
+                <div class="cta-content">
+                    <span class="section-label" style="background:var(--accent-glow);border-color:var(--accent);">
+                        Próximo passo
+                    </span>
+                    <h3>Antes de conectar, defina.</h3>
+                    <p>
+                        A Zenia Graph conecta dados e cria inteligência. A WikiVendas é a infraestrutura de governança que torna essa inteligência confiável. Comece pela definição.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="https://wa.me/5519982642481?text=Ol%C3%A1%2C%20vim%20pela%20WikiVendas%20e%20quero%20estruturar%20o%20conhecimento%20comercial%20da%20minha%20empresa%20como%20infraestrutura%20governada." target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+                            Falar com especialista no WhatsApp
+                        </a>
+                        <a href="mailto:contato@pauloleads.com.br?subject=WikiVendas%20-%20Quero%20estruturar%20meu%20conhecimento%20comercial&body=Ol%C3%A1%2C%20vim%20pela%20WikiVendas%20e%20quero%20saber%20mais%20sobre%20a%20Infraestrutura%20de%20Conhecimento%20de%20Dominio%20para%20minha%20empresa." class="btn btn-outline btn-lg">
+                            Enviar e-mail
+                        </a>
+                    </div>
+                    <div style="margin-top:var(--spacing-lg);font-size:var(--fs-sm);color:var(--text-muted);">
+                        <span><a href="https://paulo-leads.github.io/protocolo-hidra/" target="_blank" rel="noopener">Repositório no GitHub</a></span>
+                        <span style="margin:0 var(--spacing-sm);">·</span>
+                        <span><a href="https://doi.org/10.5281/zenodo.21272104" target="_blank" rel="noopener">Paper DKI</a></span>
+                        <span style="margin:0 var(--spacing-sm);">·</span>
+                        <span><a href="https://wikivendas.wikibase.cloud/entity/Q92" target="_blank" rel="noopener">Método da Imutabilidade Ontológica (MIO)™</a></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- FOOTER                                                            -->
+    <!-- ================================================================== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="brand">
+                        <span class="dot"></span> WikiVendas
+                    </div>
+                    <p>
+                        Infraestrutura de Conhecimento de Domínio para governança semântica, RevOps e IA. A camada que define o que os dados significam — antes de qualquer conexão.
+                    </p>
+                    <p style="margin-top:var(--spacing-sm);font-size:var(--fs-sm);color:var(--text-muted);">
+                        <a href="https://pauloleads.com.br" target="_blank" rel="noopener">Paulo Leads</a>
+                        <span style="margin:0 var(--spacing-xs);">·</span>
+                        <a href="https://orcid.org/0009-0003-3436-3117" target="_blank" rel="noopener">ORCID</a>
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h5>Produto</h5>
+                    <ul>
+                        <li><a href="#solucao">Solução</a></li>
+                        <li><a href="#comparacao">Vs. Zenia Graph</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                        <li><a href="https://paulo-leads.github.io/protocolo-hidra/" target="_blank" rel="noopener">GitHub</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Recursos</h5>
+                    <ul>
+                        <li><a href="https://doi.org/10.5281/zenodo.21272104" target="_blank" rel="noopener">Paper DKI</a></li>
+                        <li><a href="https://doi.org/10.5281/zenodo.20320049" target="_blank" rel="noopener">Protocolo Hidra</a></li>
+                        <li><a href="https://doi.org/10.5281/zenodo.20860586" target="_blank" rel="noopener">Sinal de Intenção</a></li>
+                        <li><a href="https://wikivendas.wikibase.cloud/entity/Q92" target="_blank" rel="noopener">Método da Imutabilidade Ontológica (MIO)™</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h5>Contato</h5>
+                    <ul>
+                        <li><a href="mailto:contato@pauloleads.com.br">contato@pauloleads.com.br</a></li>
+                        <li><a href="tel:+5519982642481">+55 19 98264-2481</a></li>
+                        <li><a href="https://wa.me/5519982642481" target="_blank" rel="noopener">WhatsApp</a></li>
+                        <li><a href="https://pauloleads.com.br" target="_blank" rel="noopener">pauloleads.com.br</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Logotipos -->
+            <div class="logotipos-footer">
+                <div class="logotipos-label">Fornecedores de Tecnologia</div>
+                <div class="logotipos" id="logotipos">
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/Selo_Cubo.webp" alt="Selo Cubo" style="max-height:28px;">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/inovabra.png" alt="Inovabra">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/scaleup-sebrae.png" alt="Scaleup Sebrae">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/certificado.png" alt="Certificado ISO 27001" style="max-height:32px;">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/intel.png" alt="Intel" style="max-height:24px;">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/aws.png" alt="AWS">
+                    </div>
+                    <div class="item">
+                        <img src="https://bigdatacorp.com.br/wp-content/themes/bigdatacorp/assets/images/logotipos/tnw.png" alt="TNW" style="max-height:32px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <span>&copy; 2026 WikiVendas. Todos os direitos reservados.</span>
+                <span>
+                    Construído com <a href="https://schema.org" target="_blank" rel="noopener">Schema.org</a>,
+                    <a href="https://www.wikimedia.org/" target="_blank" rel="noopener">Wikibase</a> e
+                    <a href="https://docs.github.com/en" target="_blank" rel="noopener">GitHub</a>.
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================================================================== -->
+    <!-- JAVASCRIPT                                                        -->
+    <!-- ================================================================== -->
+    <script>
+        (function() {
+            'use strict';
+
+            // Navbar toggle
+            const toggle = document.getElementById('navToggle');
+            const links = document.getElementById('navLinks');
+            if (toggle && links) {
+                toggle.addEventListener('click', function() {
+                    const open = links.classList.toggle('open');
+                    toggle.setAttribute('aria-expanded', open);
+                });
+                links.querySelectorAll('a').forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        links.classList.remove('open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    });
+                });
+            }
+
+            // Navbar scroll
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', function() {
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                if (currentScroll > 30) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+
+            // Scroll reveal
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+            revealElements.forEach(function(el) {
+                revealObserver.observe(el);
+            });
+
+            // FAQ toggle
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(function(q) {
+                q.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const answer = document.getElementById(targetId);
+                    const toggleIcon = this.querySelector('.faq-toggle');
+                    if (answer) {
+                        const isOpen = answer.classList.toggle('open');
+                        toggleIcon.classList.toggle('open');
+                        this.setAttribute('aria-expanded', isOpen);
+                    }
+                });
+                q.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+
+            // Hero gradient follow mouse
+            const hero = document.querySelector('.hero');
+            if (hero) {
+                hero.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+                    this.style.background =
+                        'radial-gradient(ellipse at ' + Math.round(x * 100) + '% ' + Math.round(y * 100) + '%, var(--accent-glow), transparent 70%)';
+                });
+                hero.addEventListener('mouseleave', function() {
+                    this.style.background = 'radial-gradient(ellipse at 30% 20%, var(--accent-glow), transparent 70%)';
+                });
+            }
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetEl = document.querySelector(targetId);
+                    if (targetEl) {
+                        e.preventDefault();
+                        const offsetTop = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
+                        window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            console.log('WikiVendas — A Infraestrutura de Conhecimento que Torna a IA Possível');
+            console.log('Paper DKI: https://doi.org/10.5281/zenodo.21272104');
+            console.log('WhatsApp: +55 19 98264-2481');
+
+        })();
+    </script>
+
+</body>
+</html>
