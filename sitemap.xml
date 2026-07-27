@@ -115,7 +115,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://wikivendas.com.br/sobre/diferenca/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://wikivendas.com.br/sobre/o-que-a-wikivendas-nao-e/</loc>
+    <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://wikivendas.com.br/sobre/servicos/</loc>
     <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

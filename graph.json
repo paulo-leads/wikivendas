@@ -74,6 +74,25 @@
       "urn": "urn:wikivendas:core:organization"
     },
     {
+      "@id": "wikivendas:sobre-diferenca",
+      "@type": "schema:AboutPage",
+      "name": "Wiki Vendas ® - O Que Significa? Desambiguação Completa do Termo",
+      "description": "Wiki Vendas: desambiguação do termo. Pode ser a Wikipédia sobre vendas, um sistema de gestão ou a WikiVendas® DKI. Entenda cada significado e qual é o oficial.",
+      "url": "https://wikivendas.com.br/sobre/diferenca/",
+      "priority": 0.7,
+      "isPartOf": {
+        "@id": "wikivendas:sobre"
+      },
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049"
+      ],
+      "identifier": {
+        "@id": "wd:Q103"
+      },
+      "wikibaseId": "Q103"
+    },
+    {
       "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e",
       "@type": "schema:AboutPage",
       "name": "WikiVendas: Desmistificando a Infraestrutura de Conhecimento de Domínio (DKI)",
@@ -83,6 +102,26 @@
       "isPartOf": {
         "@id": "wikivendas:sobre"
       }
+    },
+    {
+      "@id": "wikivendas:sobre-servicos",
+      "@type": "schema:AboutPage",
+      "name": "WikiVendas® - A Infraestrutura de Conhecimento que Torna a IA e o RevOps Possíveis",
+      "description": "WikiVendas® é a camada de governança semântica que antecede CRMs, RevOps e IAs. Enquanto a Zenia Graph conecta dados, a WikiVendas define o que os dados significam. DKI para empresas que levam conhecimento a sério.",
+      "url": "https://wikivendas.com.br/sobre/servicos/",
+      "priority": 0.7,
+      "isPartOf": {
+        "@id": "wikivendas:sobre"
+      },
+      "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.20860586"
+      ],
+      "identifier": {
+        "@id": "wd:Q28"
+      },
+      "wikibaseId": "Q28"
     },
     {
       "@id": "wikivendas:termos-asset-hoarding-latency",
@@ -161,9 +200,9 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21541962",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21541962"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -181,9 +220,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q26"
@@ -264,9 +303,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q20"
@@ -1365,7 +1404,8 @@
       ],
       "skos:related": {
         "@id": "wd:Q11660"
-      }
+      },
+      "skos:definition": "Aplicação de IA no contexto corporativo, com foco em governança e confiabilidade."
     },
     {
       "@id": "ws:c-ia-generativa",
@@ -1533,7 +1573,8 @@
           "@value": "Commercial Knowledge Engineering",
           "@language": "en"
         }
-      ]
+      ],
+      "skos:definition": "Disciplina que trata da modelagem, representação e governança do conhecimento organizacional."
     },
     {
       "@id": "ws:c-knowledge-management",
@@ -2755,6 +2796,85 @@
           ]
         }
       ]
+    },
+    {
+      "@id": "ws:ConceptScheme_WikiVendas",
+      "@type": "skos:ConceptScheme",
+      "skos:prefLabel": "Taxonomia de Domínio WikiVendas",
+      "skos:hasTopConcept": [
+        {
+          "@id": "ws:branch-desambiguacao"
+        },
+        {
+          "@id": "ws:branch-conhecimento"
+        },
+        {
+          "@id": "ws:branch-ia"
+        }
+      ]
+    },
+    {
+      "@id": "ws:branch-desambiguacao",
+      "@type": "skos:Concept",
+      "skos:topConceptOf": {
+        "@id": "ws:ConceptScheme_WikiVendas"
+      },
+      "skos:prefLabel": "Desambiguação do Termo Wiki Vendas",
+      "skos:definition": "O termo 'wiki vendas' pode referir-se a múltiplos significados. Esta taxonomia estabelece a desambiguação oficial."
+    },
+    {
+      "@id": "ws:wiki-vendas-wikipedia",
+      "@type": "skos:Concept",
+      "skos:broader": {
+        "@id": "ws:branch-desambiguacao"
+      },
+      "skos:prefLabel": "Wikipédia - Venda",
+      "skos:definition": "Artigo da Wikipédia sobre o conceito de venda.",
+      "skos:altLabel": [
+        "Venda (Wikipédia)",
+        "Artigo sobre venda"
+      ]
+    },
+    {
+      "@id": "ws:wiki-vendas-sistema",
+      "@type": "skos:Concept",
+      "skos:broader": {
+        "@id": "ws:branch-desambiguacao"
+      },
+      "skos:prefLabel": "Wiki Sistemas - Módulo de Vendas",
+      "skos:definition": "Sistema de gestão comercial da Wiki Sistemas, com módulo de vendas, faturamento e e-commerce.",
+      "skos:altLabel": [
+        "Sistema Wiki Vendas",
+        "Wiki Sistemas Vendas"
+      ]
+    },
+    {
+      "@id": "ws:wiki-vendas-suprimentos",
+      "@type": "skos:Concept",
+      "skos:broader": {
+        "@id": "ws:branch-desambiguacao"
+      },
+      "skos:prefLabel": "Wiki Suprimentos - Central de Pedidos",
+      "skos:definition": "Canal de vendas da Wiki Suprimentos para produtos de limpeza, descartáveis e equipamentos.",
+      "skos:altLabel": [
+        "Wiki Suprimentos Vendas"
+      ]
+    },
+    {
+      "@id": "ws:wikivendas-dki",
+      "@type": "skos:Concept",
+      "skos:broader": {
+        "@id": "ws:branch-desambiguacao"
+      },
+      "skos:prefLabel": "WikiVendas® DKI",
+      "skos:definition": "Infraestrutura de Conhecimento de Domínio (DKI) para governança semântica, ontologias corporativas e IA empresarial.",
+      "skos:altLabel": [
+        "WikiVendas",
+        "WikiVendas DKI",
+        "Wikivendas",
+        "Wiki Vendas DKI"
+      ],
+      "skos:note": "Esta é a única entidade registrada com marca registrada e domínio oficial."
     },
     {
       "@type": "WebPage",
@@ -5282,7 +5402,13 @@
       "priority": 0.9,
       "hasPart": [
         {
+          "@id": "wikivendas:sobre-diferenca"
+        },
+        {
           "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e"
+        },
+        {
+          "@id": "wikivendas:sobre-servicos"
         }
       ]
     },
@@ -5315,8 +5441,8 @@
       ]
     }
   ],
-  "totalPages": 22,
-  "totalNodes": 123,
+  "totalPages": 24,
+  "totalNodes": 131,
   "generated": "2026-07-27",
   "domain": "wikivendas.com.br"
 }
