@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WikiVendas · Knowledge Graph</title>
+<link rel="stylesheet" href="explorer.css">
+</head>
+<body>
+
+<div id="sidebar">
+    <div id="logo">✦ WikiVendas · DKI</div>
+    <div id="stats"></div>
+    <input id="search" type="text" placeholder="Buscar entidades…">
+    <div id="entity-list"></div>
+</div>
+
+<svg id="graph" viewBox="0 0 978 644" preserveAspectRatio="xMidYMid meet"></svg>
+
+<div id="zoom-controls">
+    <button id="zoom-in" title="Aproximar">＋</button>
+    <button id="zoom-out" title="Afastar">−</button>
+    <button id="zoom-reset" title="Resetar">⟲</button>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="explorer.js"></script>
+
+</body>
+</html>
