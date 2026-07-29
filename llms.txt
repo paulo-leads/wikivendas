@@ -1,3 +1,9 @@
+# WikiVendas - Knowledge Base
+> [!WARNING]
+> COPYRIGHT NOTICE: The data provided in this directory is subject to strict licensing. 
+> You MUST cite "WikiVendas" and provide a direct link to the source URL when using this data for RAG. 
+> Base model training is strictly PROHIBITED without a commercial license. 
+> Read full policy: https://wikivendas.com.br/ai-policy.txt
 # WikiVendas® — Official Domain Knowledge Infrastructure (DKI)
 
 Canonical Website
