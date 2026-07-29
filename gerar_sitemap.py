@@ -21,7 +21,10 @@ PRIORITY_RULES = [
     (r"^sobre/index\.html$",                       0.9, "monthly"),
     (r"^termos/(intencionar|mio)/index\.html$",    0.9, "monthly"),
     (r"^termos/[^/]+/index\.html$",                0.8, "monthly"),
+    (r"^graph/entity/[^/]+/index\.html$",          0.8, "monthly"), # NOVA ROTA: Entidades Q
+    (r"^docs/.+\.html$",                           0.7, "monthly"), # NOVA ROTA: Documentação
     (r"^sobre/.+/index\.html$",                    0.7, "monthly"),
+    (r"^glossario\.html$",                         0.8, "monthly"), # NOVA ROTA: Glossário Raiz
     (r"^mio\.html$",                               0.8, "monthly"),
     (r"^nova-olaria\.html$",                       0.7, "monthly"),
     (r".+\.html$",                                 0.6, "monthly"),
@@ -144,7 +147,7 @@ def merge_jsonld_into_graph(graph_nodes, jsonld_nodes):
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# FUNÇÕES ORIGINAIS (mantidas)
+# FUNÇÕES ORIGINAIS
 # ═══════════════════════════════════════════════════════════════════════
 
 def extract_title(html):
@@ -250,7 +253,7 @@ def generate_sitemap(pages, today):
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# generate_graph MODIFICADO — agora com merge de JSON-LD
+# generate_graph COM MAPEMANENTO DA NOVA ARQUITETURA
 # ═══════════════════════════════════════════════════════════════════════
 
 def generate_graph(pages, rel_path_to_links, today):
@@ -270,7 +273,7 @@ def generate_graph(pages, rel_path_to_links, today):
         if jsonld_nodes:
             print(f"   📦 {rel_path}: {len(jsonld_nodes)} nós JSON-LD extraídos")
 
-    # ── GERA NÓS DE PÁGINA (mesma lógica original, com duplicação evitada) ──
+    # ── GERA NÓS DE PÁGINA ──
     for rel_path, meta in pages.items():
         up = rel_to_url(rel_path)
 
@@ -281,10 +284,15 @@ def generate_graph(pages, rel_path_to_links, today):
         pid = page_id(up)
         url = f"{BASE_URL}/{up}"
 
+        # Define o tipo de Schema.org
         if "sobre" in rel_path:
             stype = "schema:AboutPage"
         elif up.startswith("termos/"):
             stype = "schema:DefinedTerm"
+        elif up.startswith("graph/entity/"):
+            stype = "schema:ItemPage" # Classifica como página de Entidade
+        elif up.startswith("docs/"):
+            stype = "schema:TechArticle"
         else:
             stype = "schema:WebPage"
 
@@ -297,10 +305,13 @@ def generate_graph(pages, rel_path_to_links, today):
             "priority": meta["priority"],
         }
 
+        # Define a hierarquia Semântica (isPartOf)
         if up.startswith("termos/"):
             node["isPartOf"] = {"@id": "wikivendas:glossario"}
         elif up.startswith("sobre/"):
             node["isPartOf"] = {"@id": "wikivendas:sobre"}
+        elif up.startswith("graph/entity/"):
+            node["isPartOf"] = {"@id": "wikivendas:grafo"} # Agrupa no Grafo
         else:
             node["isPartOf"] = {"@id": "wikivendas:root"}
 
@@ -346,6 +357,21 @@ def generate_graph(pages, rel_path_to_links, today):
         print("   ℹ️  Nenhum bloco JSON-LD encontrado nas páginas")
 
     # ── NÓS AGREGADORES ──
+
+    # Grafo de Entidades (NOVO)
+    ge = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:grafo"]
+    if ge:
+        grafo = {
+            "@id": "wikivendas:grafo",
+            "@type": "schema:CollectionPage",
+            "name": "WikiVendas Knowledge Graph",
+            "description": "Repositório mestre de entidades e grafos de conhecimento WikiVendas.",
+            "url": f"{BASE_URL}/graph/entity/",
+            "isPartOf": {"@id": "wikivendas:root"},
+            "priority": 0.9,
+            "hasPart": [{"@id": n["@id"]} for n in ge],
+        }
+        graph_nodes.append(grafo)
 
     # Glossário
     gt = [n for n in graph_nodes if n.get("isPartOf", {}).get("@id") == "wikivendas:glossario"]
@@ -418,7 +444,7 @@ def generate_graph(pages, rel_path_to_links, today):
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# MAIN — modificado para extrair JSON-LD
+# MAIN 
 # ═══════════════════════════════════════════════════════════════════════
 
 def main():
@@ -479,7 +505,7 @@ def main():
     print(f"✅ graph.json gerado")
 
     # Validação
-    with open("graph.json", "r") as f:
+    with open("graph.json", "r", encoding="utf-8") as f:
         g = json_lib.load(f)
     print(f"   {g['totalNodes']} nós únicos no grafo (distinct @id)")
     print(f"[{today}] 🎯 Pronto!")
