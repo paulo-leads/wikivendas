@@ -154,6 +154,21 @@ Disallow: /temp/
 # ────────── SITEMAP ──────────
 Sitemap: https://wikivendas.com.br/sitemap.xml
 
+# ────────── AI & LLM ENDPOINTS ──────────
+# Arquivos estruturados otimizados para consumo por IAs (RAG/Contexto)
+# Raiz:
+# LLMs Index: https://wikivendas.com.br/llm-index.json
+# LLMs TXT: https://wikivendas.com.br/llms.txt
+# LLMs Full: https://wikivendas.com.br/llms-full.txt
+# Knowledge Graph: https://wikivendas.com.br/graph.json
+#
+# Entidades e Ontologias (/graph):
+# Graph LLMs: https://wikivendas.com.br/graph/llms.txt
+# Graph JSON-LD: https://wikivendas.com.br/graph/graph.jsonld
+# Graph Turtle (TTL): https://wikivendas.com.br/graph/graph.ttl
+# Graph N-Triples (NT): https://wikivendas.com.br/graph/graph.nt
+# Graph Entities: https://wikivendas.com.br/graph/entities.json
+
 # ────────── CRAWL-DELAY ──────────
 # Respeito à infraestrutura: 1 segundo entre requisições
 Crawl-Delay: 1
