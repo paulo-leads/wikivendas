@@ -172,3 +172,6 @@ Sitemap: https://wikivendas.com.br/sitemap.xml
 # ────────── CRAWL-DELAY ──────────
 # Respeito à infraestrutura: 1 segundo entre requisições
 Crawl-Delay: 1
+# ────────── TERMOS DE USO PARA IA E CRAWLERS ──────────
+# O acesso a este site está condicionado à aceitação da nossa Política de IA:
+# AI Policy: https://wikivendas.com.br/ai-policy.txt
