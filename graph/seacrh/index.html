@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Busca · WikiVendas</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',Arial,sans-serif;background:#04070D;color:#e0e0e0;padding:40px;max-width:800px;margin:auto;min-height:100vh}
+a.back{display:inline-flex;align-items:center;gap:6px;color:rgba(0,209,255,0.7);text-decoration:none;font-size:14px;margin-bottom:30px;transition:color 0.3s}
+a.back:hover{color:#00D1FF}
+input{width:100%;padding:14px 18px;background:rgba(255,255,255,0.05);border:1px solid rgba(0,209,255,0.2);border-radius:12px;font-size:16px;font-family:'Inter',sans-serif;color:#fff;outline:none;transition:all 0.3s;margin-bottom:24px}
+input:focus{border-color:#00D1FF;box-shadow:0 0 30px rgba(0,209,255,0.12);background:rgba(255,255,255,0.08)}
+input::placeholder{color:rgba(255,255,255,0.2);font-weight:300}
+.result{padding:14px 18px;border:1px solid transparent;border-radius:10px;cursor:pointer;transition:all 0.25s;margin-bottom:4px}
+.result:hover{background:rgba(0,209,255,0.06);border-color:rgba(0,209,255,0.12);transform:translateX(4px)}
+.result h3{font-size:16px;font-weight:600;color:#fff;margin-bottom:4px}
+.result p{font-size:13px;color:rgba(255,255,255,0.45);font-weight:300}
+</style>
+</head>
+<body>
+<a class="back" href="../index.html">&larr; Voltar ao grafo</a>
+<input id="q" type="text" placeholder="Digite para buscar..." autofocus>
+<div id="results"></div>
+<script src="search.js"></script>
+</body>
+</html>
