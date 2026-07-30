@@ -1,85 +1,11 @@
 # ═══════════════════════════════════════════════════════════════
 #  robots.txt — WikiVendas (wikivendas.com.br)
-#  Propósito: Bloquear bots predatórios; permitir indexadores
-#  que geram retorno orgânico, citação e visibilidade.
+#  Propósito: negar por padrão. Só passa quem está explicitamente
+#  permitido abaixo — indexadores e agentes de IA que geram
+#  citação, retorno orgânico e visibilidade real.
 # ═══════════════════════════════════════════════════════════════
 
-# ────────── BLOQUEIO TOTAL: Bots indesejados ──────────
-# Scrapers agressivos, coletores de e-mail, harvesters, IA predatória
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-User-agent: SpiderBot
-Disallow: /
-
-User-agent: Screaming Frog
-Disallow: /
-
-User-agent: BLEXBot
-Disallow: /
-
-User-agent: ExtractorBot
-Disallow: /
-
-User-agent: HTTrack
-Disallow: /
-
-User-agent: wget
-Disallow: /
-
-User-agent: curl
-Disallow: /
-
-User-agent: Python-urllib
-Disallow: /
-
-User-agent: Python-requests
-Disallow: /
-
-User-agent: Go-http-client
-Disallow: /
-
-User-agent: scrapely
-Disallow: /
-
-User-agent: UniversalFeedParser
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: DataForSeoBot
-Disallow: /
-
-User-agent: Bytespider
-Disallow: /
-
-User-agent: Amazonbot
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: FacebookBot
-Disallow: /
-
-User-agent: Meta-ExternalAgent
-Disallow: /
-
-User-agent: Applebot-Extended
-Disallow: /
-
-# ────────── PERMITIDO: Indexadores que trazem retorno ──────────
-# Google (indexação + AI Overviews)
+# ────────── BUSCA TRADICIONAL ──────────
 User-agent: Googlebot
 Allow: /
 User-agent: Googlebot-Image
@@ -88,90 +14,119 @@ User-agent: Googlebot-News
 Allow: /
 User-agent: Googlebot-Video
 Allow: /
-User-agent: Google-Extended
-Allow: /
-
-# Bing / Microsoft
 User-agent: Bingbot
 Allow: /
-User-agent: MicrosoftStart
-Allow: /
-User-agent: adidxbot
-Allow: /
-
-# Yandex (relevante para RU/mercados emergentes)
-User-agent: YandexBot
-Allow: /
-User-agent: YandexImages
-Allow: /
-
-# DuckDuckGo
 User-agent: DuckDuckBot
 Allow: /
-
-# Baidu (mercado chinês)
+User-agent: YandexBot
+Allow: /
 User-agent: Baiduspider
 Allow: /
-
-# Yahoo / Slurp
 User-agent: Slurp
 Allow: /
-
-# Seznam (Czech/Slovak)
 User-agent: SeznamBot
 Allow: /
-
-# Naver (Coreia)
 User-agent: Yeti
 Allow: /
 
-# OpenAI — GPTBot (indexação com citação explícita via llms.txt)
+# ────────── IA — TREINO DE MODELO (decisão estratégica; ligado por padrão porque a tese do negócio é ser fonte para IA) ──────────
+User-agent: Google-Extended
+Allow: /
+User-agent: Applebot-Extended
+Disallow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: meta-externalagent
+Allow: /
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# ────────── IA — INDEXAÇÃO E CITAÇÃO EM RESPOSTAS (o que realmente traz visibilidade) ──────────
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: Claude-User
+Allow: /
+User-agent: claude-code
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
 User-agent: GPTBot
 Allow: /
-
-# Perplexity AI
 User-agent: PerplexityBot
 Allow: /
-
-# Anthropic — Claude (versão que respeita robots.txt)
-User-agent: Anthropic-Web
+User-agent: Perplexity-User
+Allow: /
+User-agent: Meta-ExternalFetcher
 Allow: /
 
-# Moz
-User-agent: MozBot
+# ────────── PREVIEW DE LINK EM REDES SOCIAIS ──────────
+User-agent: facebookexternalhit
+Allow: /
+User-agent: Twitterbot
+Allow: /
+User-agent: LinkedInBot
+Allow: /
+User-agent: Slackbot
+Allow: /
+User-agent: WhatsApp
 Allow: /
 
-# ────────── REGRAS GLOBAIS ──────────
-# Para qualquer bot não listado acima, permitir geral
-# mas bloquear áreas administrativas e sensíveis
+# ────────── APPLEBOT (busca/Siri — diferente de Applebot-Extended, que é treino) ──────────
+User-agent: Applebot
+Allow: /
+
+# ────────── BLOQUEIO EXPLÍCITO: scrapers de SEO e coletores agressivos ──────────
+User-agent: MJ12bot
+Disallow: /
+User-agent: AhrefsBot
+Disallow: /
+User-agent: SemrushBot
+Disallow: /
+User-agent: DotBot
+Disallow: /
+User-agent: Screaming Frog SEO Spider
+Disallow: /
+User-agent: BLEXBot
+Disallow: /
+User-agent: HTTrack
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: DataForSeoBot
+Disallow: /
+User-agent: Bytespider
+Disallow: /
+User-agent: Amazonbot
+Disallow: /
+
+# ────────── PADRÃO: NEGAR TUDO O QUE NÃO FOI PERMITIDO ACIMA ──────────
+# Esta é a mudança estrutural em relação à versão anterior.
+# Qualquer bot não listado explicitamente acima é bloqueado por padrão,
+# em vez de passar livre. Áreas administrativas seguem bloqueadas
+# mesmo para os bots permitidos.
 User-agent: *
-Allow: /
 Disallow: /admin/
 Disallow: /private/
 Disallow: /tmp/
 Disallow: /temp/
+Disallow: /
 
 # ────────── SITEMAP ──────────
 Sitemap: https://wikivendas.com.br/sitemap.xml
 
-# ────────── AI & LLM ENDPOINTS ──────────
-# Arquivos estruturados otimizados para consumo por IAs (RAG/Contexto)
-# Raiz:
-# LLMs Index: https://wikivendas.com.br/llm-index.json
-# LLMs TXT: https://wikivendas.com.br/llms.txt
-# LLMs Full: https://wikivendas.com.br/llms-full.txt
-# Knowledge Graph: https://wikivendas.com.br/graph.json
-#
-# Entidades e Ontologias (/graph):
-# Graph LLMs: https://wikivendas.com.br/graph/llms.txt
-# Graph JSON-LD: https://wikivendas.com.br/graph/graph.jsonld
-# Graph Turtle (TTL): https://wikivendas.com.br/graph/graph.ttl
-# Graph N-Triples (NT): https://wikivendas.com.br/graph/graph.nt
-# Graph Entities: https://wikivendas.com.br/graph/entities.json
+# ────────── ENDPOINTS PARA IA / LLM (RAG e contexto) ──────────
+# https://wikivendas.com.br/llms.txt
+# https://wikivendas.com.br/llms-full.txt
+# https://wikivendas.com.br/llm-index.json
+# https://wikivendas.com.br/graph/graph.jsonld
+# https://wikivendas.com.br/graph/graph.ttl
+# https://wikivendas.com.br/graph/graph.nt
+# https://wikivendas.com.br/graph/entities.json
 
 # ────────── CRAWL-DELAY ──────────
-# Respeito à infraestrutura: 1 segundo entre requisições
 Crawl-Delay: 1
-# ────────── TERMOS DE USO PARA IA E CRAWLERS ──────────
-# O acesso a este site está condicionado à aceitação da nossa Política de IA:
-# AI Policy: https://wikivendas.com.br/ai-policy.txt
+
+# ────────── AI POLICY (referência informativa — não é enforcement técnico) ──────────
+# https://wikivendas.com.br/ai-policy.txt
