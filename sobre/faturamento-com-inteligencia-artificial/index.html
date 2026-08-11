@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>determinar.ia.br — Um grafo determinístico, não um modelo que infere</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#0F1B1E;
+    --ink-2:#16262A;
+    --paper:#F1ECDC;
+    --paper-dim:#E4DEC9;
+    --seal:#8C6A2F;
+    --seal-bright:#C9A24B;
+    --verify:#3E8F72;
+    --line: rgba(241,236,220,0.16);
+    --text-dim: rgba(241,236,220,0.62);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+
+  .mono{
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    border-bottom:1px solid var(--line);
+    padding:22px 0;
+  }
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .brand .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--verify);
+    box-shadow:0 0 0 3px rgba(62,143,114,0.18);
+  }
+  nav a{
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:13px;
+    margin-left:26px;
+    letter-spacing:0.02em;
+  }
+  nav a:hover{ color:var(--paper); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:96px 0 84px;
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap:56px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--seal-bright);
+    margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:24px; height:1px;
+    background:var(--seal-bright);
+  }
+  .hero h1{
+    font-size:clamp(34px, 4.6vw, 56px);
+    line-height:1.06;
+    color:var(--paper);
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:var(--seal-bright);
+  }
+  .hero p.lede{
+    margin-top:26px;
+    font-size:17.5px;
+    color:var(--text-dim);
+    max-width:52ch;
+  }
+  .hero-cta{
+    margin-top:34px;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:12px 20px;
+    border-radius:3px;
+    text-decoration:none;
+    letter-spacing:0.02em;
+  }
+  .btn-primary{
+    background:var(--seal-bright);
+    color:var(--ink);
+    font-weight:600;
+  }
+  .btn-ghost{
+    border:1px solid var(--line);
+    color:var(--paper);
+  }
+
+  /* ---------- LEDGER CARD (signature element) ---------- */
+  .ledger{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:2px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.55);
+    position:relative;
+    overflow:hidden;
+  }
+  .ledger-head{
+    padding:20px 22px 16px;
+    border-bottom:1px dashed rgba(15,27,30,0.22);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  .ledger-head .code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:20px;
+    font-weight:600;
+  }
+  .ledger-head .qid{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:rgba(15,27,30,0.5);
+    margin-top:4px;
+  }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--verify);
+    border:1px solid var(--verify);
+    padding:4px 9px;
+    border-radius:2px;
+    transform:rotate(-3deg);
+    white-space:nowrap;
+  }
+  .ledger-body{ padding:6px 22px 4px; }
+  .stmt{
+    padding:14px 0;
+    border-bottom:1px solid rgba(15,27,30,0.1);
+  }
+  .stmt:last-child{ border-bottom:none; }
+  .stmt .prop{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:rgba(15,27,30,0.55);
+    margin-bottom:4px;
+  }
+  .stmt .val{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    font-weight:500;
+  }
+  .stmt .val.no{ color:#8C3A2F; }
+  .stmt .val.yes{ color:var(--verify); }
+  .qualifiers{
+    margin-top:7px;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    font-size:10.5px;
+    font-family:'IBM Plex Mono', monospace;
+    color:rgba(15,27,30,0.5);
+  }
+  .qualifiers span b{ color:rgba(15,27,30,0.72); font-weight:500; }
+  .ledger-foot{
+    padding:14px 22px 18px;
+    font-size:10.5px;
+    font-family:'IBM Plex Mono', monospace;
+    color:rgba(15,27,30,0.45);
+    display:flex;
+    justify-content:space-between;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section{ padding:78px 0; border-top:1px solid var(--line); }
+  .kicker{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--seal-bright);
+    margin-bottom:14px;
+  }
+  section h2{
+    font-size:clamp(26px,3vw,36px);
+    max-width:22ch;
+    color:var(--paper);
+  }
+  section > p.intro{
+    margin-top:18px;
+    max-width:64ch;
+    color:var(--text-dim);
+    font-size:16px;
+  }
+
+  /* grammar diagram */
+  .grammar{
+    margin-top:44px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .grammar > div{
+    background:var(--ink);
+    padding:26px 24px;
+  }
+  .grammar h4{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--seal-bright);
+    margin-bottom:10px;
+  }
+  .grammar p{ font-size:14px; color:var(--text-dim); }
+  .grammar .ex{
+    margin-top:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    color:var(--paper);
+    background:rgba(241,236,220,0.05);
+    padding:8px 10px;
+    border-left:2px solid var(--verify);
+  }
+
+  /* comparison */
+  .compare{
+    margin-top:44px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    border:1px solid var(--line);
+  }
+  .compare > div{ padding:30px 28px; }
+  .compare .col-a{ border-right:1px solid var(--line); }
+  .compare .col-b{ background:rgba(62,143,114,0.055); }
+  .compare h3{
+    font-size:17px;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .compare .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    padding:3px 7px;
+    border-radius:2px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+  }
+  .col-a .tag{ background:rgba(140,58,47,0.16); color:#D98876; }
+  .col-b .tag{ background:rgba(62,143,114,0.18); color:var(--verify); }
+  .compare ul{ list-style:none; }
+  .compare li{
+    font-size:14.5px;
+    color:var(--text-dim);
+    padding:9px 0;
+    border-top:1px solid var(--line);
+    padding-left:18px;
+    position:relative;
+  }
+  .compare li:first-of-type{ border-top:none; }
+  .col-a li::before{
+    content:"×";
+    position:absolute; left:0; color:#8C3A2F; font-family:'IBM Plex Mono', monospace;
+  }
+  .col-b li::before{
+    content:"✓";
+    position:absolute; left:0; color:var(--verify); font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* endpoints */
+  .endpoints{
+    margin-top:44px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+  }
+  .ep-card{
+    border:1px solid var(--line);
+    padding:24px 22px;
+    position:relative;
+  }
+  .ep-card .n{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-dim);
+    position:absolute;
+    top:20px; right:22px;
+  }
+  .ep-card h4{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14.5px;
+    color:var(--seal-bright);
+    margin-bottom:10px;
+    padding-right:30px;
+  }
+  .ep-card p{ font-size:13.5px; color:var(--text-dim); }
+  .ep-card code{
+    display:block;
+    margin-top:14px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    color:var(--paper);
+    background:rgba(241,236,220,0.05);
+    padding:9px 10px;
+    border-radius:2px;
+    word-break:break-all;
+  }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:36px 0 48px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  footer p{ font-size:12.5px; color:var(--text-dim); font-family:'IBM Plex Mono', monospace; }
+
+  @media (max-width: 860px){
+    .hero{ grid-template-columns:1fr; padding-top:60px; }
+    .grammar{ grid-template-columns:1fr; }
+    .compare{ grid-template-columns:1fr; }
+    .compare .col-a{ border-right:none; border-bottom:1px solid var(--line); }
+    .endpoints{ grid-template-columns:1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+  }
+
+  a:focus-visible, .btn:focus-visible{
+    outline:2px solid var(--seal-bright);
+    outline-offset:2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div class="brand"><span class="dot"></span> determinar.ia.br — cartório digital</div>
+    <nav>
+      <a href="#gramatica">Gramática</a>
+      <a href="#comparativo">Determinístico vs. inferido</a>
+      <a href="#endpoints">Endpoints</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="border-top:none; padding-top:96px;">
+    <div>
+      <div class="eyebrow">Grafo de faturamento SUS · SIGTAP</div>
+      <h1>Uma IA pode faturar um procedimento. <em>Não porque ela entende — porque o grafo já decidiu.</em></h1>
+      <p class="lede">Cada código SIGTAP no determinar.ia.br é um item com afirmações estruturadas: fonte, data de coleta e status de verificação. Não há texto livre para o modelo interpretar, e não há espaço para inferir uma regra que o grafo não declarou.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#gramatica">Ver a gramática do grafo</a>
+        <a class="btn btn-ghost" href="#endpoints">Ver os endpoints</a>
+      </div>
+    </div>
+
+    <div class="ledger">
+      <div class="ledger-head">
+        <div>
+          <div class="code">0101050089</div>
+          <div class="qid">Item:Q29118 · Property:P87 (SIGTAP Code)</div>
+        </div>
+        <div class="stamp">verificado</div>
+      </div>
+      <div class="ledger-body">
+        <div class="stmt">
+          <div class="prop">Exige CBO</div>
+          <div class="val yes">yes</div>
+          <div class="qualifiers"><span><b>Fonte</b> Q20755</span><span><b>Coleta</b> 1 jul 2026</span></div>
+        </div>
+        <div class="stmt">
+          <div class="prop">Exige Habilitação</div>
+          <div class="val no">no</div>
+          <div class="qualifiers"><span><b>Fonte</b> Q20755</span><span><b>Coleta</b> 1 jul 2026</span></div>
+        </div>
+        <div class="stmt">
+          <div class="prop">Exige Serviço CNES</div>
+          <div class="val no">no</div>
+          <div class="qualifiers"><span><b>Fonte</b> Q20755</span><span><b>Coleta</b> 1 jul 2026</span></div>
+        </div>
+        <div class="stmt">
+          <div class="prop">Complexidade</div>
+          <div class="val">Atenção Básica</div>
+        </div>
+        <div class="stmt">
+          <div class="prop">Financiamento</div>
+          <div class="val">Atenção Básica (PAB)</div>
+        </div>
+      </div>
+      <div class="ledger-foot">
+        <span>Official Source: sigtap.datasus.gov.br</span>
+        <span>0 inferências</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="gramatica">
+    <div class="wrap">
+      <div class="kicker">A gramática</div>
+      <h2>Item → Statement → Qualificadores. Sem quarta camada de dúvida.</h2>
+      <p class="intro">O Wikibase por trás do determinar.ia.br força toda afirmação a caber em três partes fechadas. Uma IA que consulta o grafo não precisa "julgar" se um dado é confiável — ela lê o qualificador e segue a regra que já está lá.</p>
+
+      <div class="grammar">
+        <div>
+          <h4>01 — Item</h4>
+          <p>Um código, uma entidade. O procedimento SIGTAP 0101050089 é o Q29118 — um identificador fixo, não um texto a ser reconhecido.</p>
+          <div class="ex">Item:Q29118</div>
+        </div>
+        <div>
+          <h4>02 — Statement</h4>
+          <p>Cada exigência de faturamento vira uma propriedade booleana ou categórica, nunca uma frase para interpretar.</p>
+          <div class="ex">P183 Exige CBO → yes</div>
+        </div>
+        <div>
+          <h4>03 — Qualificador</h4>
+          <p>Fonte, data de coleta e status de verificação amarrados ao statement — a IA sabe de onde veio e quando foi conferido.</p>
+          <div class="ex">Fonte: Q20755 · verificado</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="comparativo">
+    <div class="wrap">
+      <div class="kicker">O ponto central</div>
+      <h2>Um modelo generativo alucina regra. Um grafo tipado não tem onde alucinar.</h2>
+      <p class="intro">A diferença entre pedir a um modelo de linguagem para "saber" as regras do SIGTAP e consultar o determinar.ia.br é a diferença entre uma opinião estatística e uma constraint booleana.</p>
+
+      <div class="compare">
+        <div class="col-a">
+          <h3><span class="tag">sem o grafo</span></h3>
+          <ul>
+            <li>O modelo estima, a partir de padrões de texto, se um CBO provavelmente é exigido.</li>
+            <li>Duas consultas iguais podem gerar respostas diferentes.</li>
+            <li>Não há como apontar a fonte exata de uma regra de faturamento.</li>
+            <li>Erros de elegibilidade só aparecem na glosa, depois do envio.</li>
+          </ul>
+        </div>
+        <div class="col-b">
+          <h3><span class="tag">com o grafo</span></h3>
+          <ul>
+            <li>A IA lê P183 (Exige CBO) e recebe yes ou no — não uma probabilidade.</li>
+            <li>A mesma consulta ao mesmo item sempre retorna o mesmo statement.</li>
+            <li>Toda exigência carrega Fonte (P79) e Status de Verificação (P86).</li>
+            <li>A elegibilidade é checada antes do envio, não descoberta na glosa.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="endpoints">
+    <div class="wrap">
+      <div class="kicker">Onde uma IA entra</div>
+      <h2>Sem chat, sem prompt. Consulta estruturada.</h2>
+      <p class="intro">A eficiência do grafo não se prova em conversa — se prova nos endpoints que uma IA de faturamento consultaria diretamente para validar um procedimento antes de gerar a fatura.</p>
+
+      <div class="endpoints">
+        <div class="ep-card">
+          <span class="n">01</span>
+          <h4>Query Service (SPARQL)</h4>
+          <p>Consulta direta aos statements — a IA pergunta "este item exige CBO?" e recebe o valor tipado, não um resumo.</p>
+          <code>query.determinar.ia.br</code>
+        </div>
+        <div class="ep-card">
+          <span class="n">02</span>
+          <h4>QuickStatements</h4>
+          <p>Caminho de escrita em lote, auditável: cada statement novo entra com fonte e data, como os que populam os itens SIGTAP.</p>
+          <code>determinar.ia.br/tools/quickstatements</code>
+        </div>
+        <div class="ep-card">
+          <span class="n">03</span>
+          <h4>Item page</h4>
+          <p>A mesma leitura que um humano faz na tela é a que a IA recebe pela API — nenhuma camada extra de interpretação entre as duas.</p>
+          <code>determinar.ia.br/wiki/Item:Q29118</code>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap header-row" style="width:100%;">
+    <p>determinar.ia.br — dados de saúde: SIGTAP · TUSS · CID-10/11 · CNES</p>
+    <p>Statements verificados em 1 jul 2026 · fonte oficial sigtap.datasus.gov.br</p>
+  </div>
+</footer>
+
+</body>
+</html>
