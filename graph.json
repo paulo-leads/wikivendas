@@ -58,9 +58,9 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.20475915",
+        "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -304,8 +304,8 @@
         "@id": "wikivendas:grafo"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20362080",
-        "https://doi.org/10.1145/3637528.3671900"
+        "https://doi.org/10.1145/3637528.3671900",
+        "https://doi.org/10.5281/zenodo.20362080"
       ],
       "identifier": {
         "@id": "wd:Q28"
@@ -463,13 +463,28 @@
         "@id": "wikivendas:sobre"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q103"
       },
       "wikibaseId": "Q103"
+    },
+    {
+      "@id": "wikivendas:sobre-faturamento-com-inteligencia-artificial",
+      "@type": "schema:AboutPage",
+      "name": "determinar.ia.br — Um grafo determinístico, não um modelo que infere",
+      "description": "determinar.ia.br — Um grafo determinístico, não um modelo que infere",
+      "url": "https://wikivendas.com.br/sobre/faturamento-com-inteligencia-artificial/",
+      "priority": 0.7,
+      "isPartOf": {
+        "@id": "wikivendas:sobre"
+      },
+      "identifier": {
+        "@id": "wd:Q29118"
+      },
+      "wikibaseId": "Q29118"
     },
     {
       "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e",
@@ -493,9 +508,9 @@
         "@id": "wikivendas:sobre"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q28"
@@ -562,10 +577,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q5176896"
@@ -599,10 +614,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q139940879"
@@ -620,10 +635,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21541962",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21541962"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -641,10 +656,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.21541962",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.21541962"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -662,9 +677,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q26"
@@ -745,9 +760,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104"
       ],
       "identifier": {
         "@id": "wd:Q20"
@@ -831,10 +846,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.20320049"
+        "https://doi.org/10.5281/zenodo.20320049",
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q139958088"
@@ -8723,6 +8738,9 @@
           "@id": "wikivendas:sobre-diferenca"
         },
         {
+          "@id": "wikivendas:sobre-faturamento-com-inteligencia-artificial"
+        },
+        {
           "@id": "wikivendas:sobre-o-que-a-wikivendas-nao-e"
         },
         {
@@ -8768,8 +8786,8 @@
       ]
     }
   ],
-  "totalPages": 52,
-  "totalNodes": 186,
-  "generated": "2026-08-11",
+  "totalPages": 53,
+  "totalNodes": 187,
+  "generated": "2026-08-12",
   "domain": "wikivendas.com.br"
 }
