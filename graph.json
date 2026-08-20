@@ -636,9 +636,9 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21541962",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21541962"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -657,9 +657,9 @@
       },
       "sameAs": [
         "https://doi.org/10.5281/zenodo.21272104",
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21541962",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21541962"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -8788,6 +8788,6 @@
   ],
   "totalPages": 53,
   "totalNodes": 187,
-  "generated": "2026-08-19",
+  "generated": "2026-08-20",
   "domain": "wikivendas.com.br"
 }
