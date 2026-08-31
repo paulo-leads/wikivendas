@@ -57,10 +57,10 @@
         "@id": "wikivendas:grafo"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20475915",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20475915",
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -463,8 +463,8 @@
         "@id": "wikivendas:sobre"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.21272104",
+        "https://doi.org/10.5281/zenodo.20320049"
       ],
       "identifier": {
         "@id": "wd:Q103"
@@ -508,9 +508,9 @@
         "@id": "wikivendas:sobre"
       },
       "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q28"
@@ -577,10 +577,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q5176896"
@@ -614,10 +614,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q139940879"
@@ -635,10 +635,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.21541962",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -656,10 +656,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
         "https://doi.org/10.5281/zenodo.21541962",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q140427962"
@@ -677,9 +677,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q26"
@@ -760,9 +760,9 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.20860586",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q20"
@@ -846,10 +846,10 @@
         "@id": "wikivendas:glossario"
       },
       "sameAs": [
-        "https://doi.org/10.5281/zenodo.20860586",
+        "https://doi.org/10.5281/zenodo.21272104",
         "https://doi.org/10.5281/zenodo.21615274",
         "https://doi.org/10.5281/zenodo.20320049",
-        "https://doi.org/10.5281/zenodo.21272104"
+        "https://doi.org/10.5281/zenodo.20860586"
       ],
       "identifier": {
         "@id": "wd:Q139958088"
@@ -8788,6 +8788,6 @@
   ],
   "totalPages": 53,
   "totalNodes": 187,
-  "generated": "2026-08-30",
+  "generated": "2026-08-31",
   "domain": "wikivendas.com.br"
 }
